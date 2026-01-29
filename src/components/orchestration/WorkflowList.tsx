@@ -79,7 +79,7 @@ export function WorkflowList() {
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Active Workflows ({activeWorkflows.length})
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
             {activeWorkflows.map((workflow) => (
               <WorkflowCard
                 key={workflow.id}
@@ -98,7 +98,7 @@ export function WorkflowList() {
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Paused Workflows ({pausedWorkflows.length})
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
             {pausedWorkflows.map((workflow) => (
               <WorkflowCard
                 key={workflow.id}
@@ -117,7 +117,7 @@ export function WorkflowList() {
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Draft Workflows ({draftWorkflows.length})
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
             {draftWorkflows.map((workflow) => (
               <WorkflowCard
                 key={workflow.id}

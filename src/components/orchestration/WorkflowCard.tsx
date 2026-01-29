@@ -1,7 +1,8 @@
-import { Play, Pause, Edit, Trash2, GitBranch, Clock, Users, Bot, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Play, Pause, Edit, Trash2, GitBranch, Clock, Users, Bot, CheckCircle, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Workflow } from "@/lib/mockData";
 
 interface WorkflowCardProps {
@@ -18,7 +19,7 @@ const getStatusBadge = (status: Workflow["status"]) => {
     case "paused":
       return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Paused</Badge>;
     case "draft":
-      return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Draft</Badge>;
+      return <Badge variant="secondary">Draft</Badge>;
     case "archived":
       return <Badge className="bg-muted text-muted-foreground border-muted">Archived</Badge>;
   }
@@ -41,97 +42,126 @@ export function WorkflowCard({ workflow, onEdit, onToggleStatus, onDelete }: Wor
   const hybridStages = workflow.stages.filter(s => s.assignedActor === "hybrid").length;
 
   return (
-    <Card className="hover:border-primary/50 transition-colors">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-base flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-primary" />
-              {workflow.name}
-              <span className="text-xs text-muted-foreground font-normal">v{workflow.version}</span>
-            </CardTitle>
-            <p className="text-sm text-muted-foreground line-clamp-1">
-              {workflow.description}
-            </p>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-5">
+        {/* Header Row */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <GitBranch className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-lg">{workflow.name}</h3>
+            <span className="text-muted-foreground text-sm">v{workflow.version}</span>
           </div>
           <div className="flex items-center gap-2">
             {getStatusBadge(workflow.status)}
             {getJobTypeBadge(workflow.jobType)}
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-4 mb-4">
+
+        {/* Description */}
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-1">
+          {workflow.description}
+        </p>
+
+        {/* Metrics Row */}
+        <div className="flex items-center gap-8 mb-4">
           <div className="text-center">
-            <div className="text-lg font-semibold">{workflow.stages.length}</div>
+            <div className="text-xl font-bold">{workflow.stages.length}</div>
             <div className="text-xs text-muted-foreground">Stages</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-emerald-500">{workflow.executionCount.toLocaleString()}</div>
+            <div className="text-xl font-bold text-primary">{workflow.executionCount.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Executions</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-primary">{workflow.successRate}%</div>
+            <div className="text-xl font-bold text-emerald-500">{workflow.successRate}%</div>
             <div className="text-xs text-muted-foreground">Success</div>
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Bot className="h-3 w-3 text-primary" />
-              <span className="text-sm">{aiStages}</span>
-              <Users className="h-3 w-3 text-amber-500 ml-1" />
-              <span className="text-sm">{humanStages}</span>
-              <CheckCircle className="h-3 w-3 text-teal-500 ml-1" />
-              <span className="text-sm">{hybridStages}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">AI/Human/Hybrid</div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="flex items-center gap-1">
+              <Bot className="h-4 w-4 text-amber-500" />
+              {aiStages}
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              {humanStages}
+            </span>
+            <span className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4 text-teal-500" />
+              {hybridStages}
+            </span>
+            <span className="text-xs text-muted-foreground">AI/Human/Hybrid</span>
           </div>
         </div>
 
-        {/* Stage preview */}
-        <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
-          {workflow.stages.map((stage, idx) => (
-            <div key={stage.id} className="flex items-center">
-              <div 
-                className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
-                  stage.assignedActor === "ai" 
-                    ? "bg-primary/10 text-primary" 
-                    : stage.assignedActor === "human"
-                    ? "bg-amber-500/10 text-amber-500"
-                    : "bg-teal-500/10 text-teal-500"
-                }`}
-              >
+        {/* Stage Flow */}
+        <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2">
+          {workflow.stages.slice(0, 4).map((stage, index) => (
+            <div key={stage.id} className="flex items-center gap-2">
+              <Badge variant="outline" className="whitespace-nowrap bg-teal-500/10 text-teal-600 border-teal-500/20">
                 {stage.name}
-              </div>
-              {idx < workflow.stages.length - 1 && (
-                <span className="text-muted-foreground mx-1">→</span>
+              </Badge>
+              {index < Math.min(workflow.stages.length - 1, 3) && (
+                <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               )}
             </div>
           ))}
+          {workflow.stages.length > 4 && (
+            <span className="text-sm text-muted-foreground whitespace-nowrap">+{workflow.stages.length - 4} more</span>
+          )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              Updated {workflow.updatedAt}
-            </span>
+        {/* Progress Bar */}
+        <Progress value={workflow.successRate} className="h-1.5 mb-4" />
+
+        {/* Footer */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>Updated {workflow.updatedAt}</span>
             <span>by {workflow.createdBy}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => onEdit?.(workflow)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            {workflow.status === "draft" ? (
-              <Button variant="ghost" size="sm" onClick={() => onDelete?.(workflow)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(workflow);
+                }}
+              >
+                <Edit className="h-4 w-4" />
               </Button>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => onToggleStatus?.(workflow)}>
+            )}
+            {onToggleStatus && workflow.status !== "draft" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStatus(workflow);
+                }}
+              >
                 {workflow.status === "paused" ? (
-                  <Play className="h-4 w-4 text-emerald-500" />
+                  <Play className="h-4 w-4" />
                 ) : (
-                  <Pause className="h-4 w-4 text-amber-500" />
+                  <Pause className="h-4 w-4" />
                 )}
+              </Button>
+            )}
+            {onDelete && workflow.status === "draft" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(workflow);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
