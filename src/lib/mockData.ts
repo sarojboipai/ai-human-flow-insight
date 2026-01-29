@@ -592,3 +592,610 @@ export const aggregateFunnelData = [
   { name: "Offer Released", total: 70, ai: 16, human: 54 },
   { name: "Placement Confirmed", total: 29, ai: 11, human: 18 },
 ];
+
+// ============================================
+// HITL Rule Engine V2 Data Models
+// ============================================
+
+export type RuleType = "confidence" | "business" | "anomaly" | "sla";
+export type OperatorType = ">" | "<" | "=" | ">=" | "<=" | "!=";
+export type ActionType = "route_to_queue" | "alert" | "escalate" | "block";
+export type TargetQueue = "recruiter_review" | "ops_escalation" | "enterprise_priority";
+export type RuleStatus = "active" | "paused" | "draft";
+export type TaskStatus = "pending" | "assigned" | "in_review" | "approved" | "rejected" | "escalated";
+export type TaskPriority = "high" | "medium" | "low";
+export type AuditEventType = "rule_triggered" | "task_created" | "task_assigned" | "task_resolved" | "task_escalated";
+
+export interface HITLRuleV2 {
+  id: string;
+  name: string;
+  description: string;
+  ruleType: RuleType;
+  conditionMetric: string;
+  operator: OperatorType;
+  thresholdValue: string | number;
+  actionType: ActionType;
+  targetQueue: TargetQueue;
+  priority: 1 | 2 | 3 | 4 | 5;
+  status: RuleStatus;
+  triggerCount: number;
+  lastTriggered: string | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  version: number;
+}
+
+export interface HITLTask {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  candidateId: string;
+  candidateName: string;
+  jobId: string;
+  jobTitle: string;
+  aiAgentId: string | null;
+  aiDecision: string;
+  confidenceScore: number;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignedTo: string | null;
+  assignedAt: string | null;
+  resolution: string | null;
+  resolvedAt: string | null;
+  dueAt: string | null;
+  createdAt: string;
+  metadata: Record<string, string | number>;
+}
+
+export interface HITLAuditLog {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  taskId: string;
+  eventType: AuditEventType;
+  actor: string;
+  details: string;
+  snapshot: Record<string, string | number>;
+  timestamp: string;
+}
+
+export interface SimulationResult {
+  ruleId: string;
+  totalCandidates: number;
+  matchedCandidates: number;
+  routingPercentage: number;
+  sampleMatches: Array<{ candidateId: string; jobId: string; score: number }>;
+}
+
+// Condition metrics by rule type
+export const conditionMetrics: Record<RuleType, { value: string; label: string }[]> = {
+  confidence: [
+    { value: "ai_confidence", label: "AI Confidence Score" },
+    { value: "match_confidence", label: "Match Confidence" },
+    { value: "interview_prediction", label: "Interview Prediction Score" },
+  ],
+  business: [
+    { value: "employer_tier", label: "Employer Tier" },
+    { value: "role_type", label: "Role Type" },
+    { value: "role_level", label: "Role Level" },
+    { value: "salary_range", label: "Salary Range" },
+  ],
+  anomaly: [
+    { value: "drop_off_rate", label: "Drop-off Rate (%)" },
+    { value: "response_rate", label: "Response Rate (%)" },
+    { value: "conversion_rate", label: "Conversion Rate (%)" },
+  ],
+  sla: [
+    { value: "time_to_interview", label: "Time to Interview (hours)" },
+    { value: "time_in_stage", label: "Time in Stage (hours)" },
+    { value: "days_open", label: "Days Open" },
+  ],
+};
+
+export const operators: { value: OperatorType; label: string }[] = [
+  { value: "<", label: "Less than" },
+  { value: "<=", label: "Less than or equal" },
+  { value: "=", label: "Equals" },
+  { value: "!=", label: "Not equals" },
+  { value: ">", label: "Greater than" },
+  { value: ">=", label: "Greater than or equal" },
+];
+
+export const actionTypes: { value: ActionType; label: string }[] = [
+  { value: "route_to_queue", label: "Route to Queue" },
+  { value: "alert", label: "Send Alert" },
+  { value: "escalate", label: "Escalate to Manager" },
+  { value: "block", label: "Block Action" },
+];
+
+export const targetQueues: { value: TargetQueue; label: string }[] = [
+  { value: "recruiter_review", label: "Recruiter Review Queue" },
+  { value: "ops_escalation", label: "Ops Escalation Queue" },
+  { value: "enterprise_priority", label: "Enterprise Priority Queue" },
+];
+
+// Extended HITL Rules with full structure
+export const hitlRulesV2: HITLRuleV2[] = [
+  {
+    id: "rule-001",
+    name: "Low AI Confidence",
+    description: "Route candidates with low AI match confidence for human review",
+    ruleType: "confidence",
+    conditionMetric: "ai_confidence",
+    operator: "<",
+    thresholdValue: 0.7,
+    actionType: "route_to_queue",
+    targetQueue: "recruiter_review",
+    priority: 1,
+    status: "active",
+    triggerCount: 342,
+    lastTriggered: "10 mins ago",
+    createdAt: "2024-01-01",
+    updatedAt: "2024-01-28",
+    createdBy: "Saroj",
+    version: 3,
+  },
+  {
+    id: "rule-002",
+    name: "Enterprise Employer",
+    description: "All enterprise employer candidates require mandatory human review",
+    ruleType: "business",
+    conditionMetric: "employer_tier",
+    operator: "=",
+    thresholdValue: "enterprise",
+    actionType: "route_to_queue",
+    targetQueue: "enterprise_priority",
+    priority: 1,
+    status: "active",
+    triggerCount: 189,
+    lastTriggered: "25 mins ago",
+    createdAt: "2024-01-05",
+    updatedAt: "2024-01-20",
+    createdBy: "Priya",
+    version: 2,
+  },
+  {
+    id: "rule-003",
+    name: "Senior Doctor Roles",
+    description: "Senior doctor positions need specialized recruiter attention",
+    ruleType: "business",
+    conditionMetric: "role_level",
+    operator: "=",
+    thresholdValue: "senior",
+    actionType: "route_to_queue",
+    targetQueue: "recruiter_review",
+    priority: 2,
+    status: "active",
+    triggerCount: 114,
+    lastTriggered: "2 hours ago",
+    createdAt: "2024-01-08",
+    updatedAt: "2024-01-15",
+    createdBy: "Rahul",
+    version: 1,
+  },
+  {
+    id: "rule-004",
+    name: "High Drop-off Alert",
+    description: "Alert ops team when funnel drop-off exceeds threshold",
+    ruleType: "anomaly",
+    conditionMetric: "drop_off_rate",
+    operator: ">",
+    thresholdValue: 40,
+    actionType: "alert",
+    targetQueue: "ops_escalation",
+    priority: 2,
+    status: "active",
+    triggerCount: 28,
+    lastTriggered: "1 day ago",
+    createdAt: "2024-01-10",
+    updatedAt: "2024-01-22",
+    createdBy: "Ananya",
+    version: 2,
+  },
+  {
+    id: "rule-005",
+    name: "Interview Scheduling SLA",
+    description: "Escalate if interview not scheduled within 48 hours",
+    ruleType: "sla",
+    conditionMetric: "time_to_interview",
+    operator: ">",
+    thresholdValue: 48,
+    actionType: "escalate",
+    targetQueue: "ops_escalation",
+    priority: 3,
+    status: "active",
+    triggerCount: 56,
+    lastTriggered: "4 hours ago",
+    createdAt: "2024-01-12",
+    updatedAt: "2024-01-18",
+    createdBy: "Vikram",
+    version: 1,
+  },
+  {
+    id: "rule-006",
+    name: "Low Response Rate",
+    description: "Trigger human outreach when AI response rate is below threshold",
+    ruleType: "anomaly",
+    conditionMetric: "response_rate",
+    operator: "<",
+    thresholdValue: 5,
+    actionType: "route_to_queue",
+    targetQueue: "recruiter_review",
+    priority: 3,
+    status: "paused",
+    triggerCount: 22,
+    lastTriggered: "3 days ago",
+    createdAt: "2024-01-15",
+    updatedAt: "2024-01-25",
+    createdBy: "Deepa",
+    version: 1,
+  },
+  {
+    id: "rule-007",
+    name: "High Salary Negotiation",
+    description: "Senior recruiter review for offers exceeding salary threshold",
+    ruleType: "business",
+    conditionMetric: "salary_range",
+    operator: ">",
+    thresholdValue: 2500000,
+    actionType: "route_to_queue",
+    targetQueue: "enterprise_priority",
+    priority: 2,
+    status: "active",
+    triggerCount: 34,
+    lastTriggered: "6 hours ago",
+    createdAt: "2024-01-18",
+    updatedAt: "2024-01-26",
+    createdBy: "Saroj",
+    version: 1,
+  },
+  {
+    id: "rule-008",
+    name: "Match Confidence Warning",
+    description: "Flag candidates with moderate match confidence for review",
+    ruleType: "confidence",
+    conditionMetric: "match_confidence",
+    operator: "<",
+    thresholdValue: 0.75,
+    actionType: "alert",
+    targetQueue: "recruiter_review",
+    priority: 4,
+    status: "draft",
+    triggerCount: 0,
+    lastTriggered: null,
+    createdAt: "2024-01-28",
+    updatedAt: "2024-01-28",
+    createdBy: "Priya",
+    version: 1,
+  },
+];
+
+// HITL Tasks with full details
+export const hitlTasks: HITLTask[] = [
+  {
+    id: "HITL-001",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    candidateId: "CAN-45892",
+    candidateName: "Amit Verma",
+    jobId: "JOB-001",
+    jobTitle: "Senior ICU Nurse",
+    aiAgentId: "agent-002",
+    aiDecision: "Matched",
+    confidenceScore: 0.62,
+    status: "pending",
+    priority: "high",
+    assignedTo: "Priya Sharma",
+    assignedAt: "1 hour ago",
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "4 hours",
+    createdAt: "2 hours ago",
+    metadata: { skillGap: "35%", roleMatch: "72%", experience: "6 years" },
+  },
+  {
+    id: "HITL-002",
+    ruleId: "rule-002",
+    ruleName: "Enterprise Employer",
+    candidateId: "CAN-45901",
+    candidateName: "Neha Gupta",
+    jobId: "JOB-002",
+    jobTitle: "General Physician",
+    aiAgentId: "agent-002",
+    aiDecision: "Strong Match",
+    confidenceScore: 0.89,
+    status: "in_review",
+    priority: "high",
+    assignedTo: "Rahul Mehta",
+    assignedAt: "3 hours ago",
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "2 hours",
+    createdAt: "4 hours ago",
+    metadata: { employerTier: "enterprise", salary: "₹18,00,000" },
+  },
+  {
+    id: "HITL-003",
+    ruleId: "rule-003",
+    ruleName: "Senior Doctor Roles",
+    candidateId: "CAN-45876",
+    candidateName: "Dr. Rajesh Kumar",
+    jobId: "JOB-006",
+    jobTitle: "Cardiologist",
+    aiAgentId: "agent-002",
+    aiDecision: "Matched",
+    confidenceScore: 0.78,
+    status: "pending",
+    priority: "medium",
+    assignedTo: "Ananya Patel",
+    assignedAt: "5 hours ago",
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "8 hours",
+    createdAt: "6 hours ago",
+    metadata: { roleLevel: "senior", specialization: "Cardiology" },
+  },
+  {
+    id: "HITL-004",
+    ruleId: "rule-005",
+    ruleName: "Interview Scheduling SLA",
+    candidateId: "CAN-45912",
+    candidateName: "Sunita Reddy",
+    jobId: "JOB-003",
+    jobTitle: "Emergency Paramedic",
+    aiAgentId: "agent-004",
+    aiDecision: "Schedule Pending",
+    confidenceScore: 0.85,
+    status: "assigned",
+    priority: "medium",
+    assignedTo: null,
+    assignedAt: null,
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "1 hour",
+    createdAt: "8 hours ago",
+    metadata: { waitTime: "52 hours", schedulingAttempts: 3 },
+  },
+  {
+    id: "HITL-005",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    candidateId: "CAN-45889",
+    candidateName: "Kiran Joshi",
+    jobId: "JOB-004",
+    jobTitle: "Lab Technician",
+    aiAgentId: "agent-002",
+    aiDecision: "Weak Match",
+    confidenceScore: 0.58,
+    status: "approved",
+    priority: "low",
+    assignedTo: "Vikram Singh",
+    assignedAt: "1 day ago",
+    resolution: "Approved after skills verification",
+    resolvedAt: "20 hours ago",
+    dueAt: null,
+    createdAt: "1 day ago",
+    metadata: { skillGap: "42%", roleMatch: "65%" },
+  },
+  {
+    id: "HITL-006",
+    ruleId: "rule-004",
+    ruleName: "High Drop-off Alert",
+    candidateId: "CAN-45923",
+    candidateName: "Meera Shah",
+    jobId: "JOB-005",
+    jobTitle: "Pediatric Nurse",
+    aiAgentId: null,
+    aiDecision: "N/A - Anomaly Alert",
+    confidenceScore: 0,
+    status: "rejected",
+    priority: "low",
+    assignedTo: "Deepa Kumar",
+    assignedAt: "2 days ago",
+    resolution: "Candidate withdrew application",
+    resolvedAt: "1 day ago",
+    dueAt: null,
+    createdAt: "2 days ago",
+    metadata: { dropOffStage: "Interview Scheduled", dropOffRate: "45%" },
+  },
+  {
+    id: "HITL-007",
+    ruleId: "rule-007",
+    ruleName: "High Salary Negotiation",
+    candidateId: "CAN-45934",
+    candidateName: "Dr. Arun Nair",
+    jobId: "JOB-006",
+    jobTitle: "Cardiologist",
+    aiAgentId: "agent-006",
+    aiDecision: "Salary Counter Proposed",
+    confidenceScore: 0.72,
+    status: "pending",
+    priority: "high",
+    assignedTo: null,
+    assignedAt: null,
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "6 hours",
+    createdAt: "3 hours ago",
+    metadata: { proposedSalary: "₹32,00,000", budgetMax: "₹28,00,000" },
+  },
+  {
+    id: "HITL-008",
+    ruleId: "rule-002",
+    ruleName: "Enterprise Employer",
+    candidateId: "CAN-45945",
+    candidateName: "Pooja Iyer",
+    jobId: "JOB-001",
+    jobTitle: "Senior ICU Nurse",
+    aiAgentId: "agent-002",
+    aiDecision: "Matched",
+    confidenceScore: 0.81,
+    status: "escalated",
+    priority: "high",
+    assignedTo: "Saroj Manager",
+    assignedAt: "5 hours ago",
+    resolution: null,
+    resolvedAt: null,
+    dueAt: "OVERDUE",
+    createdAt: "12 hours ago",
+    metadata: { escalationReason: "Client requested senior attention" },
+  },
+];
+
+// HITL Audit Logs
+export const hitlAuditLogs: HITLAuditLog[] = [
+  {
+    id: "log-001",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    taskId: "HITL-001",
+    eventType: "rule_triggered",
+    actor: "system",
+    details: "Rule triggered: AI confidence score 0.62 < 0.7 threshold",
+    snapshot: { aiDecision: "Matched", score: 0.62, candidate: "CAN-45892" },
+    timestamp: "2 hours ago",
+  },
+  {
+    id: "log-002",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    taskId: "HITL-001",
+    eventType: "task_created",
+    actor: "system",
+    details: "HITL task created and added to Recruiter Review Queue",
+    snapshot: { queue: "recruiter_review", priority: "high" },
+    timestamp: "2 hours ago",
+  },
+  {
+    id: "log-003",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    taskId: "HITL-001",
+    eventType: "task_assigned",
+    actor: "Priya Sharma",
+    details: "Task self-assigned by recruiter",
+    snapshot: { previousAssignee: null, newAssignee: "Priya Sharma" },
+    timestamp: "1 hour ago",
+  },
+  {
+    id: "log-004",
+    ruleId: "rule-002",
+    ruleName: "Enterprise Employer",
+    taskId: "HITL-002",
+    eventType: "rule_triggered",
+    actor: "system",
+    details: "Rule triggered: Enterprise employer detected (Fortis Healthcare)",
+    snapshot: { employer: "Fortis Healthcare", tier: "enterprise" },
+    timestamp: "4 hours ago",
+  },
+  {
+    id: "log-005",
+    ruleId: "rule-002",
+    ruleName: "Enterprise Employer",
+    taskId: "HITL-002",
+    eventType: "task_assigned",
+    actor: "system",
+    details: "Auto-assigned to Rahul Mehta based on workload balancing",
+    snapshot: { assignmentMethod: "auto", workloadScore: 0.65 },
+    timestamp: "4 hours ago",
+  },
+  {
+    id: "log-006",
+    ruleId: "rule-001",
+    ruleName: "Low AI Confidence",
+    taskId: "HITL-005",
+    eventType: "task_resolved",
+    actor: "Vikram Singh",
+    details: "Task approved: Candidate skills verified manually",
+    snapshot: { resolution: "approved", verificationMethod: "manual_review" },
+    timestamp: "20 hours ago",
+  },
+  {
+    id: "log-007",
+    ruleId: "rule-004",
+    ruleName: "High Drop-off Alert",
+    taskId: "HITL-006",
+    eventType: "task_resolved",
+    actor: "Deepa Kumar",
+    details: "Task rejected: Candidate withdrew application during process",
+    snapshot: { resolution: "rejected", reason: "candidate_withdrawal" },
+    timestamp: "1 day ago",
+  },
+  {
+    id: "log-008",
+    ruleId: "rule-002",
+    ruleName: "Enterprise Employer",
+    taskId: "HITL-008",
+    eventType: "task_escalated",
+    actor: "Rahul Mehta",
+    details: "Task escalated to senior manager: Client special request",
+    snapshot: { previousAssignee: "Rahul Mehta", escalatedTo: "Saroj Manager" },
+    timestamp: "5 hours ago",
+  },
+  {
+    id: "log-009",
+    ruleId: "rule-005",
+    ruleName: "Interview Scheduling SLA",
+    taskId: "HITL-004",
+    eventType: "rule_triggered",
+    actor: "system",
+    details: "SLA breach: Interview not scheduled within 48 hours (current: 52h)",
+    snapshot: { slaThreshold: 48, actualTime: 52, attempts: 3 },
+    timestamp: "8 hours ago",
+  },
+  {
+    id: "log-010",
+    ruleId: "rule-007",
+    ruleName: "High Salary Negotiation",
+    taskId: "HITL-007",
+    eventType: "rule_triggered",
+    actor: "system",
+    details: "Rule triggered: Proposed salary ₹32,00,000 exceeds threshold ₹25,00,000",
+    snapshot: { proposedSalary: 3200000, threshold: 2500000 },
+    timestamp: "3 hours ago",
+  },
+];
+
+// HITL Analytics Data
+export const hitlVolumeData = [
+  { date: "Jan 22", created: 12, resolved: 10, pending: 8 },
+  { date: "Jan 23", created: 15, resolved: 14, pending: 9 },
+  { date: "Jan 24", created: 18, resolved: 16, pending: 11 },
+  { date: "Jan 25", created: 14, resolved: 15, pending: 10 },
+  { date: "Jan 26", created: 22, resolved: 18, pending: 14 },
+  { date: "Jan 27", created: 19, resolved: 21, pending: 12 },
+  { date: "Jan 28", created: 16, resolved: 14, pending: 14 },
+  { date: "Jan 29", created: 8, resolved: 6, pending: 16 },
+];
+
+export const rulePerformanceData = [
+  { rule: "Low AI Confidence", triggers: 342, overrideRate: 12, falsePositive: 8, avgResolutionTime: 2.4 },
+  { rule: "Enterprise Employer", triggers: 189, overrideRate: 5, falsePositive: 3, avgResolutionTime: 3.1 },
+  { rule: "Senior Doctor Roles", triggers: 114, overrideRate: 18, falsePositive: 12, avgResolutionTime: 4.2 },
+  { rule: "High Drop-off Alert", triggers: 28, overrideRate: 45, falsePositive: 22, avgResolutionTime: 1.8 },
+  { rule: "Interview SLA", triggers: 56, overrideRate: 8, falsePositive: 5, avgResolutionTime: 1.2 },
+  { rule: "Low Response Rate", triggers: 22, overrideRate: 35, falsePositive: 28, avgResolutionTime: 2.8 },
+  { rule: "High Salary Negotiation", triggers: 34, overrideRate: 22, falsePositive: 10, avgResolutionTime: 5.6 },
+];
+
+export const resolutionOutcomes = [
+  { name: "Approved", value: 62, color: "hsl(var(--success))" },
+  { name: "Rejected", value: 18, color: "hsl(var(--destructive))" },
+  { name: "Escalated", value: 12, color: "hsl(var(--warning))" },
+  { name: "Pending", value: 8, color: "hsl(var(--muted))" },
+];
+
+// Historical candidates for simulation
+export const historicalCandidates = [
+  { id: "SIM-001", jobId: "JOB-001", aiConfidence: 0.65, employerTier: "enterprise", roleLevel: "mid" },
+  { id: "SIM-002", jobId: "JOB-002", aiConfidence: 0.82, employerTier: "enterprise", roleLevel: "senior" },
+  { id: "SIM-003", jobId: "JOB-003", aiConfidence: 0.71, employerTier: "mid-market", roleLevel: "junior" },
+  { id: "SIM-004", jobId: "JOB-001", aiConfidence: 0.58, employerTier: "enterprise", roleLevel: "senior" },
+  { id: "SIM-005", jobId: "JOB-004", aiConfidence: 0.89, employerTier: "smb", roleLevel: "mid" },
+  { id: "SIM-006", jobId: "JOB-005", aiConfidence: 0.45, employerTier: "smb", roleLevel: "junior" },
+  { id: "SIM-007", jobId: "JOB-006", aiConfidence: 0.77, employerTier: "enterprise", roleLevel: "senior" },
+  { id: "SIM-008", jobId: "JOB-002", aiConfidence: 0.62, employerTier: "mid-market", roleLevel: "mid" },
+  { id: "SIM-009", jobId: "JOB-003", aiConfidence: 0.91, employerTier: "enterprise", roleLevel: "mid" },
+  { id: "SIM-010", jobId: "JOB-001", aiConfidence: 0.53, employerTier: "smb", roleLevel: "senior" },
+];

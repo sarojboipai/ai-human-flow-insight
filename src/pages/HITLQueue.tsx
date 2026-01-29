@@ -1,32 +1,161 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
-import { hitlQueue } from "@/lib/mockData";
-import { Zap, Clock, CheckCircle, AlertTriangle, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-const priorityColors = {
-  high: "bg-destructive/20 text-destructive border-destructive/30",
-  medium: "bg-warning/20 text-warning border-warning/30",
-  low: "bg-muted text-muted-foreground border-border",
-};
-
-const statusColors = {
-  pending: "bg-warning/20 text-warning",
-  in_review: "bg-info/20 text-info",
-  completed: "bg-success/20 text-success",
-  unassigned: "bg-muted text-muted-foreground",
-};
+  hitlRulesV2,
+  hitlTasks,
+  hitlAuditLogs,
+  HITLRuleV2,
+  HITLTask,
+} from "@/lib/mockData";
+import {
+  Zap,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Plus,
+  Download,
+  Upload,
+  PlayCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RuleBuilderDialog } from "@/components/hitl/RuleBuilderDialog";
+import { RulesTable } from "@/components/hitl/RulesTable";
+import { RuleSimulator } from "@/components/hitl/RuleSimulator";
+import { TasksQueue } from "@/components/hitl/TasksQueue";
+import { HITLAnalytics } from "@/components/hitl/HITLAnalytics";
+import { AuditLogTable } from "@/components/hitl/AuditLogTable";
+import { useToast } from "@/hooks/use-toast";
 
 export default function HITLQueue() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("queue");
+  const [rules, setRules] = useState<HITLRuleV2[]>(hitlRulesV2);
+  const [tasks, setTasks] = useState<HITLTask[]>(hitlTasks);
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState<HITLRuleV2 | null>(null);
+  const [simulatingRule, setSimulatingRule] = useState<HITLRuleV2 | null>(null);
+  const [showSimulator, setShowSimulator] = useState(false);
+
+  // Metrics calculations
+  const pendingTasks = tasks.filter(
+    (t) => t.status === "pending" || t.status === "assigned"
+  ).length;
+  const highPriorityTasks = tasks.filter((t) => t.priority === "high").length;
+  const resolvedToday = tasks.filter(
+    (t) => t.status === "approved" || t.status === "rejected"
+  ).length;
+  const activeRules = rules.filter((r) => r.status === "active").length;
+
+  // Rule handlers
+  const handleCreateRule = () => {
+    setEditingRule(null);
+    setRuleDialogOpen(true);
+  };
+
+  const handleEditRule = (rule: HITLRuleV2) => {
+    setEditingRule(rule);
+    setRuleDialogOpen(true);
+  };
+
+  const handleSaveRule = (ruleData: Partial<HITLRuleV2>) => {
+    if (ruleData.id) {
+      // Update existing
+      setRules((prev) =>
+        prev.map((r) =>
+          r.id === ruleData.id
+            ? {
+                ...r,
+                ...ruleData,
+                updatedAt: new Date().toISOString().split("T")[0],
+                version: r.version + 1,
+              }
+            : r
+        )
+      );
+    } else {
+      // Create new
+      const newRule: HITLRuleV2 = {
+        id: `rule-${String(rules.length + 1).padStart(3, "0")}`,
+        name: ruleData.name || "",
+        description: ruleData.description || "",
+        ruleType: ruleData.ruleType || "confidence",
+        conditionMetric: ruleData.conditionMetric || "",
+        operator: ruleData.operator || "<",
+        thresholdValue: ruleData.thresholdValue || 0,
+        actionType: ruleData.actionType || "route_to_queue",
+        targetQueue: ruleData.targetQueue || "recruiter_review",
+        priority: ruleData.priority || 3,
+        status: ruleData.status || "active",
+        triggerCount: 0,
+        lastTriggered: null,
+        createdAt: new Date().toISOString().split("T")[0],
+        updatedAt: new Date().toISOString().split("T")[0],
+        createdBy: "Current User",
+        version: 1,
+      };
+      setRules((prev) => [...prev, newRule]);
+    }
+  };
+
+  const handleDeleteRule = (ruleId: string) => {
+    setRules((prev) => prev.filter((r) => r.id !== ruleId));
+  };
+
+  const handleToggleRuleStatus = (
+    ruleId: string,
+    newStatus: "active" | "paused"
+  ) => {
+    setRules((prev) =>
+      prev.map((r) => (r.id === ruleId ? { ...r, status: newStatus } : r))
+    );
+    toast({
+      title: newStatus === "active" ? "Rule Activated" : "Rule Paused",
+      description: `Rule has been ${newStatus === "active" ? "activated" : "paused"}.`,
+    });
+  };
+
+  const handleSimulateRule = (rule: HITLRuleV2) => {
+    setSimulatingRule(rule);
+    setShowSimulator(true);
+  };
+
+  // Task handlers
+  const handleAssignTask = (taskId: string, assignee: string) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              assignedTo: assignee,
+              assignedAt: "Just now",
+              status: "assigned" as const,
+            }
+          : t
+      )
+    );
+  };
+
+  const handleResolveTask = (
+    taskId: string,
+    resolution: "approved" | "rejected" | "escalated",
+    notes: string
+  ) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              status: resolution,
+              resolution: notes || `Task ${resolution}`,
+              resolvedAt: "Just now",
+            }
+          : t
+      )
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -35,20 +164,22 @@ export default function HITLQueue() {
           <div>
             <h1 className="dashboard-title">HITL Queue</h1>
             <p className="text-muted-foreground mt-1">
-              Human-in-the-Loop review tasks requiring manual intervention
+              Human-in-the-Loop review tasks and rule management
             </p>
           </div>
-          <Button variant="outline">
-            <Zap className="h-4 w-4 mr-2" />
-            Configure Rules
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setActiveTab("rules")}>
+              <Zap className="h-4 w-4 mr-2" />
+              {activeRules} Active Rules
+            </Button>
+          </div>
         </div>
 
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Pending Reviews"
-            value="24"
+            value={String(pendingTasks)}
             change={-12}
             changeLabel="vs yesterday"
             icon={<Clock className="h-5 w-5" />}
@@ -56,7 +187,7 @@ export default function HITLQueue() {
           />
           <MetricCard
             title="High Priority"
-            value="3"
+            value={String(highPriorityTasks)}
             icon={<AlertTriangle className="h-5 w-5" />}
             variant="primary"
           />
@@ -70,7 +201,7 @@ export default function HITLQueue() {
           />
           <MetricCard
             title="Completed Today"
-            value="18"
+            value={String(resolvedToday)}
             change={25}
             changeLabel="vs yesterday"
             icon={<CheckCircle className="h-5 w-5" />}
@@ -78,165 +209,126 @@ export default function HITLQueue() {
           />
         </div>
 
-        {/* Queue Table */}
-        <div className="chart-container">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="section-title">Review Queue</h3>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={priorityColors.high}>
-                3 High
-              </Badge>
-              <Badge variant="outline" className={priorityColors.medium}>
-                8 Medium
-              </Badge>
-              <Badge variant="outline" className={priorityColors.low}>
-                13 Low
-              </Badge>
-            </div>
-          </div>
-          
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground font-medium">ID</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Candidate</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Reason</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Priority</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Assignee</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Status</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Created</TableHead>
-                <TableHead className="text-muted-foreground font-medium text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {hitlQueue.map((item) => (
-                <TableRow key={item.id} className="border-border">
-                  <TableCell className="font-mono text-sm">{item.id}</TableCell>
-                  <TableCell className="font-mono text-sm">{item.candidateId}</TableCell>
-                  <TableCell className="text-sm max-w-[200px] truncate">
-                    {item.reason}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={priorityColors[item.priority as keyof typeof priorityColors]}
-                    >
-                      {item.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {item.assignee ? (
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                          <User className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-sm">{item.assignee}</span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Unassigned</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={statusColors[item.status as keyof typeof statusColors]}>
-                      {item.status.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {item.createdAt}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      Review
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        {/* Tabbed Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-muted/50 p-1">
+            <TabsTrigger value="queue" className="data-[state=active]:bg-background">
+              Queue
+            </TabsTrigger>
+            <TabsTrigger value="rules" className="data-[state=active]:bg-background">
+              Rules
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-background">
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="data-[state=active]:bg-background">
+              Audit Log
+            </TabsTrigger>
+          </TabsList>
 
-        {/* HITL Rules */}
-        <div className="chart-container">
-          <h3 className="section-title mb-4">Active HITL Rules</h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Low AI Confidence",
-                condition: "AI confidence < 0.7",
-                action: "Route to human review",
-                triggers: 342,
-                status: "active",
-              },
-              {
-                name: "Enterprise Employer",
-                condition: "Employer tier = Enterprise",
-                action: "Mandatory review",
-                triggers: 189,
-                status: "active",
-              },
-              {
-                name: "Compliance Check",
-                condition: "Role requires certification",
-                action: "Verify credentials",
-                triggers: 114,
-                status: "active",
-              },
-              {
-                name: "High Drop-off",
-                condition: "Stage drop-off > 40%",
-                action: "Ops escalation",
-                triggers: 28,
-                status: "active",
-              },
-              {
-                name: "Salary Negotiation",
-                condition: "Offer counter > 15%",
-                action: "Senior recruiter review",
-                triggers: 56,
-                status: "active",
-              },
-              {
-                name: "Geographic Restriction",
-                condition: "Cross-region placement",
-                action: "Compliance check",
-                triggers: 22,
-                status: "paused",
-              },
-            ].map((rule) => (
-              <div
-                key={rule.name}
-                className={`rounded-lg border p-4 ${
-                  rule.status === "active"
-                    ? "border-primary/30 bg-primary/5"
-                    : "border-border bg-muted/50"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <h4 className="font-medium">{rule.name}</h4>
-                  <Badge
-                    variant="outline"
-                    className={
-                      rule.status === "active"
-                        ? "bg-success/20 text-success border-success/30"
-                        : "bg-muted text-muted-foreground"
-                    }
-                  >
-                    {rule.status}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  <span className="text-foreground">If:</span> {rule.condition}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <span className="text-foreground">Then:</span> {rule.action}
-                </p>
-                <p className="text-xs text-muted-foreground mt-3">
-                  {rule.triggers} triggers this month
-                </p>
+          {/* Queue Tab */}
+          <TabsContent value="queue" className="mt-6">
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="section-title">Review Queue</h3>
               </div>
-            ))}
-          </div>
-        </div>
+              <TasksQueue
+                tasks={tasks}
+                onAssign={handleAssignTask}
+                onResolve={handleResolveTask}
+              />
+            </div>
+          </TabsContent>
+
+          {/* Rules Tab */}
+          <TabsContent value="rules" className="mt-6 space-y-6">
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="section-title">HITL Rules</h3>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button onClick={handleCreateRule}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Rule
+                  </Button>
+                </div>
+              </div>
+              <RulesTable
+                rules={rules}
+                onEdit={handleEditRule}
+                onDelete={handleDeleteRule}
+                onToggleStatus={handleToggleRuleStatus}
+                onSimulate={handleSimulateRule}
+              />
+            </div>
+
+            {/* Rule Simulator */}
+            {showSimulator && (
+              <div className="chart-container">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="section-title">Rule Simulator</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSimulator(false)}
+                  >
+                    Hide Simulator
+                  </Button>
+                </div>
+                <RuleSimulator
+                  rules={rules}
+                  selectedRule={simulatingRule}
+                  onSelectRule={setSimulatingRule}
+                />
+              </div>
+            )}
+
+            {!showSimulator && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowSimulator(true)}
+              >
+                <PlayCircle className="h-4 w-4 mr-2" />
+                Open Rule Simulator
+              </Button>
+            )}
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="mt-6">
+            <HITLAnalytics />
+          </TabsContent>
+
+          {/* Audit Log Tab */}
+          <TabsContent value="audit" className="mt-6">
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="section-title">Audit Trail</h3>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Logs
+                </Button>
+              </div>
+              <AuditLogTable logs={hitlAuditLogs} />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Rule Builder Dialog */}
+        <RuleBuilderDialog
+          open={ruleDialogOpen}
+          onOpenChange={setRuleDialogOpen}
+          rule={editingRule}
+          onSave={handleSaveRule}
+        />
       </div>
     </DashboardLayout>
   );
