@@ -1199,3 +1199,369 @@ export const historicalCandidates = [
   { id: "SIM-009", jobId: "JOB-003", aiConfidence: 0.91, employerTier: "enterprise", roleLevel: "mid" },
   { id: "SIM-010", jobId: "JOB-001", aiConfidence: 0.53, employerTier: "smb", roleLevel: "senior" },
 ];
+
+// ============================================
+// Orchestration Engine Data Models
+// ============================================
+
+// Workflow Entity
+export interface WorkflowStage {
+  id: string;
+  name: string;
+  type: "intake" | "match" | "outreach" | "interview" | "offer" | "join";
+  assignedActor: "ai" | "human" | "hybrid";
+  agentId: string | null;
+  humanBackup: string;
+  slaHours: number;
+  retryPolicy: { maxRetries: number; backoffMinutes: number };
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  version: number;
+  status: "draft" | "active" | "paused" | "archived";
+  jobType: "frontline" | "professional" | "enterprise";
+  stages: WorkflowStage[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  executionCount: number;
+  successRate: number;
+}
+
+export const workflows: Workflow[] = [
+  {
+    id: "wf-001",
+    name: "Frontline Hiring",
+    description: "Standard workflow for nurse and paramedic positions with high automation",
+    version: 2,
+    status: "active",
+    jobType: "frontline",
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "ai", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 4, retryPolicy: { maxRetries: 3, backoffMinutes: 15 } },
+      { id: "s2", name: "Skills Matching", type: "match", assignedActor: "ai", agentId: "agent-002", humanBackup: "Technical Recruiters", slaHours: 2, retryPolicy: { maxRetries: 2, backoffMinutes: 10 } },
+      { id: "s3", name: "Initial Outreach", type: "outreach", assignedActor: "hybrid", agentId: "agent-003", humanBackup: "Recruiter Team", slaHours: 24, retryPolicy: { maxRetries: 5, backoffMinutes: 60 } },
+      { id: "s4", name: "Interview Scheduling", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s5", name: "Offer Process", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 72, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s6", name: "Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 168, retryPolicy: { maxRetries: 1, backoffMinutes: 480 } },
+    ],
+    createdBy: "Saroj",
+    createdAt: "2024-01-01",
+    updatedAt: "2024-01-25",
+    executionCount: 1245,
+    successRate: 87.4,
+  },
+  {
+    id: "wf-002",
+    name: "Enterprise Physician",
+    description: "Premium workflow for senior physician roles with mandatory human checkpoints",
+    version: 1,
+    status: "active",
+    jobType: "enterprise",
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "hybrid", agentId: "agent-001", humanBackup: "Senior Screening", slaHours: 8, retryPolicy: { maxRetries: 2, backoffMinutes: 30 } },
+      { id: "s2", name: "Credential Verification", type: "match", assignedActor: "human", agentId: "agent-005", humanBackup: "Compliance Team", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 60 } },
+      { id: "s3", name: "Personal Outreach", type: "outreach", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s4", name: "Multi-Panel Interview", type: "interview", assignedActor: "human", agentId: null, humanBackup: "Interview Panel", slaHours: 96, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s5", name: "Offer Negotiation", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Executive Team", slaHours: 120, retryPolicy: { maxRetries: 3, backoffMinutes: 480 } },
+      { id: "s6", name: "Executive Onboarding", type: "join", assignedActor: "human", agentId: null, humanBackup: "HR Director", slaHours: 336, retryPolicy: { maxRetries: 1, backoffMinutes: 720 } },
+    ],
+    createdBy: "Priya",
+    createdAt: "2024-01-08",
+    updatedAt: "2024-01-20",
+    executionCount: 89,
+    successRate: 92.1,
+  },
+  {
+    id: "wf-003",
+    name: "Bulk Paramedic",
+    description: "High-volume automated workflow for bulk paramedic hiring",
+    version: 3,
+    status: "active",
+    jobType: "frontline",
+    stages: [
+      { id: "s1", name: "Bulk Screening", type: "intake", assignedActor: "ai", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 2, retryPolicy: { maxRetries: 5, backoffMinutes: 10 } },
+      { id: "s2", name: "Auto Matching", type: "match", assignedActor: "ai", agentId: "agent-002", humanBackup: "Technical Recruiters", slaHours: 1, retryPolicy: { maxRetries: 3, backoffMinutes: 5 } },
+      { id: "s3", name: "Batch Outreach", type: "outreach", assignedActor: "ai", agentId: "agent-003", humanBackup: "Recruiter Team", slaHours: 12, retryPolicy: { maxRetries: 7, backoffMinutes: 30 } },
+      { id: "s4", name: "Group Interview", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 60 } },
+      { id: "s5", name: "Standard Offer", type: "offer", assignedActor: "ai", agentId: null, humanBackup: "Recruiters", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 120 } },
+      { id: "s6", name: "Fast Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 72, retryPolicy: { maxRetries: 1, backoffMinutes: 240 } },
+    ],
+    createdBy: "Ananya",
+    createdAt: "2024-01-12",
+    updatedAt: "2024-01-28",
+    executionCount: 456,
+    successRate: 81.2,
+  },
+  {
+    id: "wf-004",
+    name: "New ICU Process",
+    description: "Draft workflow for specialized ICU nurse hiring",
+    version: 1,
+    status: "draft",
+    jobType: "professional",
+    stages: [
+      { id: "s1", name: "ICU Screening", type: "intake", assignedActor: "hybrid", agentId: "agent-001", humanBackup: "ICU Specialist", slaHours: 6, retryPolicy: { maxRetries: 2, backoffMinutes: 20 } },
+      { id: "s2", name: "Clinical Skills Match", type: "match", assignedActor: "hybrid", agentId: "agent-002", humanBackup: "Clinical Team", slaHours: 8, retryPolicy: { maxRetries: 2, backoffMinutes: 30 } },
+    ],
+    createdBy: "Rahul",
+    createdAt: "2024-01-28",
+    updatedAt: "2024-01-28",
+    executionCount: 0,
+    successRate: 0,
+  },
+];
+
+// Connector Entity
+export interface Connector {
+  id: string;
+  name: string;
+  type: "ats" | "messaging" | "calendar" | "crm" | "webhook" | "billing";
+  provider: string;
+  status: "connected" | "disconnected" | "error";
+  lastSync: string;
+  eventSubscriptions: string[];
+  dailyVolume: number;
+  errorRate: number;
+}
+
+export const connectors: Connector[] = [
+  {
+    id: "conn-001",
+    name: "Greenhouse ATS",
+    type: "ats",
+    provider: "greenhouse",
+    status: "connected",
+    lastSync: "5 mins ago",
+    eventSubscriptions: ["candidate_stage_change", "offer_accepted", "interview_scheduled"],
+    dailyVolume: 2450,
+    errorRate: 0.8,
+  },
+  {
+    id: "conn-002",
+    name: "WhatsApp Business",
+    type: "messaging",
+    provider: "whatsapp",
+    status: "connected",
+    lastSync: "2 mins ago",
+    eventSubscriptions: ["outreach_sent", "response_received", "opt_out"],
+    dailyVolume: 3200,
+    errorRate: 1.2,
+  },
+  {
+    id: "conn-003",
+    name: "Calendly",
+    type: "calendar",
+    provider: "calendly",
+    status: "connected",
+    lastSync: "8 mins ago",
+    eventSubscriptions: ["interview_booked", "interview_cancelled", "reschedule_requested"],
+    dailyVolume: 340,
+    errorRate: 0.3,
+  },
+  {
+    id: "conn-004",
+    name: "Salesforce CRM",
+    type: "crm",
+    provider: "salesforce",
+    status: "error",
+    lastSync: "2 hours ago",
+    eventSubscriptions: ["employer_created", "deal_closed", "renewal_due"],
+    dailyVolume: 0,
+    errorRate: 100,
+  },
+  {
+    id: "conn-005",
+    name: "Slack Notifications",
+    type: "webhook",
+    provider: "slack",
+    status: "connected",
+    lastSync: "1 min ago",
+    eventSubscriptions: ["sla_breach", "escalation_needed", "daily_summary"],
+    dailyVolume: 156,
+    errorRate: 0.1,
+  },
+  {
+    id: "conn-006",
+    name: "Stripe Billing",
+    type: "billing",
+    provider: "stripe",
+    status: "connected",
+    lastSync: "15 mins ago",
+    eventSubscriptions: ["placement_confirmed", "invoice_generated", "payment_received"],
+    dailyVolume: 28,
+    errorRate: 0.5,
+  },
+];
+
+// Event Subscription Entity
+export interface EventSubscription {
+  id: string;
+  trigger: string;
+  action: string;
+  connectorId: string;
+  status: "active" | "paused";
+  lastTriggered: string;
+  triggerCount: number;
+}
+
+export const eventSubscriptions: EventSubscription[] = [
+  { id: "evt-sub-001", trigger: "interview_scheduled", action: "Update ATS status", connectorId: "conn-001", status: "active", lastTriggered: "10 mins ago", triggerCount: 892 },
+  { id: "evt-sub-002", trigger: "candidate_joined", action: "Generate invoice", connectorId: "conn-006", status: "active", lastTriggered: "2 hours ago", triggerCount: 156 },
+  { id: "evt-sub-003", trigger: "sla_breach", action: "Send Slack alert", connectorId: "conn-005", status: "active", lastTriggered: "4 hours ago", triggerCount: 234 },
+  { id: "evt-sub-004", trigger: "offer_accepted", action: "Sync to CRM", connectorId: "conn-004", status: "paused", lastTriggered: "2 hours ago", triggerCount: 89 },
+  { id: "evt-sub-005", trigger: "candidate_response", action: "Update messaging thread", connectorId: "conn-002", status: "active", lastTriggered: "5 mins ago", triggerCount: 4521 },
+];
+
+// Execution Log Entity
+export interface TraceEvent {
+  id: string;
+  stage: string;
+  actor: "ai" | "human";
+  action: string;
+  duration: string;
+  status: "success" | "failed" | "pending";
+  timestamp: string;
+}
+
+export interface ExecutionLog {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  jobId: string;
+  jobTitle: string;
+  candidateId: string;
+  candidateName: string;
+  currentStage: string;
+  status: "running" | "completed" | "failed" | "paused";
+  startedAt: string;
+  completedAt: string | null;
+  traceEvents: TraceEvent[];
+  aiActions: number;
+  humanActions: number;
+}
+
+export const executionLogs: ExecutionLog[] = [
+  {
+    id: "exec-001",
+    workflowId: "wf-001",
+    workflowName: "Frontline Hiring",
+    jobId: "JOB-001",
+    jobTitle: "Senior ICU Nurse",
+    candidateId: "CAN-45892",
+    candidateName: "Amit Verma",
+    currentStage: "Interview Scheduling",
+    status: "running",
+    startedAt: "2 hours ago",
+    completedAt: null,
+    traceEvents: [
+      { id: "t1", stage: "Profile Screening", actor: "ai", action: "CV parsed and validated", duration: "1.2s", status: "success", timestamp: "2 hours ago" },
+      { id: "t2", stage: "Skills Matching", actor: "ai", action: "Matched with 87% confidence", duration: "0.8s", status: "success", timestamp: "1h 58m ago" },
+      { id: "t3", stage: "Initial Outreach", actor: "ai", action: "WhatsApp sent", duration: "0.3s", status: "success", timestamp: "1h 55m ago" },
+      { id: "t4", stage: "Initial Outreach", actor: "human", action: "Response handled", duration: "15m", status: "success", timestamp: "1h 30m ago" },
+      { id: "t5", stage: "Interview Scheduling", actor: "ai", action: "Calendar invite sent", duration: "2.1s", status: "pending", timestamp: "45m ago" },
+    ],
+    aiActions: 4,
+    humanActions: 1,
+  },
+  {
+    id: "exec-002",
+    workflowId: "wf-002",
+    workflowName: "Enterprise Physician",
+    jobId: "JOB-006",
+    jobTitle: "Cardiologist",
+    candidateId: "CAN-45934",
+    candidateName: "Dr. Arun Nair",
+    currentStage: "Offer Negotiation",
+    status: "running",
+    startedAt: "3 days ago",
+    completedAt: null,
+    traceEvents: [
+      { id: "t1", stage: "Profile Screening", actor: "ai", action: "Initial screening", duration: "2.5s", status: "success", timestamp: "3 days ago" },
+      { id: "t2", stage: "Profile Screening", actor: "human", action: "Manual review completed", duration: "2h", status: "success", timestamp: "3 days ago" },
+      { id: "t3", stage: "Credential Verification", actor: "human", action: "Medical license verified", duration: "1 day", status: "success", timestamp: "2 days ago" },
+      { id: "t4", stage: "Personal Outreach", actor: "human", action: "Personal call completed", duration: "45m", status: "success", timestamp: "2 days ago" },
+      { id: "t5", stage: "Multi-Panel Interview", actor: "human", action: "Panel interview completed", duration: "2h", status: "success", timestamp: "1 day ago" },
+      { id: "t6", stage: "Offer Negotiation", actor: "human", action: "Counter-offer pending", duration: "ongoing", status: "pending", timestamp: "6 hours ago" },
+    ],
+    aiActions: 1,
+    humanActions: 5,
+  },
+  {
+    id: "exec-003",
+    workflowId: "wf-003",
+    workflowName: "Bulk Paramedic",
+    jobId: "JOB-003",
+    jobTitle: "Emergency Paramedic",
+    candidateId: "CAN-45956",
+    candidateName: "Rahul Sharma",
+    currentStage: "Onboarding",
+    status: "completed",
+    startedAt: "5 days ago",
+    completedAt: "1 day ago",
+    traceEvents: [
+      { id: "t1", stage: "Bulk Screening", actor: "ai", action: "Batch processed", duration: "0.5s", status: "success", timestamp: "5 days ago" },
+      { id: "t2", stage: "Auto Matching", actor: "ai", action: "Auto matched 92%", duration: "0.3s", status: "success", timestamp: "5 days ago" },
+      { id: "t3", stage: "Batch Outreach", actor: "ai", action: "Email + WhatsApp sent", duration: "0.8s", status: "success", timestamp: "5 days ago" },
+      { id: "t4", stage: "Group Interview", actor: "ai", action: "Slot auto-assigned", duration: "1.2s", status: "success", timestamp: "4 days ago" },
+      { id: "t5", stage: "Group Interview", actor: "human", action: "Interview conducted", duration: "30m", status: "success", timestamp: "3 days ago" },
+      { id: "t6", stage: "Standard Offer", actor: "ai", action: "Offer letter generated", duration: "2.1s", status: "success", timestamp: "2 days ago" },
+      { id: "t7", stage: "Fast Onboarding", actor: "ai", action: "Onboarding completed", duration: "1 day", status: "success", timestamp: "1 day ago" },
+    ],
+    aiActions: 6,
+    humanActions: 1,
+  },
+  {
+    id: "exec-004",
+    workflowId: "wf-001",
+    workflowName: "Frontline Hiring",
+    jobId: "JOB-005",
+    jobTitle: "Pediatric Nurse",
+    candidateId: "CAN-45967",
+    candidateName: "Priya Menon",
+    currentStage: "Skills Matching",
+    status: "failed",
+    startedAt: "4 hours ago",
+    completedAt: "3 hours ago",
+    traceEvents: [
+      { id: "t1", stage: "Profile Screening", actor: "ai", action: "CV parsed", duration: "1.1s", status: "success", timestamp: "4 hours ago" },
+      { id: "t2", stage: "Skills Matching", actor: "ai", action: "Match failed - skill gap too high", duration: "0.9s", status: "failed", timestamp: "3 hours ago" },
+    ],
+    aiActions: 2,
+    humanActions: 0,
+  },
+  {
+    id: "exec-005",
+    workflowId: "wf-001",
+    workflowName: "Frontline Hiring",
+    jobId: "JOB-001",
+    jobTitle: "Senior ICU Nurse",
+    candidateId: "CAN-45978",
+    candidateName: "Sunita Devi",
+    currentStage: "Initial Outreach",
+    status: "paused",
+    startedAt: "6 hours ago",
+    completedAt: null,
+    traceEvents: [
+      { id: "t1", stage: "Profile Screening", actor: "ai", action: "CV parsed", duration: "1.3s", status: "success", timestamp: "6 hours ago" },
+      { id: "t2", stage: "Skills Matching", actor: "ai", action: "Matched 78%", duration: "0.7s", status: "success", timestamp: "6 hours ago" },
+      { id: "t3", stage: "Initial Outreach", actor: "ai", action: "Paused - HITL review required", duration: "-", status: "pending", timestamp: "5 hours ago" },
+    ],
+    aiActions: 2,
+    humanActions: 0,
+  },
+];
+
+// Telemetry Metrics
+export const telemetryMetrics = {
+  workflowsRunning: 12,
+  workflowsCompleted: 156,
+  workflowsFailed: 8,
+  avgDuration: "2.4 days",
+  aiActionsToday: 4521,
+  humanActionsToday: 342,
+  avgLatency: "1.2s",
+  errorRate: 2.4,
+};
