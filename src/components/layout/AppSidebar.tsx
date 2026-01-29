@@ -51,11 +51,6 @@ const orchestrationItems = [
     url: "/orchestration",
     icon: Network,
   },
-  {
-    title: "HITL Queue",
-    url: "/hitl",
-    icon: Zap,
-  },
 ];
 
 const operationsItems = [
@@ -68,6 +63,11 @@ const operationsItems = [
     title: "AI Performance",
     url: "/ai-performance",
     icon: Bot,
+  },
+  {
+    title: "HITL Queue",
+    url: "/hitl",
+    icon: Zap,
   },
 ];
 
