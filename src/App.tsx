@@ -12,6 +12,9 @@ import HITLQueue from "./pages/HITLQueue";
 import RevenueIntelligence from "./pages/RevenueIntelligence";
 import StaffingPlanner from "./pages/StaffingPlanner";
 import Settings from "./pages/Settings";
+import OrchestrationEngine from "./pages/OrchestrationEngine";
+import JobFunnelExplorer from "./pages/JobFunnelExplorer";
+import JobDetail from "./pages/JobDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
           <Route path="/revenue" element={<RevenueIntelligence />} />
           <Route path="/staffing" element={<StaffingPlanner />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/orchestration" element={<OrchestrationEngine />} />
+          <Route path="/jobs" element={<JobFunnelExplorer />} />
+          <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
