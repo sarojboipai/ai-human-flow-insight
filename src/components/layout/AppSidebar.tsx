@@ -9,7 +9,6 @@ import {
   BarChart3,
   Zap,
   Target,
-  Briefcase,
   Network,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -35,12 +34,7 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Job Explorer",
-    url: "/jobs",
-    icon: Briefcase,
-  },
-  {
-    title: "Funnel Analytics",
+    title: "Jobs & Funnel",
     url: "/funnel",
     icon: TrendingUp,
   },
