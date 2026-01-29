@@ -77,7 +77,7 @@ export function RecruiterTable({ recruiters, title }: RecruiterTableProps) {
                   {recruiter.placements}
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  ${recruiter.revenue.toLocaleString()}
+                  ₹{recruiter.revenue.toLocaleString()}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">

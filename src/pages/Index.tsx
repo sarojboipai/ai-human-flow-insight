@@ -104,7 +104,7 @@ const Index = () => {
                 <div className="rounded-lg bg-secondary/50 p-4">
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
                   <p className="text-2xl font-semibold mt-1">
-                    ${(revenueMetrics.totalRevenue / 1000000).toFixed(2)}M
+                    ₹{(revenueMetrics.totalRevenue / 1000000).toFixed(2)}M
                   </p>
                   <p className="text-sm text-success mt-1">
                     +{revenueMetrics.revenueChange}% vs last quarter
@@ -113,7 +113,7 @@ const Index = () => {
                 <div className="rounded-lg bg-secondary/50 p-4">
                   <p className="text-sm text-muted-foreground">Avg Fee/Placement</p>
                   <p className="text-2xl font-semibold mt-1">
-                    ${revenueMetrics.avgFeePerPlacement.toLocaleString()}
+                    ₹{revenueMetrics.avgFeePerPlacement.toLocaleString()}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {revenueMetrics.placements} placements
@@ -122,7 +122,7 @@ const Index = () => {
                 <div className="rounded-lg bg-secondary/50 p-4">
                   <p className="text-sm text-muted-foreground">Cost/Placement</p>
                   <p className="text-2xl font-semibold mt-1">
-                    ${revenueMetrics.costPerPlacement.toLocaleString()}
+                    ₹{revenueMetrics.costPerPlacement.toLocaleString()}
                   </p>
                   <p className="text-sm text-success mt-1">
                     -8% vs target

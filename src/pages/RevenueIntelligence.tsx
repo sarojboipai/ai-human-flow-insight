@@ -57,7 +57,7 @@ export default function RevenueIntelligence() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Revenue"
-            value={`$${(revenueMetrics.totalRevenue / 1000000).toFixed(2)}M`}
+            value={`₹${(revenueMetrics.totalRevenue / 1000000).toFixed(2)}M`}
             change={revenueMetrics.revenueChange}
             changeLabel="vs last quarter"
             icon={<DollarSign className="h-5 w-5" />}
@@ -73,7 +73,7 @@ export default function RevenueIntelligence() {
           />
           <MetricCard
             title="Revenue/Placement"
-            value={`$${revenueMetrics.avgFeePerPlacement.toLocaleString()}`}
+            value={`₹${revenueMetrics.avgFeePerPlacement.toLocaleString()}`}
             change={5}
             changeLabel="vs last quarter"
             icon={<PieChart className="h-5 w-5" />}
@@ -81,7 +81,7 @@ export default function RevenueIntelligence() {
           />
           <MetricCard
             title="Cost/Placement"
-            value={`$${revenueMetrics.costPerPlacement.toLocaleString()}`}
+            value={`₹${revenueMetrics.costPerPlacement.toLocaleString()}`}
             change={-8}
             changeLabel="vs target"
             icon={<Calculator className="h-5 w-5" />}
@@ -109,7 +109,7 @@ export default function RevenueIntelligence() {
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
               />
               <Tooltip
                 contentStyle={{
@@ -117,7 +117,7 @@ export default function RevenueIntelligence() {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`]}
+                formatter={(value: number) => [`₹${value.toLocaleString()}`]}
               />
               <Area
                 type="monotone"
@@ -150,7 +150,7 @@ export default function RevenueIntelligence() {
                 <div key={item.category} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>{item.category}</span>
-                    <span className="font-mono">${(item.amount / 1000).toFixed(0)}K ({item.percentage}%)</span>
+                    <span className="font-mono">₹{(item.amount / 1000).toFixed(0)}K ({item.percentage}%)</span>
                   </div>
                   <div className="h-3 rounded-full bg-secondary overflow-hidden">
                     <div
@@ -170,11 +170,11 @@ export default function RevenueIntelligence() {
               <div className="pt-4 border-t border-border">
                 <div className="flex justify-between text-sm font-medium">
                   <span>Total Operating Cost</span>
-                  <span className="font-mono">${(totalCost / 1000).toFixed(0)}K</span>
+                  <span className="font-mono">₹{(totalCost / 1000).toFixed(0)}K</span>
                 </div>
                 <div className="flex justify-between text-sm font-medium mt-2 text-success">
                   <span>Gross Profit</span>
-                  <span className="font-mono">${(grossProfit / 1000).toFixed(0)}K</span>
+                  <span className="font-mono">₹{(grossProfit / 1000).toFixed(0)}K</span>
                 </div>
               </div>
             </div>
@@ -187,19 +187,19 @@ export default function RevenueIntelligence() {
               <div className="rounded-lg bg-success/10 border border-success/30 p-4">
                 <p className="text-sm text-muted-foreground">Revenue per Placement</p>
                 <p className="text-3xl font-semibold text-success mt-1">
-                  ${revenueMetrics.avgFeePerPlacement.toLocaleString()}
+                  ₹{revenueMetrics.avgFeePerPlacement.toLocaleString()}
                 </p>
               </div>
               <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-4">
                 <p className="text-sm text-muted-foreground">Cost per Placement</p>
                 <p className="text-3xl font-semibold text-destructive mt-1">
-                  ${revenueMetrics.costPerPlacement.toLocaleString()}
+                  ₹{revenueMetrics.costPerPlacement.toLocaleString()}
                 </p>
               </div>
               <div className="rounded-lg bg-primary/10 border border-primary/30 p-4">
                 <p className="text-sm text-muted-foreground">Profit per Placement</p>
                 <p className="text-3xl font-semibold text-primary mt-1">
-                  ${(revenueMetrics.avgFeePerPlacement - revenueMetrics.costPerPlacement).toLocaleString()}
+                  ₹{(revenueMetrics.avgFeePerPlacement - revenueMetrics.costPerPlacement).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function RevenueIntelligence() {
                 type="number"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
               />
               <YAxis
                 type="category"
@@ -232,7 +232,7 @@ export default function RevenueIntelligence() {
                   borderRadius: "8px",
                 }}
                 formatter={(value: number, name: string, props: any) => [
-                  `$${value.toLocaleString()}`,
+                  `₹${value.toLocaleString()}`,
                   `${props.payload.placements} placements`,
                 ]}
               />
