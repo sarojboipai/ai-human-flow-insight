@@ -13,7 +13,6 @@ import RevenueIntelligence from "./pages/RevenueIntelligence";
 import StaffingPlanner from "./pages/StaffingPlanner";
 import Settings from "./pages/Settings";
 import OrchestrationEngine from "./pages/OrchestrationEngine";
-import JobFunnelExplorer from "./pages/JobFunnelExplorer";
 import JobDetail from "./pages/JobDetail";
 import NotFound from "./pages/NotFound";
 
@@ -36,7 +35,6 @@ const App = () => (
           <Route path="/staffing" element={<StaffingPlanner />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/orchestration" element={<OrchestrationEngine />} />
-          <Route path="/jobs" element={<JobFunnelExplorer />} />
           <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
