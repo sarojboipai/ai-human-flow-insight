@@ -94,7 +94,7 @@ export default function RecruiterDashboard() {
           />
           <MetricCard
             title="Revenue/Recruiter"
-            value="$14.2K"
+            value="₹14.2K"
             change={12}
             changeLabel="vs last month"
             icon={<DollarSign className="h-5 w-5" />}
