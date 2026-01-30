@@ -1204,6 +1204,42 @@ export const historicalCandidates = [
 // Orchestration Engine Data Models
 // ============================================
 
+// Workflow Automation Types
+export type AutomationTrigger =
+  | "stage_entered"
+  | "stage_completed"
+  | "candidate_matched"
+  | "interview_scheduled"
+  | "offer_released"
+  | "offer_accepted"
+  | "offer_rejected"
+  | "sla_breach"
+  | "candidate_response";
+
+export type AutomationAction =
+  | "send_notification"
+  | "update_ats"
+  | "sync_crm"
+  | "schedule_calendar"
+  | "send_message"
+  | "generate_invoice"
+  | "create_hitl_task"
+  | "trigger_webhook";
+
+export interface WorkflowAutomation {
+  id: string;
+  trigger: AutomationTrigger;
+  stageId?: string;
+  condition?: {
+    field: string;
+    operator: string;
+    value: string | number;
+  };
+  action: AutomationAction;
+  targetConnectorId: string;
+  enabled: boolean;
+}
+
 // Workflow Entity
 export interface WorkflowStage {
   id: string;
@@ -1224,6 +1260,7 @@ export interface Workflow {
   status: "draft" | "active" | "paused" | "archived";
   jobType: "frontline" | "professional" | "enterprise";
   stages: WorkflowStage[];
+  automations?: WorkflowAutomation[];
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -1246,6 +1283,31 @@ export const workflows: Workflow[] = [
       { id: "s4", name: "Interview Scheduling", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
       { id: "s5", name: "Offer Process", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 72, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
       { id: "s6", name: "Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 168, retryPolicy: { maxRetries: 1, backoffMinutes: 480 } },
+    ],
+    automations: [
+      {
+        id: "auto-001",
+        trigger: "stage_completed",
+        stageId: "s1",
+        condition: { field: "ai_confidence", operator: "<", value: 0.7 },
+        action: "create_hitl_task",
+        targetConnectorId: "",
+        enabled: true,
+      },
+      {
+        id: "auto-002",
+        trigger: "interview_scheduled",
+        action: "update_ats",
+        targetConnectorId: "conn-001",
+        enabled: true,
+      },
+      {
+        id: "auto-003",
+        trigger: "offer_accepted",
+        action: "generate_invoice",
+        targetConnectorId: "conn-006",
+        enabled: true,
+      },
     ],
     createdBy: "Saroj",
     createdAt: "2024-01-01",

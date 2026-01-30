@@ -20,9 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Users, CheckCircle } from "lucide-react";
-import { Workflow, WorkflowStage } from "@/lib/mockData";
+import { Bot, Users, CheckCircle, Plus, Zap } from "lucide-react";
+import { Workflow, WorkflowStage, connectors, WorkflowAutomation } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { AutomationRow, AutomationConfig } from "./AutomationRow";
 
 interface WorkflowBuilderDialogProps {
   open: boolean;
@@ -61,6 +62,7 @@ export function WorkflowBuilderDialog({
   const [jobType, setJobType] = useState<Workflow["jobType"]>("frontline");
   const [status, setStatus] = useState<Workflow["status"]>("draft");
   const [stages, setStages] = useState<StageConfig[]>(DEFAULT_STAGES);
+  const [automations, setAutomations] = useState<AutomationConfig[]>([]);
 
   const isEditing = !!workflow?.id;
 
@@ -88,12 +90,32 @@ export function WorkflowBuilderDialog({
         return { ...defaultStage, enabled: false };
       });
       setStages(mappedStages);
+
+      // Map workflow automations to config
+      if (workflow.automations) {
+        const mappedAutomations: AutomationConfig[] = workflow.automations.map((auto) => ({
+          id: auto.id,
+          trigger: auto.trigger,
+          stageId: auto.stageId || "",
+          hasCondition: !!auto.condition,
+          conditionField: auto.condition?.field || "",
+          conditionOperator: auto.condition?.operator || "=",
+          conditionValue: String(auto.condition?.value || ""),
+          action: auto.action,
+          targetConnectorId: auto.targetConnectorId,
+          enabled: auto.enabled,
+        }));
+        setAutomations(mappedAutomations);
+      } else {
+        setAutomations([]);
+      }
     } else {
       setName("");
       setDescription("");
       setJobType("frontline");
       setStatus("draft");
       setStages(DEFAULT_STAGES);
+      setAutomations([]);
     }
   }, [workflow, open]);
 
@@ -112,6 +134,35 @@ export function WorkflowBuilderDialog({
   const handleSlaChange = (stageId: string, slaHours: number) => {
     setStages((prev) =>
       prev.map((s) => (s.id === stageId ? { ...s, slaHours } : s))
+    );
+  };
+
+  // Automation handlers
+  const handleAddAutomation = () => {
+    setAutomations((prev) => [
+      ...prev,
+      {
+        id: `auto-${Date.now()}`,
+        trigger: "stage_completed",
+        stageId: "",
+        hasCondition: false,
+        conditionField: "",
+        conditionOperator: "=",
+        conditionValue: "",
+        action: "send_notification",
+        targetConnectorId: "",
+        enabled: true,
+      },
+    ]);
+  };
+
+  const handleRemoveAutomation = (id: string) => {
+    setAutomations((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleUpdateAutomation = (id: string, field: string, value: string | boolean) => {
+    setAutomations((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, [field]: value } : a))
     );
   };
 
@@ -146,6 +197,23 @@ export function WorkflowBuilderDialog({
       retryPolicy: { maxRetries: 3, backoffMinutes: 15 },
     }));
 
+    // Convert automation configs to workflow automations
+    const workflowAutomations: WorkflowAutomation[] = automations.map((a) => ({
+      id: a.id,
+      trigger: a.trigger as WorkflowAutomation["trigger"],
+      stageId: a.stageId || undefined,
+      condition: a.hasCondition && a.conditionField
+        ? {
+            field: a.conditionField,
+            operator: a.conditionOperator,
+            value: isNaN(Number(a.conditionValue)) ? a.conditionValue : Number(a.conditionValue),
+          }
+        : undefined,
+      action: a.action as WorkflowAutomation["action"],
+      targetConnectorId: a.targetConnectorId,
+      enabled: a.enabled,
+    }));
+
     const workflowData: Partial<Workflow> = {
       ...(workflow?.id && { id: workflow.id }),
       name: name.trim(),
@@ -153,6 +221,7 @@ export function WorkflowBuilderDialog({
       jobType,
       status,
       stages: workflowStages,
+      automations: workflowAutomations.length > 0 ? workflowAutomations : undefined,
     };
 
     onSave(workflowData);
@@ -324,6 +393,44 @@ export function WorkflowBuilderDialog({
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Automations Configuration */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Automations</Label>
+                <p className="text-xs text-muted-foreground">
+                  Configure automatic actions triggered by workflow events
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleAddAutomation}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Automation
+              </Button>
+            </div>
+
+            {automations.length === 0 ? (
+              <div className="border border-dashed rounded-lg p-6 text-center">
+                <Zap className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No automations configured. Add one to automate actions.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {automations.map((automation) => (
+                  <AutomationRow
+                    key={automation.id}
+                    automation={automation}
+                    stages={stages.filter((s) => s.enabled).map((s) => ({ id: s.id, name: s.name }))}
+                    connectors={connectors}
+                    onChange={handleUpdateAutomation}
+                    onRemove={handleRemoveAutomation}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
