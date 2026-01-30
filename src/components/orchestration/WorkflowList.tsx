@@ -3,7 +3,7 @@ import { Plus, FileText, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkflowCard } from "./WorkflowCard";
-import { Workflow, workflows as mockWorkflows } from "@/lib/mockData";
+import { Workflow, workflows as mockWorkflows, jobs } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { WorkflowBuilderDialog } from "./WorkflowBuilderDialog";
 import { WorkflowTemplatesDialog, WorkflowTemplate } from "./WorkflowTemplatesDialog";
@@ -25,6 +25,11 @@ export function WorkflowList() {
   const activeWorkflows = filteredWorkflows.filter((wf) => wf.status === "active");
   const draftWorkflows = filteredWorkflows.filter((wf) => wf.status === "draft");
   const pausedWorkflows = filteredWorkflows.filter((wf) => wf.status === "paused");
+
+  // Compute jobs count per workflow
+  const getJobsCount = (workflowId: string) => {
+    return jobs.filter(job => job.workflowId === workflowId).length;
+  };
 
   const handleSaveWorkflow = (workflowData: Partial<Workflow>) => {
     if (workflowData.id) {
@@ -151,6 +156,7 @@ export function WorkflowList() {
               <WorkflowCard
                 key={workflow.id}
                 workflow={workflow}
+                jobsCount={getJobsCount(workflow.id)}
                 onEdit={handleEdit}
                 onToggleStatus={handleToggleStatus}
               />
@@ -170,6 +176,7 @@ export function WorkflowList() {
               <WorkflowCard
                 key={workflow.id}
                 workflow={workflow}
+                jobsCount={getJobsCount(workflow.id)}
                 onEdit={handleEdit}
                 onToggleStatus={handleToggleStatus}
               />
@@ -189,6 +196,7 @@ export function WorkflowList() {
               <WorkflowCard
                 key={workflow.id}
                 workflow={workflow}
+                jobsCount={getJobsCount(workflow.id)}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />

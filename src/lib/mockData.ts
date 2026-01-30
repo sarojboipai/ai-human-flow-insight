@@ -411,6 +411,7 @@ export interface Job {
   cost: number;
   margin: number;
   hitlEvents: JobHITLEvent[];
+  workflowId: string;  // Links job to a workflow
 }
 
 export const jobs: Job[] = [
@@ -442,6 +443,7 @@ export const jobs: Job[] = [
       { id: "evt-001", type: "escalation", reason: "Enterprise employer requirement", assignee: "Priya Sharma", resolution: "Approved after review", duration: "2 hours", timestamp: "2 days ago" },
       { id: "evt-002", type: "override", reason: "Candidate requested specific shift", assignee: "Rahul Mehta", resolution: "Manual scheduling", duration: "4 hours", timestamp: "1 day ago" },
     ],
+    workflowId: "wf-001",
   },
   {
     id: "JOB-002",
@@ -470,6 +472,7 @@ export const jobs: Job[] = [
     hitlEvents: [
       { id: "evt-003", type: "review", reason: "High salary negotiation", assignee: "Ananya Patel", resolution: "Counter-offer approved", duration: "6 hours", timestamp: "3 days ago" },
     ],
+    workflowId: "wf-002",
   },
   {
     id: "JOB-003",
@@ -496,6 +499,7 @@ export const jobs: Job[] = [
     cost: 85000,
     margin: 73.4,
     hitlEvents: [],
+    workflowId: "wf-003",
   },
   {
     id: "JOB-004",
@@ -524,6 +528,7 @@ export const jobs: Job[] = [
     hitlEvents: [
       { id: "evt-004", type: "approval", reason: "Bulk hiring approval", assignee: "Vikram Singh", resolution: "Approved 8 candidates", duration: "1 hour", timestamp: "5 days ago" },
     ],
+    workflowId: "wf-007",
   },
   {
     id: "JOB-005",
@@ -550,6 +555,7 @@ export const jobs: Job[] = [
     cost: 42000,
     margin: 76.7,
     hitlEvents: [],
+    workflowId: "wf-001",
   },
   {
     id: "JOB-006",
@@ -579,6 +585,7 @@ export const jobs: Job[] = [
       { id: "evt-005", type: "escalation", reason: "VIP candidate - requires senior recruiter", assignee: "Deepa Kumar", resolution: "Personal outreach completed", duration: "8 hours", timestamp: "1 week ago" },
       { id: "evt-006", type: "review", reason: "Credential verification complex", assignee: "Priya Sharma", resolution: "Manual verification completed", duration: "2 days", timestamp: "4 days ago" },
     ],
+    workflowId: "wf-002",
   },
 ];
 

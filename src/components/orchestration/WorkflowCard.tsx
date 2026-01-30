@@ -1,4 +1,4 @@
-import { Play, Pause, Edit, Trash2, GitBranch, Clock, Users, Bot, CheckCircle, ArrowRight } from "lucide-react";
+import { Play, Pause, Edit, Trash2, GitBranch, Clock, Users, Bot, CheckCircle, ArrowRight, Briefcase } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Workflow } from "@/lib/mockData";
 
 interface WorkflowCardProps {
   workflow: Workflow;
+  jobsCount?: number;
   onEdit?: (workflow: Workflow) => void;
   onToggleStatus?: (workflow: Workflow) => void;
   onDelete?: (workflow: Workflow) => void;
@@ -36,7 +37,7 @@ const getJobTypeBadge = (jobType: Workflow["jobType"]) => {
   }
 };
 
-export function WorkflowCard({ workflow, onEdit, onToggleStatus, onDelete }: WorkflowCardProps) {
+export function WorkflowCard({ workflow, jobsCount = 0, onEdit, onToggleStatus, onDelete }: WorkflowCardProps) {
   const aiStages = workflow.stages.filter(s => s.assignedActor === "ai").length;
   const humanStages = workflow.stages.filter(s => s.assignedActor === "human").length;
   const hybridStages = workflow.stages.filter(s => s.assignedActor === "hybrid").length;
@@ -69,6 +70,10 @@ export function WorkflowCard({ workflow, onEdit, onToggleStatus, onDelete }: Wor
             <div className="text-xs text-muted-foreground">Stages</div>
           </div>
           <div className="text-center">
+            <div className="text-xl font-bold text-blue-500">{jobsCount}</div>
+            <div className="text-xs text-muted-foreground">Jobs</div>
+          </div>
+          <div className="text-center">
             <div className="text-xl font-bold text-primary">{workflow.executionCount.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Executions</div>
           </div>
@@ -93,21 +98,18 @@ export function WorkflowCard({ workflow, onEdit, onToggleStatus, onDelete }: Wor
           </div>
         </div>
 
-        {/* Stage Flow */}
-        <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2">
-          {workflow.stages.slice(0, 4).map((stage, index) => (
+        {/* Stage Flow - Show all stages */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {workflow.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-2">
               <Badge variant="outline" className="whitespace-nowrap bg-teal-500/10 text-teal-600 border-teal-500/20">
                 {stage.name}
               </Badge>
-              {index < Math.min(workflow.stages.length - 1, 3) && (
+              {index < workflow.stages.length - 1 && (
                 <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               )}
             </div>
           ))}
-          {workflow.stages.length > 4 && (
-            <span className="text-sm text-muted-foreground whitespace-nowrap">+{workflow.stages.length - 4} more</span>
-          )}
         </div>
 
         {/* Progress Bar */}
