@@ -1,20 +1,22 @@
 
 
-# Reorganize HITL Queue and HITL Rules
+# Add Workflow Creation Actions and Additional Workflows
 
-This plan moves the HITL Queue to the Operations section in the sidebar and relocates the HITL Rules functionality as a new tab within the Orchestration Engine.
+This plan adds functional "Create Workflow" capabilities to the Orchestration Engine, including a dialog for creating new workflows, workflow templates, and additional workflow data for the listing.
 
 ---
 
 ## Overview
 
 **Current State:**
-- HITL Queue is under the "Orchestration" section in the sidebar
-- HITL Rules is a tab within the HITL Queue page (`/hitl`)
+- "Create Workflow" button exists but shows only a toast notification
+- "Templates" button shows a toast notification
+- Only 4 workflows in mock data (3 active/paused, 1 draft)
 
 **Target State:**
-- HITL Queue moves to the "Operations" section in the sidebar
-- HITL Rules becomes a 5th tab in the Orchestration Engine page
+- Functional "Create Workflow" dialog with form to define workflow details
+- "Templates" dialog with pre-built workflow templates users can select
+- 8+ workflows in mock data for a richer listing
 
 ---
 
@@ -22,205 +24,304 @@ This plan moves the HITL Queue to the Operations section in the sidebar and relo
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/AppSidebar.tsx` | Modify | Move HITL Queue from orchestrationItems to operationsItems |
-| `src/pages/OrchestrationEngine.tsx` | Modify | Add "HITL Rules" as a 5th tab with rules management UI |
-| `src/pages/HITLQueue.tsx` | Modify | Remove "Rules" tab (keep Queue, Analytics, Audit Log tabs) |
+| `src/components/orchestration/WorkflowBuilderDialog.tsx` | Create | Dialog form for creating/editing workflows |
+| `src/components/orchestration/WorkflowTemplatesDialog.tsx` | Create | Dialog with pre-built workflow templates |
+| `src/components/orchestration/WorkflowList.tsx` | Modify | Wire up Create and Templates buttons with dialogs |
+| `src/lib/mockData.ts` | Modify | Add 4+ additional workflow entries |
 
 ---
 
-## Implementation Details
+## New Components
 
-### 1. Sidebar Navigation Update
+### 1. WorkflowBuilderDialog
 
-Move HITL Queue from orchestrationItems to operationsItems:
-
-**Before:**
-```text
-Orchestration
-  - Orchestration Engine
-  - HITL Queue
-
-Operations
-  - Recruiter Dashboard
-  - AI Performance
-```
-
-**After:**
-```text
-Orchestration
-  - Orchestration Engine
-
-Operations
-  - Recruiter Dashboard
-  - AI Performance
-  - HITL Queue
-```
-
-### 2. Orchestration Engine - Add HITL Rules Tab
-
-Add a 5th tab called "HITL Rules" to the Orchestration Engine:
+A dialog form for creating and editing workflows with these fields:
 
 ```text
-[Tabs: Workflows | Agents | Connectors | Telemetry | HITL Rules]
++------------------------------------------------------------------+
+|  Create New Workflow                                    [X]       |
++------------------------------------------------------------------+
+| Workflow Name*                                                    |
+| [__________________________________________________]              |
+|                                                                   |
+| Description                                                       |
+| [__________________________________________________]              |
+|                                                                   |
+| Job Type*                  Status*                                |
+| [Frontline v]              [Draft v]                              |
+|                                                                   |
+| Initial Stages (can add more after creation)                      |
+| +---------------------------------------------------------------+ |
+| | [x] Profile Screening    Actor: [AI v]     SLA: [4] hours     | |
+| | [x] Skills Matching      Actor: [AI v]     SLA: [2] hours     | |
+| | [x] Initial Outreach     Actor: [Hybrid v] SLA: [24] hours    | |
+| | [x] Interview Scheduling Actor: [Hybrid v] SLA: [48] hours    | |
+| | [x] Offer Process        Actor: [Human v]  SLA: [72] hours    | |
+| | [x] Onboarding           Actor: [Hybrid v] SLA: [168] hours   | |
+| +---------------------------------------------------------------+ |
+|                                                                   |
+|                              [Cancel]  [Create Workflow]          |
++------------------------------------------------------------------+
 ```
 
-The HITL Rules tab will include:
-- Rules table (RulesTable component)
-- Create/Edit rule functionality (RuleBuilderDialog)
-- Rule simulator (RuleSimulator)
-- Import/Export buttons
+**Form Fields:**
+- Workflow name (required)
+- Description (optional)
+- Job type: Frontline, Professional, Enterprise
+- Status: Draft, Active, Paused
+- Stages checklist with actor assignment and SLA configuration
 
-### 3. HITL Queue Page - Remove Rules Tab
+### 2. WorkflowTemplatesDialog
 
-Simplify the HITL Queue page to focus on task management:
+A dialog showing pre-built workflow templates that can be cloned:
 
-**Before (4 tabs):**
 ```text
-[Queue | Rules | Analytics | Audit Log]
++------------------------------------------------------------------+
+|  Workflow Templates                                     [X]       |
++------------------------------------------------------------------+
+| Choose a template to start with. You can customize after.        |
+|                                                                   |
+| +-------------------------------------------------------------+  |
+| | [Icon] Frontline Hiring                          [Use This] |  |
+| | Standard workflow for nurse and paramedic positions         |  |
+| | 6 stages | High automation | AI-first approach              |  |
+| +-------------------------------------------------------------+  |
+|                                                                   |
+| +-------------------------------------------------------------+  |
+| | [Icon] Professional Hiring                       [Use This] |  |
+| | Balanced workflow for mid-level clinical roles              |  |
+| | 6 stages | Hybrid approach | Human checkpoints              |  |
+| +-------------------------------------------------------------+  |
+|                                                                   |
+| +-------------------------------------------------------------+  |
+| | [Icon] Enterprise Hiring                         [Use This] |  |
+| | Premium workflow for senior physician roles                 |  |
+| | 6 stages | Human-heavy | Mandatory approvals                |  |
+| +-------------------------------------------------------------+  |
+|                                                                   |
+| +-------------------------------------------------------------+  |
+| | [Icon] Bulk Hiring                               [Use This] |  |
+| | High-volume workflow for rapid bulk placements              |  |
+| | 6 stages | Maximum automation | Fast processing             |  |
+| +-------------------------------------------------------------+  |
+|                                                                   |
+| +-------------------------------------------------------------+  |
+| | [Icon] Blank Workflow                            [Use This] |  |
+| | Start from scratch with no pre-defined stages               |  |
+| | 0 stages | Custom configuration                             |  |
+| +-------------------------------------------------------------+  |
++------------------------------------------------------------------+
 ```
 
-**After (3 tabs):**
+**Templates Available:**
+1. Frontline Hiring - AI-first, 6 stages
+2. Professional Hiring - Hybrid approach
+3. Enterprise Hiring - Human-heavy
+4. Bulk Hiring - Maximum automation
+5. Blank Workflow - Start from scratch
+
+---
+
+## Additional Workflows for Mock Data
+
+Add 4 more workflows to provide a richer listing:
+
 ```text
-[Queue | Analytics | Audit Log]
+1. Locum Physician Placement (active, professional)
+   - Short-term physician placements with expedited process
+   - 5 stages, hybrid approach
+
+2. Nursing Agency Float Pool (active, frontline)
+   - For floating nurses across multiple facilities
+   - 6 stages, AI-heavy
+
+3. Allied Health Specialist (paused, professional)
+   - For lab technicians, radiologists, therapists
+   - 6 stages, balanced hybrid
+
+4. Executive Healthcare Search (draft, enterprise)
+   - C-suite and director-level healthcare positions
+   - 6 stages, fully human-driven
 ```
 
-The header button showing "X Active Rules" will be removed since rules are now in Orchestration.
+---
+
+## Updated WorkflowList Component
+
+Wire up the buttons to open dialogs:
+
+```text
+<div className="flex gap-2">
+  <Button onClick={() => setCreateDialogOpen(true)}>
+    <Plus className="h-4 w-4" />
+    Create Workflow
+  </Button>
+  <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)}>
+    <FileText className="h-4 w-4" />
+    Templates
+  </Button>
+  <Button variant="outline">
+    <Download className="h-4 w-4" />
+    Import
+  </Button>
+</div>
+
+{/* Dialogs */}
+<WorkflowBuilderDialog
+  open={createDialogOpen}
+  onOpenChange={setCreateDialogOpen}
+  workflow={editingWorkflow}
+  onSave={handleSaveWorkflow}
+/>
+<WorkflowTemplatesDialog
+  open={templatesDialogOpen}
+  onOpenChange={setTemplatesDialogOpen}
+  onSelectTemplate={handleSelectTemplate}
+/>
+```
+
+Add state management for:
+- Creating new workflows (CRUD operations)
+- Editing existing workflows
+- Selecting templates
+- Toggling workflow status
 
 ---
 
 ## Technical Details
 
-### Sidebar Changes (AppSidebar.tsx)
+### WorkflowBuilderDialog Component Structure
 
 ```text
-// orchestrationItems - remove HITL Queue
-const orchestrationItems = [
-  {
-    title: "Orchestration Engine",
-    url: "/orchestration",
-    icon: Network,
-  },
-];
-
-// operationsItems - add HITL Queue
-const operationsItems = [
-  {
-    title: "Recruiter Dashboard",
-    url: "/recruiters",
-    icon: Users,
-  },
-  {
-    title: "AI Performance",
-    url: "/ai-performance",
-    icon: Bot,
-  },
-  {
-    title: "HITL Queue",
-    url: "/hitl",
-    icon: Zap,
-  },
-];
+interface WorkflowBuilderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workflow?: Workflow | null;  // For editing
+  onSave: (workflow: Partial<Workflow>) => void;
+}
 ```
 
-### Orchestration Engine Changes (OrchestrationEngine.tsx)
+Form state includes:
+- name, description, jobType, status
+- stages array with checkboxes for each stage type
+- Actor assignment (ai/human/hybrid) per stage
+- SLA hours per stage
 
-- Import HITL components: `RulesTable`, `RuleBuilderDialog`, `RuleSimulator`
-- Import HITL data: `hitlRulesV2`, `HITLRuleV2`
-- Add state for rules management
-- Add 5th tab "hitl-rules" with the rules UI
-- Update TabsList from 4 columns to 5 columns
+### WorkflowTemplatesDialog Component Structure
 
-Tab structure:
 ```text
-<TabsTrigger value="hitl-rules" className="gap-2">
-  <Zap className="h-4 w-4" />
-  <span className="hidden sm:inline">HITL Rules</span>
-</TabsTrigger>
+interface WorkflowTemplatesDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelectTemplate: (template: WorkflowTemplate) => void;
+}
 
-<TabsContent value="hitl-rules">
-  {/* Rules table, create button, simulator */}
-</TabsContent>
+interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  jobType: Workflow["jobType"];
+  stages: WorkflowStage[];
+  characteristics: string[];  // e.g., "AI-first", "6 stages"
+}
 ```
 
-### HITL Queue Changes (HITLQueue.tsx)
+### State Management in WorkflowList
 
-- Remove imports for: `RulesTable`, `RuleBuilderDialog`, `RuleSimulator`
-- Remove rules-related state: `rules`, `ruleDialogOpen`, `editingRule`, `simulatingRule`, `showSimulator`
-- Remove all rule handler functions
-- Remove "Rules" tab trigger and content
-- Remove the header button that links to rules
-- Keep only Queue, Analytics, and Audit Log tabs
+```text
+const [workflows, setWorkflows] = useState<Workflow[]>(mockWorkflows);
+const [createDialogOpen, setCreateDialogOpen] = useState(false);
+const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
+const [editingWorkflow, setEditingWorkflow] = useState<Workflow | null>(null);
+
+const handleSaveWorkflow = (workflowData: Partial<Workflow>) => {
+  if (workflowData.id) {
+    // Update existing
+    setWorkflows(prev => prev.map(w => 
+      w.id === workflowData.id ? { ...w, ...workflowData } : w
+    ));
+  } else {
+    // Create new
+    const newWorkflow: Workflow = {
+      id: `wf-${String(workflows.length + 1).padStart(3, "0")}`,
+      ...workflowData,
+      version: 1,
+      executionCount: 0,
+      successRate: 0,
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
+      createdBy: "Current User",
+    };
+    setWorkflows(prev => [...prev, newWorkflow]);
+  }
+};
+
+const handleSelectTemplate = (template: WorkflowTemplate) => {
+  setEditingWorkflow({
+    ...template,
+    name: `${template.name} (Copy)`,
+    status: "draft",
+  });
+  setTemplatesDialogOpen(false);
+  setCreateDialogOpen(true);
+};
+```
 
 ---
 
-## Updated Page Layouts
+## Files to Create
 
-### Orchestration Engine (after change)
+### 1. `src/components/orchestration/WorkflowBuilderDialog.tsx`
+- Dialog with form for workflow creation/editing
+- Stage selection with actor and SLA configuration
+- Validation for required fields
+- Save handler with toast notifications
 
-```text
-+------------------------------------------------------------------+
-|  Orchestration Engine                                             |
-|  Control plane for AI agents, workflows, and automation systems   |
-+------------------------------------------------------------------+
-|  [Workflows | Agents | Connectors | Telemetry | HITL Rules]      |
-+------------------------------------------------------------------+
-
-HITL Rules Tab:
-+------------------------------------------------------------------+
-| [+ Create Rule]  [Import]  [Export]           [Search rules...]   |
-+------------------------------------------------------------------+
-| Rules Table                                                       |
-| Name | Type | Condition | Action | Priority | Triggers | Status   |
-+------------------------------------------------------------------+
-| [Open Rule Simulator] button or simulator panel                   |
-+------------------------------------------------------------------+
-```
-
-### HITL Queue (after change)
-
-```text
-+------------------------------------------------------------------+
-|  HITL Queue                                                       |
-|  Human-in-the-Loop review tasks                                   |
-+------------------------------------------------------------------+
-|  [Tabs: Queue | Analytics | Audit Log]                           |
-+------------------------------------------------------------------+
-| Key Metrics: Pending | High Priority | Avg Resolution | Completed |
-+------------------------------------------------------------------+
-| Tab content based on selection                                    |
-+------------------------------------------------------------------+
-```
+### 2. `src/components/orchestration/WorkflowTemplatesDialog.tsx`
+- Grid of template cards
+- "Use This" button to select template
+- Template preview with stage count and characteristics
 
 ---
 
 ## Files to Modify
 
-### 1. `src/components/layout/AppSidebar.tsx`
-- Remove HITL Queue from `orchestrationItems` array
-- Add HITL Queue to `operationsItems` array
+### 1. `src/components/orchestration/WorkflowList.tsx`
+- Import new dialog components
+- Add state for dialogs and workflow CRUD
+- Wire up Create and Templates buttons
+- Pass onEdit callback to WorkflowCard
 
-### 2. `src/pages/OrchestrationEngine.tsx`
-- Add imports for HITL components and data
-- Add useState for rules management (rules array, dialog state, simulator state)
-- Add rule handler functions (create, edit, delete, toggle status, simulate)
-- Expand TabsList to 5 columns
-- Add "HITL Rules" TabsTrigger
-- Add "hitl-rules" TabsContent with full rules management UI
-
-### 3. `src/pages/HITLQueue.tsx`
-- Remove HITL rules-related imports
-- Remove rules state and handler functions
-- Remove "Rules" tab from TabsList and TabsContent
-- Remove header button linking to rules
-- Keep Queue, Analytics, and Audit Log functionality
+### 2. `src/lib/mockData.ts`
+- Add 4 new workflow entries to the workflows array
+- Include diverse job types, statuses, and stage configurations
 
 ---
 
-## Logical Grouping Rationale
+## Stage Type Definitions for Templates
 
-- **Orchestration Engine**: Contains system configuration and governance rules (Workflows, Agents, Connectors, Telemetry, HITL Rules). This is where admins configure HOW the system behaves.
+Default stages available for selection:
 
-- **Operations (HITL Queue)**: Contains day-to-day operational tasks that recruiters work on. This is where users DO the work of reviewing AI decisions.
+| Stage | Type | Default Actor | Default SLA |
+|-------|------|---------------|-------------|
+| Profile Screening | intake | ai | 4 hours |
+| Skills Matching | match | ai | 2 hours |
+| Initial Outreach | outreach | hybrid | 24 hours |
+| Interview Scheduling | interview | hybrid | 48 hours |
+| Offer Process | offer | human | 72 hours |
+| Onboarding | join | hybrid | 168 hours |
 
-This separation aligns with the PRD's distinction between configuration (Orchestration) and execution (Operations).
+---
+
+## Success Criteria
+
+- "Create Workflow" button opens a dialog with form fields
+- Users can define workflow name, description, job type, and status
+- Users can select which stages to include with actor assignments
+- "Templates" button shows pre-built workflow options
+- Selecting a template pre-fills the create form
+- New workflows appear in the listing after creation
+- Workflow listing shows 8+ workflows with variety
+- Edit button on cards opens the builder dialog for editing
+- Toggle status and delete actions update the listing
 
