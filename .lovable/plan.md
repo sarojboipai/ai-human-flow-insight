@@ -1,23 +1,21 @@
 
+# Show All Stages and Jobs Count in Workflow Card
 
-# Add Automations to Workflow Creation
-
-This plan adds an "Automations" section to the Workflow Builder Dialog, allowing users to configure automated triggers and actions that execute when specific events occur within the workflow.
+This plan updates the WorkflowCard component to display all stages (instead of limiting to 4) and adds a "Jobs" metric showing how many jobs are assigned to each workflow.
 
 ---
 
 ## Overview
 
 **Current State:**
-- WorkflowBuilderDialog has fields for name, description, job type, status, and stages
-- No automation configuration during workflow creation
-- Connectors and event subscriptions exist separately in the Connectors tab
+- WorkflowCard shows only first 4 stages with "+X more" text
+- Jobs are not linked to workflows (no workflowId field)
+- No visibility into how many jobs use each workflow
 
 **Target State:**
-- New "Automations" section in the WorkflowBuilderDialog
-- Users can add automation rules during workflow creation
-- Each automation has: trigger event, condition (optional), and action
-- Automations are linked to connected systems (ATS, Messaging, Calendar, etc.)
+- All stages visible in the card with horizontal scroll for overflow
+- Each workflow card shows a "Jobs" metric count
+- Jobs linked to workflows via workflowId field
 
 ---
 
@@ -25,292 +23,122 @@ This plan adds an "Automations" section to the Workflow Builder Dialog, allowing
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/orchestration/WorkflowBuilderDialog.tsx` | Modify | Add automations section with trigger/condition/action configuration |
-| `src/lib/mockData.ts` | Modify | Add WorkflowAutomation interface and update Workflow type |
+| `src/lib/mockData.ts` | Modify | Add `workflowId` field to Job interface and update job records |
+| `src/components/orchestration/WorkflowCard.tsx` | Modify | Show all stages, add jobs count prop and display |
+| `src/components/orchestration/WorkflowList.tsx` | Modify | Import jobs data and pass job counts to WorkflowCard |
 
 ---
 
-## Automations Section Design
+## Implementation Details
 
-Add a new collapsible section in the WorkflowBuilderDialog below the stages:
+### 1. Update Job Interface (mockData.ts)
+
+Add `workflowId` field to the Job interface:
 
 ```text
-+------------------------------------------------------------------+
-|  Automations                                                      |
-|  Configure automatic actions triggered by workflow events         |
-+------------------------------------------------------------------+
-|                                                                   |
-|  [+ Add Automation]                                               |
-|                                                                   |
-|  +-------------------------------------------------------------+ |
-|  | When: [Stage Completed v]   Stage: [Profile Screening v]    | |
-|  | Condition: [AI Confidence < v] [0.7]          (optional)    | |
-|  | Then: [Send Notification v]  To: [Slack Notifications v]    | |
-|  |                                               [Remove]      | |
-|  +-------------------------------------------------------------+ |
-|                                                                   |
-|  +-------------------------------------------------------------+ |
-|  | When: [Candidate Matched v]                                 | |
-|  | Condition: [Employer Tier = v] [Enterprise]   (optional)    | |
-|  | Then: [Update External System v] To: [Greenhouse ATS v]     | |
-|  |                                               [Remove]      | |
-|  +-------------------------------------------------------------+ |
-|                                                                   |
-|  +-------------------------------------------------------------+ |
-|  | When: [Offer Accepted v]                                    | |
-|  | Condition: None                                             | |
-|  | Then: [Generate Invoice v]  To: [Stripe Billing v]          | |
-|  |                                               [Remove]      | |
-|  +-------------------------------------------------------------+ |
-|                                                                   |
-+------------------------------------------------------------------+
-```
-
----
-
-## Automation Configuration Options
-
-### Trigger Events (When)
-| Trigger | Description |
-|---------|-------------|
-| `stage_entered` | Candidate enters a workflow stage |
-| `stage_completed` | Candidate completes a workflow stage |
-| `candidate_matched` | AI completes matching |
-| `interview_scheduled` | Interview is booked |
-| `offer_released` | Offer is sent to candidate |
-| `offer_accepted` | Candidate accepts offer |
-| `offer_rejected` | Candidate rejects offer |
-| `sla_breach` | Stage SLA is breached |
-| `candidate_response` | Candidate responds to outreach |
-
-### Conditions (Optional)
-| Field | Operators | Example Values |
-|-------|-----------|----------------|
-| `ai_confidence` | <, >, =, !=, <=, >= | 0.7, 0.85 |
-| `employer_tier` | =, != | enterprise, mid-market, smb |
-| `job_type` | =, != | frontline, professional, enterprise |
-| `role_type` | =, != | nurse, doctor, paramedic |
-| `stage_name` | = | Profile Screening, Interview |
-
-### Actions (Then)
-| Action | Target Systems |
-|--------|----------------|
-| `send_notification` | Slack, Email, SMS |
-| `update_ats` | Greenhouse ATS |
-| `sync_crm` | Salesforce CRM |
-| `schedule_calendar` | Calendly |
-| `send_message` | WhatsApp Business |
-| `generate_invoice` | Stripe Billing |
-| `create_hitl_task` | Internal HITL Queue |
-| `trigger_webhook` | Custom Webhook |
-
----
-
-## Data Model Extension
-
-### WorkflowAutomation Interface
-
-```text
-interface WorkflowAutomation {
+export interface Job {
   id: string;
-  trigger: AutomationTrigger;
-  stageId?: string;  // For stage-specific triggers
-  condition?: {
-    field: string;
-    operator: string;
-    value: string | number;
-  };
-  action: AutomationAction;
-  targetConnectorId: string;
-  enabled: boolean;
-}
-
-type AutomationTrigger = 
-  | "stage_entered"
-  | "stage_completed"
-  | "candidate_matched"
-  | "interview_scheduled"
-  | "offer_released"
-  | "offer_accepted"
-  | "offer_rejected"
-  | "sla_breach"
-  | "candidate_response";
-
-type AutomationAction =
-  | "send_notification"
-  | "update_ats"
-  | "sync_crm"
-  | "schedule_calendar"
-  | "send_message"
-  | "generate_invoice"
-  | "create_hitl_task"
-  | "trigger_webhook";
-```
-
-### Updated Workflow Interface
-
-Add automations array to the existing Workflow interface:
-
-```text
-interface Workflow {
-  // ... existing fields
-  automations?: WorkflowAutomation[];
+  title: string;
+  employer: string;
+  workflowId: string;  // NEW: Links job to a workflow
+  // ... rest of fields
 }
 ```
 
----
+Update existing jobs with workflow assignments:
+- JOB-001 (Senior ICU Nurse) -> wf-001 (Frontline Hiring)
+- JOB-002 (General Physician) -> wf-002 (Enterprise Physician)
+- JOB-003 (Emergency Paramedic) -> wf-003 (Bulk Paramedic)
+- JOB-004 -> wf-001
+- JOB-005 -> wf-005
 
-## Component Implementation Details
+### 2. Update WorkflowCard Component
 
-### State Management
-
-Add to WorkflowBuilderDialog:
+**Props change:**
 ```text
-const [automations, setAutomations] = useState<AutomationConfig[]>([]);
-
-interface AutomationConfig {
-  id: string;
-  trigger: string;
-  stageId: string;
-  hasCondition: boolean;
-  conditionField: string;
-  conditionOperator: string;
-  conditionValue: string;
-  action: string;
-  targetConnectorId: string;
+interface WorkflowCardProps {
+  workflow: Workflow;
+  jobsCount?: number;  // NEW: Number of jobs using this workflow
+  onEdit?: (workflow: Workflow) => void;
+  onToggleStatus?: (workflow: Workflow) => void;
+  onDelete?: (workflow: Workflow) => void;
 }
 ```
 
-### Add Automation Handler
+**Metrics Row - Add Jobs count:**
 ```text
-const handleAddAutomation = () => {
-  setAutomations(prev => [...prev, {
-    id: `auto-${Date.now()}`,
-    trigger: "stage_completed",
-    stageId: "",
-    hasCondition: false,
-    conditionField: "",
-    conditionOperator: "=",
-    conditionValue: "",
-    action: "send_notification",
-    targetConnectorId: "",
-  }]);
-};
-```
-
-### Remove Automation Handler
-```text
-const handleRemoveAutomation = (id: string) => {
-  setAutomations(prev => prev.filter(a => a.id !== id));
-};
-```
-
-### Update Automation Handler
-```text
-const handleUpdateAutomation = (id: string, field: string, value: any) => {
-  setAutomations(prev => prev.map(a => 
-    a.id === id ? { ...a, [field]: value } : a
-  ));
-};
-```
-
----
-
-## UI Components Structure
-
-### Automations Section
-```text
-{/* Automations Configuration */}
-<div className="space-y-3">
-  <div className="flex items-center justify-between">
-    <div>
-      <Label>Automations</Label>
-      <p className="text-xs text-muted-foreground">
-        Configure automatic actions triggered by workflow events
-      </p>
-    </div>
-    <Button variant="outline" size="sm" onClick={handleAddAutomation}>
-      <Plus className="h-4 w-4 mr-1" />
-      Add Automation
-    </Button>
+<div className="flex items-center gap-8 mb-4">
+  <div className="text-center">
+    <div className="text-xl font-bold">{workflow.stages.length}</div>
+    <div className="text-xs text-muted-foreground">Stages</div>
   </div>
-  
-  {automations.length === 0 ? (
-    <div className="border border-dashed rounded-lg p-6 text-center">
-      <Zap className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-      <p className="text-sm text-muted-foreground">
-        No automations configured. Add one to automate actions.
-      </p>
-    </div>
-  ) : (
-    <div className="space-y-3">
-      {automations.map(automation => (
-        <AutomationRow 
-          key={automation.id}
-          automation={automation}
-          stages={stages.filter(s => s.enabled)}
-          connectors={connectors}
-          onChange={handleUpdateAutomation}
-          onRemove={handleRemoveAutomation}
-        />
-      ))}
-    </div>
-  )}
+  <div className="text-center">
+    <div className="text-xl font-bold text-blue-500">{jobsCount || 0}</div>
+    <div className="text-xs text-muted-foreground">Jobs</div>
+  </div>
+  <!-- ... other metrics -->
 </div>
 ```
 
-### Automation Row Component
-Each automation row contains:
-1. **Trigger Select**: When event occurs
-2. **Stage Select**: Which stage (for stage-specific triggers)
-3. **Condition Toggle**: Optional condition
-4. **Condition Fields**: Field, operator, value
-5. **Action Select**: What to do
-6. **Connector Select**: Which system to target
-7. **Remove Button**: Delete this automation
+**Stage Flow - Show all stages with wrapping:**
+```text
+{/* Stage Flow - Show all stages */}
+<div className="flex flex-wrap items-center gap-2 mb-3">
+  {workflow.stages.map((stage, index) => (
+    <div key={stage.id} className="flex items-center gap-2">
+      <Badge variant="outline" className="whitespace-nowrap bg-teal-500/10 text-teal-600 border-teal-500/20">
+        {stage.name}
+      </Badge>
+      {index < workflow.stages.length - 1 && (
+        <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      )}
+    </div>
+  ))}
+</div>
+```
+
+### 3. Update WorkflowList Component
+
+Import jobs data and compute counts:
+
+```text
+import { jobs } from "@/lib/mockData";
+
+// Compute jobs count per workflow
+const getJobsCount = (workflowId: string) => {
+  return jobs.filter(job => job.workflowId === workflowId).length;
+};
+
+// Pass to WorkflowCard
+<WorkflowCard
+  workflow={workflow}
+  jobsCount={getJobsCount(workflow.id)}
+  onEdit={handleEdit}
+  onToggleStatus={handleToggleStatus}
+  onDelete={handleDelete}
+/>
+```
 
 ---
 
-## Trigger & Action Definitions
+## Updated WorkflowCard Layout
 
-### Trigger Options
 ```text
-const triggerOptions = [
-  { value: "stage_entered", label: "Stage Entered", requiresStage: true },
-  { value: "stage_completed", label: "Stage Completed", requiresStage: true },
-  { value: "candidate_matched", label: "Candidate Matched", requiresStage: false },
-  { value: "interview_scheduled", label: "Interview Scheduled", requiresStage: false },
-  { value: "offer_released", label: "Offer Released", requiresStage: false },
-  { value: "offer_accepted", label: "Offer Accepted", requiresStage: false },
-  { value: "offer_rejected", label: "Offer Rejected", requiresStage: false },
-  { value: "sla_breach", label: "SLA Breach", requiresStage: true },
-  { value: "candidate_response", label: "Candidate Response", requiresStage: false },
-];
-```
-
-### Action Options
-```text
-const actionOptions = [
-  { value: "send_notification", label: "Send Notification", connectorTypes: ["webhook"] },
-  { value: "update_ats", label: "Update ATS", connectorTypes: ["ats"] },
-  { value: "sync_crm", label: "Sync to CRM", connectorTypes: ["crm"] },
-  { value: "schedule_calendar", label: "Create Calendar Event", connectorTypes: ["calendar"] },
-  { value: "send_message", label: "Send Message", connectorTypes: ["messaging"] },
-  { value: "generate_invoice", label: "Generate Invoice", connectorTypes: ["billing"] },
-  { value: "create_hitl_task", label: "Create HITL Task", connectorTypes: [] },
-  { value: "trigger_webhook", label: "Trigger Webhook", connectorTypes: ["webhook"] },
-];
-```
-
-### Condition Field Options
-```text
-const conditionFields = [
-  { value: "ai_confidence", label: "AI Confidence", type: "number" },
-  { value: "employer_tier", label: "Employer Tier", type: "select", options: ["enterprise", "mid-market", "smb"] },
-  { value: "job_type", label: "Job Type", type: "select", options: ["frontline", "professional", "enterprise"] },
-  { value: "role_type", label: "Role Type", type: "select", options: ["nurse", "doctor", "paramedic", "technician"] },
-  { value: "candidate_status", label: "Candidate Status", type: "select", options: ["active", "passive", "withdrawn"] },
-];
++------------------------------------------------------------------+
+| [Icon] Frontline Hiring v2                    [Active] [Frontline] |
++------------------------------------------------------------------+
+| Standard workflow for nurse and paramedic positions...            |
++------------------------------------------------------------------+
+| 6        | 12       | 1,245      | 87.4%    | [Bot]2 [Users]1... |
+| Stages   | Jobs     | Executions | Success  | AI/Human/Hybrid    |
++------------------------------------------------------------------+
+| [Profile Screening] -> [Skills Matching] -> [Initial Outreach]   |
+| -> [Interview Scheduling] -> [Offer Process] -> [Onboarding]     |
++------------------------------------------------------------------+
+| [Progress Bar: 87.4%]                                             |
++------------------------------------------------------------------+
+| Updated 2024-01-25 by Saroj                        [Edit] [Pause] |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -318,71 +146,50 @@ const conditionFields = [
 ## Files to Modify
 
 ### 1. `src/lib/mockData.ts`
-- Add `WorkflowAutomation` interface
-- Add `AutomationTrigger` and `AutomationAction` types
-- Add `automations` field to `Workflow` interface
-- Add sample automations to existing workflows
+- Add `workflowId: string` to Job interface
+- Update all 5 job records with appropriate workflowId values
+- Map jobs to workflows based on job type:
+  - Nurse/Paramedic frontline jobs -> Frontline or Bulk workflows
+  - Doctor jobs -> Enterprise Physician workflow
+  - Technician jobs -> Allied Health workflow
 
-### 2. `src/components/orchestration/WorkflowBuilderDialog.tsx`
-- Import connectors from mockData
-- Add automations state management
-- Add automations section UI below stages
-- Include automation row components with trigger/condition/action selects
-- Update handleSave to include automations in workflow data
-- Update useEffect to load automations when editing
+### 2. `src/components/orchestration/WorkflowCard.tsx`
+- Add `jobsCount` prop to interface
+- Import Briefcase icon from lucide-react
+- Add "Jobs" metric to the metrics row (between Stages and Executions)
+- Remove `.slice(0, 4)` from stages mapping
+- Change stage container from `overflow-x-auto` to `flex-wrap` for wrapping
+- Remove the "+X more" text since all stages are now shown
 
----
-
-## Sample Automations for Existing Workflows
-
-Add to Frontline Hiring workflow:
-```text
-automations: [
-  {
-    id: "auto-001",
-    trigger: "stage_completed",
-    stageId: "s1",
-    condition: { field: "ai_confidence", operator: "<", value: 0.7 },
-    action: "create_hitl_task",
-    targetConnectorId: "",
-    enabled: true,
-  },
-  {
-    id: "auto-002",
-    trigger: "interview_scheduled",
-    action: "update_ats",
-    targetConnectorId: "conn-001",
-    enabled: true,
-  },
-  {
-    id: "auto-003",
-    trigger: "offer_accepted",
-    action: "generate_invoice",
-    targetConnectorId: "conn-006",
-    enabled: true,
-  },
-]
-```
+### 3. `src/components/orchestration/WorkflowList.tsx`
+- Import `jobs` from mockData
+- Create helper function to count jobs per workflow
+- Pass `jobsCount` prop to each WorkflowCard
 
 ---
 
-## Visual Indicators
+## Job-to-Workflow Mapping
 
-- Automation count badge on workflow cards
-- Green check for active automations
-- Yellow pause for disabled automations
-- Error indicator for automations targeting disconnected connectors
+| Job ID | Job Title | Workflow ID | Workflow Name |
+|--------|-----------|-------------|---------------|
+| JOB-001 | Senior ICU Nurse | wf-001 | Frontline Hiring |
+| JOB-002 | General Physician | wf-002 | Enterprise Physician |
+| JOB-003 | Emergency Paramedic | wf-003 | Bulk Paramedic |
+| JOB-004 | Lab Technician | wf-007 | Allied Health Specialist |
+| JOB-005 | Staff Nurse | wf-001 | Frontline Hiring |
+
+This results in:
+- wf-001 (Frontline Hiring): 2 jobs
+- wf-002 (Enterprise Physician): 1 job
+- wf-003 (Bulk Paramedic): 1 job
+- wf-007 (Allied Health Specialist): 1 job
+- Other workflows: 0 jobs
 
 ---
 
 ## Success Criteria
 
-- WorkflowBuilderDialog shows "Automations" section below stages
-- Users can add multiple automations with trigger/condition/action
-- Conditions are optional and can be toggled
-- Actions filter available connectors by type
-- Stage-specific triggers show stage dropdown
-- Automations save with workflow and load when editing
-- Empty state shows when no automations configured
-- Validation warns if targeting disconnected connector
-
+- All 6 stages visible in workflow cards (wrapped to multiple lines if needed)
+- Jobs count metric displayed between Stages and Executions
+- Jobs correctly mapped to workflows via workflowId
+- Workflow cards show accurate job counts based on linked jobs
