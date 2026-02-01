@@ -100,7 +100,7 @@ const Index = () => {
           <div className="space-y-4">
             <div className="chart-container">
               <h3 className="section-title mb-4">Revenue Intelligence</h3>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-lg bg-secondary/50 p-4">
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
                   <p className="text-2xl font-semibold mt-1">
@@ -126,6 +126,13 @@ const Index = () => {
                   </p>
                   <p className="text-sm text-success mt-1">
                     -8% vs target
+                  </p>
+                </div>
+                <div className="rounded-lg bg-secondary/50 p-4">
+                  <p className="text-sm text-muted-foreground">HITL Queue</p>
+                  <p className="text-2xl font-semibold mt-1">24</p>
+                  <p className="text-sm text-warning mt-1">
+                    3 high priority
                   </p>
                 </div>
               </div>
