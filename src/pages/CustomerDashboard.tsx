@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/layout/AppSidebar";
+import { CustomerSidebar } from "@/components/layout/CustomerSidebar";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { Bell, Search, User, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ export default function CustomerDashboard() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <AppSidebar />
+        <CustomerSidebar />
         <SidebarInset className="flex-1">
           <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
             <SidebarTrigger className="-ml-2" />
