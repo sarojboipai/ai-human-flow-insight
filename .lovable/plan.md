@@ -1,17 +1,14 @@
 
 
-# Standardize Header and Increase Board Height
+# Remove HITL Queue from Home Page Sidebar
 
-This plan adjusts the Pipeline Board Dialog to have a more compact header and maximize the board canvas area.
+This plan removes the "HITL Queue" navigation item from the Admin sidebar on the home page.
 
 ---
 
-## Problem
+## Overview
 
-Looking at the current implementation:
-- The DialogHeader uses `px-6 py-4` padding, making it unnecessarily tall
-- The dialog content structure doesn't properly use flexbox to maximize the board area
-- The board area doesn't fill all available space below the header
+The HITL Queue is accessible via the dedicated HITL persona (through the "Change Persona" dropdown), so it doesn't need to appear in the main Admin sidebar navigation.
 
 ---
 
@@ -19,72 +16,60 @@ Looking at the current implementation:
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Reduce header padding, add proper flex layout |
+| `src/components/layout/AppSidebar.tsx` | Modify | Remove HITL Queue from operationsItems array |
 
 ---
 
 ## Specific Changes
 
-### 1. Dialog Content Structure
+### 1. Remove HITL Queue item from operationsItems array
 
-Change from:
+**Before (lines 56-72):**
 ```tsx
-<DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] p-0 gap-0">
+const operationsItems = [
+  {
+    title: "Recruiter Dashboard",
+    url: "/recruiters",
+    icon: Users,
+  },
+  {
+    title: "AI Performance",
+    url: "/ai-performance",
+    icon: Bot,
+  },
+  {
+    title: "HITL Queue",
+    url: "/hitl",
+    icon: Zap,
+  },
+];
 ```
 
-To:
+**After:**
 ```tsx
-<DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] p-0 gap-0 flex flex-col">
+const operationsItems = [
+  {
+    title: "Recruiter Dashboard",
+    url: "/recruiters",
+    icon: Users,
+  },
+  {
+    title: "AI Performance",
+    url: "/ai-performance",
+    icon: Bot,
+  },
+];
 ```
 
-### 2. Compact Header
+### 2. Remove unused Zap import
 
-Change from:
-```tsx
-<DialogHeader className="px-6 py-4 border-b">
-```
-
-To:
-```tsx
-<DialogHeader className="px-4 py-2 border-b shrink-0">
-```
-
-Also reduce:
-- Title font size from `text-lg` to `text-base`
-- Job ID font size from `text-sm` to `text-xs`
-- Legend text sizes remain compact
-
-### 3. Board Container
-
-Change from:
-```tsx
-<div className="flex-1 h-full">
-```
-
-To:
-```tsx
-<div className="flex-1 min-h-0">
-```
-
-The `min-h-0` is crucial for flexbox to allow the container to shrink and fill available space properly.
-
----
-
-## Visual Comparison
-
-| Element | Before | After |
-|---------|--------|-------|
-| Header padding | `py-4` (16px vertical) | `py-2` (8px vertical) |
-| Title size | `text-lg` | `text-base` |
-| Job ID size | `text-sm` | `text-xs` |
-| Board area | Limited by header | Maximized with flexbox |
-| Overall header height | ~80px | ~48px |
+Remove `Zap` from the lucide-react imports since it's no longer used.
 
 ---
 
 ## Result
 
-- Header will be approximately half its current height
-- The React Flow canvas will fill all remaining space
-- The diagram will be more centered and visible immediately on open
+- The Operations section will show only "Recruiter Dashboard" and "AI Performance"
+- HITL Queue remains accessible via the HITL persona dropdown in the header
+- Clean, focused navigation for the Admin view
 
