@@ -106,7 +106,7 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] p-0 gap-0 flex flex-col">
-        <DialogHeader className="px-4 py-2 border-b shrink-0">
+        <DialogHeader className="px-4 py-2 border-b shrink-0 pr-10">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-base font-semibold">{job.title}</DialogTitle>
