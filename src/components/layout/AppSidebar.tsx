@@ -7,7 +7,6 @@ import {
   GitBranch,
   Settings,
   BarChart3,
-  Zap,
   Target,
   Network,
 } from "lucide-react";
@@ -63,11 +62,6 @@ const operationsItems = [
     title: "AI Performance",
     url: "/ai-performance",
     icon: Bot,
-  },
-  {
-    title: "HITL Queue",
-    url: "/hitl",
-    icon: Zap,
   },
 ];
 
