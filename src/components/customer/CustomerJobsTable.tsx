@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Search, Filter, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { jobs, Job } from "@/lib/mockData";
+import { PipelineBoardDialog } from "./PipelineBoardDialog";
 
 const getStatusBadge = (status: Job["status"]) => {
   switch (status) {
@@ -27,8 +27,9 @@ const getStatusBadge = (status: Job["status"]) => {
 };
 
 export function CustomerJobsTable() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const filteredJobs = jobs.filter(
     (job) =>
@@ -96,7 +97,10 @@ export function CustomerJobsTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/jobs/${job.id}`)}
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setDialogOpen(true);
+                    }}
                   >
                     View Pipeline
                     <ArrowRight className="h-4 w-4 ml-1" />
@@ -107,6 +111,12 @@ export function CustomerJobsTable() {
           </TableBody>
         </Table>
       </CardContent>
+
+      <PipelineBoardDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        job={selectedJob}
+      />
     </Card>
   );
 }
