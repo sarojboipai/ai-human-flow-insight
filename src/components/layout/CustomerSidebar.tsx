@@ -1,8 +1,6 @@
 import {
   LayoutDashboard,
-  TrendingUp,
-  Users,
-  DollarSign,
+  Briefcase,
   Settings,
   BarChart3,
 } from "lucide-react";
@@ -23,24 +21,14 @@ import {
 
 const customerNavItems = [
   {
-    title: "Command Center",
-    url: "/",
+    title: "Dashboard",
+    url: "/customer",
     icon: LayoutDashboard,
   },
   {
-    title: "Hiring Funnel",
-    url: "/funnel",
-    icon: TrendingUp,
-  },
-  {
-    title: "Recruiter Dashboard",
-    url: "/recruiters",
-    icon: Users,
-  },
-  {
-    title: "Revenue & Costs",
-    url: "/revenue",
-    icon: DollarSign,
+    title: "Business",
+    url: "/customer/business",
+    icon: Briefcase,
   },
 ];
 
