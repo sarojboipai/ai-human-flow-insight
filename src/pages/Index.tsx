@@ -128,6 +128,13 @@ const Index = () => {
                     -8% vs target
                   </p>
                 </div>
+                <div className="rounded-lg bg-secondary/50 p-4">
+                  <p className="text-sm text-muted-foreground">HITL Queue</p>
+                  <p className="text-2xl font-semibold mt-1">24</p>
+                  <p className="text-sm text-warning mt-1">
+                    3 high priority
+                  </p>
+                </div>
               </div>
             </div>
           </div>
