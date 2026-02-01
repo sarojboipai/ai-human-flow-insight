@@ -1,6 +1,7 @@
 import { CustomerSidebar } from "@/components/layout/CustomerSidebar";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { JobProgressPipeline } from "@/components/customer/JobProgressPipeline";
+import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
 import { Bell, Search, User, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,6 +104,11 @@ export default function CustomerDashboard() {
             {/* Job Progress Pipeline */}
             <div className="mt-6">
               <JobProgressPipeline />
+            </div>
+
+            {/* Jobs Pipeline Table */}
+            <div className="mt-6">
+              <CustomerJobsTable />
             </div>
           </main>
         </SidebarInset>
