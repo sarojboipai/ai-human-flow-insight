@@ -67,7 +67,7 @@ export default function CustomerDashboard() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
