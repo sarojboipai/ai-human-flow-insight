@@ -55,10 +55,10 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                   <DropdownMenuItem onClick={() => navigate("/")}>
                     Admin
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/")}>
+                  <DropdownMenuItem onClick={() => navigate("/orchestration")}>
                     Operation Manager
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/")}>
+                  <DropdownMenuItem onClick={() => navigate("/hitl")}>
                     HITL
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/customer")}>
