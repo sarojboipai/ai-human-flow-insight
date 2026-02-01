@@ -14,6 +14,7 @@ import StaffingPlanner from "./pages/StaffingPlanner";
 import Settings from "./pages/Settings";
 import OrchestrationEngine from "./pages/OrchestrationEngine";
 import JobDetail from "./pages/JobDetail";
+import CustomerDashboard from "./pages/CustomerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/orchestration" element={<OrchestrationEngine />} />
           <Route path="/jobs/:jobId" element={<JobDetail />} />
+          <Route path="/customer" element={<CustomerDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -62,7 +62,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                   <DropdownMenuItem>
                     HITL
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/customer")}>
                     Customer
                   </DropdownMenuItem>
                 </DropdownMenuContent>
