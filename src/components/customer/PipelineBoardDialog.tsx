@@ -105,12 +105,12 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] p-0 gap-0 flex flex-col">
+        <DialogHeader className="px-4 py-2 border-b shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-lg font-semibold">{job.title}</DialogTitle>
-              <p className="text-sm text-muted-foreground font-mono">{job.id}</p>
+              <DialogTitle className="text-base font-semibold">{job.title}</DialogTitle>
+              <p className="text-xs text-muted-foreground font-mono">{job.id}</p>
             </div>
             <div className="flex items-center gap-2">
               {legendItems.map((item) => (
@@ -125,7 +125,7 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
           </div>
         </DialogHeader>
         
-        <div className="flex-1 h-full">
+        <div className="flex-1 min-h-0">
           <ReactFlow
             nodes={nodes}
             edges={edges}
