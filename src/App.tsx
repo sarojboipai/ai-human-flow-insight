@@ -9,6 +9,8 @@ import HumanAIWorkload from "./pages/HumanAIWorkload";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import AIPerformance from "./pages/AIPerformance";
 import HITLQueue from "./pages/HITLQueue";
+import HITLAnalytics from "./pages/HITLAnalytics";
+import HITLAuditLog from "./pages/HITLAuditLog";
 import RevenueIntelligence from "./pages/RevenueIntelligence";
 import StaffingPlanner from "./pages/StaffingPlanner";
 import Settings from "./pages/Settings";
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/recruiters" element={<RecruiterDashboard />} />
           <Route path="/ai-performance" element={<AIPerformance />} />
           <Route path="/hitl" element={<HITLQueue />} />
+          <Route path="/hitl/analytics" element={<HITLAnalytics />} />
+          <Route path="/hitl/audit" element={<HITLAuditLog />} />
           <Route path="/revenue" element={<RevenueIntelligence />} />
           <Route path="/staffing" element={<StaffingPlanner />} />
           <Route path="/settings" element={<Settings />} />
