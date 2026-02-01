@@ -1,19 +1,18 @@
 
-# Simplified Customer Sidebar
+# Job Progress Pipeline Widget
 
-This plan creates a dedicated sidebar for the Customer page that only shows the 4 requested navigation items.
+This plan adds a visual workflow diagram to the Customer Dashboard showing the progress of posted jobs through the hiring pipeline.
 
 ---
 
 ## Overview
 
-**Current State:**
-- Customer page uses the shared `AppSidebar` component
-- AppSidebar shows all navigation items (Command Center, Jobs & Funnel, Human vs AI, Orchestration Engine, Recruiter Dashboard, AI Performance, HITL Queue, Revenue & Costs, Staffing Planner)
-
-**Target State:**
-- Customer page uses a new `CustomerSidebar` component
-- Only 4 items visible: Command Center, Hiring Funnel, Recruiter Dashboard, Revenue & Costs
+**What We're Building:**
+A horizontal flowchart widget that visualizes the hiring pipeline stages from job posting to candidate outcomes. The design follows the reference image with:
+- Connected stage boxes with icons
+- A decision diamond node
+- Branching paths for different candidate outcomes (Highly Qualified, Qualified, Knockout)
+- Color-coded badges indicating handler type (AI, Human, Hybrid)
 
 ---
 
@@ -21,65 +20,108 @@ This plan creates a dedicated sidebar for the Customer page that only shows the 
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/CustomerSidebar.tsx` | Create | New simplified sidebar component for customer pages |
-| `src/pages/CustomerDashboard.tsx` | Modify | Import and use CustomerSidebar instead of AppSidebar |
+| `src/components/customer/JobProgressPipeline.tsx` | Create | New visual pipeline component |
+| `src/pages/CustomerDashboard.tsx` | Modify | Add the pipeline widget below existing metrics |
+
+---
+
+## Pipeline Structure
+
+```text
++----------+     +----------+     +----------+     +----------+     +----------+     +----------+
+|   ATS    | --> | Jobs in  | --> |   Job    | --> |Expression| --> |   Pre-   | --> |  Voice   |
+|  Source  |     |  System  |     | Discovery|     |    of    |     |screening |     |  Agent   |
+|          |     |          |     |          |     | Interest |     | Questions|     | Screening|
++----------+     +----------+     +----------+     +----------+     +----------+     +----------+
+                                                                                           |
+                                                                                           v
+                                                          +------- Highly Qualified --> [Scheduling]
+                                                          |
+                                                   [Decision] ---- Qualified --------> [Silver Medalist]
+                                                          |
+                                                          +------- Knockout ---------> [Talent Community]
+```
+
+---
+
+## Component Features
+
+### Stage Nodes
+- Rounded rectangle boxes with light blue border
+- Icon at top center
+- Stage name below icon
+- Colored badge indicating handler type:
+  - Purple (C) = Candidate-driven
+  - Yellow (AE) = AI + Human hybrid  
+  - Orange (X+) = AI screened
+
+### Decision Node
+- Diamond shape rotated 45 degrees
+- Dark background with person icon
+- "Decision" label below
+
+### Connecting Lines
+- Dashed lines between stages
+- Small dots at connection points
+- Labeled branches for outcomes (Highly Qualified, Qualified, Knockout)
+
+### Outcome Nodes
+- Same style as stage nodes
+- Color-coded labels on connecting lines
 
 ---
 
 ## Implementation Details
 
-### 1. Create CustomerSidebar Component
-
-Create a new sidebar with only the required navigation items:
-
-```text
-Navigation Items:
-- Command Center (/)
-- Hiring Funnel (/funnel)  
-- Recruiter Dashboard (/recruiters)
-- Revenue & Costs (/revenue)
-```
+### 1. Create JobProgressPipeline Component
 
 The component will:
-- Follow the same structure as AppSidebar
-- Include the SHIP header with logo
-- Have a single "Navigation" group with all 4 items
-- Include Settings in the footer
+- Accept an optional `jobId` prop to show specific job data
+- Display mock pipeline stages with current candidate counts
+- Use flexbox for horizontal layout with overflow scroll
+- Include SVG/CSS for the decision diamond and connecting lines
 
 ### 2. Update CustomerDashboard
 
-Replace the AppSidebar import with CustomerSidebar:
+Add the new widget below the existing metric cards:
 
 ```text
-- import { AppSidebar } from "@/components/layout/AppSidebar";
-+ import { CustomerSidebar } from "@/components/layout/CustomerSidebar";
+Current Layout:
+- Header with search and navigation
+- 3 metric cards (Active Jobs, Total Candidates, Interviews Scheduled)
+
+New Layout:
+- Header with search and navigation
+- 3 metric cards
+- Job Progress Pipeline widget (new)
 ```
 
 ---
 
-## CustomerSidebar Structure
+## Mock Data for Pipeline
 
-```text
-+----------------------------------+
-| [Logo] SHIP                      |
-|        Hiring Intelligence       |
-+----------------------------------+
-| NAVIGATION                       |
-|   Command Center                 |
-|   Hiring Funnel                  |
-|   Recruiter Dashboard            |
-|   Revenue & Costs                |
-+----------------------------------+
-|   Settings                       |
-+----------------------------------+
-```
+The widget will display these stages with sample data:
+
+| Stage | Handler | Candidates |
+|-------|---------|------------|
+| ATS Source | - | 500 |
+| Jobs in System | Candidate | 485 |
+| Job Discovery | Candidate | 420 |
+| Expression of Interest | Candidate | 380 |
+| Pre-screening Questions | AI+Human | 290 |
+| Voice Agent Screening | AI | 145 |
+| Decision | - | 145 |
+| Scheduling | AI+Human | 52 |
+| Silver Medalist | AI+Human | 43 |
+| Talent Community | Candidate | 50 |
 
 ---
 
-## Why Create a Separate Component?
+## Visual Styling
 
-Creating a dedicated `CustomerSidebar` component instead of modifying `AppSidebar`:
-- Keeps the admin/operator navigation intact
-- Makes it easy to customize customer-specific navigation in the future
-- Follows separation of concerns - different user roles see different navigation
-- No risk of breaking existing pages that use AppSidebar
+- **Node borders**: Light blue (`border-sky-200`)
+- **Node background**: White with subtle shadow
+- **Connecting lines**: Dashed gray lines with dots at endpoints
+- **Decision diamond**: Dark slate background rotated 45 degrees
+- **Branch labels**: Colored text (green for Highly Qualified, blue for Qualified, red for Knockout)
+- **Handler badges**: Circular colored badges matching the reference
