@@ -52,14 +52,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">Saroj Kumar</p>
-                      <p className="text-xs text-muted-foreground">saroj@company.com</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                <DropdownMenuContent align="end" className="w-40">
                   <DropdownMenuItem>
                     <UserCircle className="mr-2 h-4 w-4" />
                     Profile
@@ -67,11 +60,6 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive focus:text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
