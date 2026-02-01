@@ -52,14 +52,18 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>
-                    <UserCircle className="mr-2 h-4 w-4" />
-                    Profile
+                    Admin
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                  <DropdownMenuItem>
+                    Operation Manager
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    HITL
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Customer
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
