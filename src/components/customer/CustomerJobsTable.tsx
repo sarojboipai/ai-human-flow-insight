@@ -15,16 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { jobs, Job } from "@/lib/mockData";
 import { PipelineBoardDialog } from "./PipelineBoardDialog";
 
-const getStatusBadge = (status: Job["status"]) => {
-  switch (status) {
-    case "active":
-      return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Active</Badge>;
-    case "filled":
-      return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Filled</Badge>;
-    case "closed":
-      return <Badge className="bg-muted text-muted-foreground">Closed</Badge>;
-  }
-};
 
 export function CustomerJobsTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,11 +61,11 @@ export function CustomerJobsTable() {
             <TableRow>
               <TableHead>Job ID</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Role Type</TableHead>
+              
               <TableHead>Current Stage</TableHead>
               <TableHead className="text-right">Candidates</TableHead>
               <TableHead className="text-right">Days Open</TableHead>
-              <TableHead>Status</TableHead>
+              
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -84,7 +74,7 @@ export function CustomerJobsTable() {
               <TableRow key={job.id}>
                 <TableCell className="font-mono text-xs">{job.id}</TableCell>
                 <TableCell className="font-medium">{job.title}</TableCell>
-                <TableCell className="capitalize">{job.roleType}</TableCell>
+                
                 <TableCell>
                   <Badge variant="secondary">{currentStage(job)}</Badge>
                 </TableCell>
@@ -92,7 +82,7 @@ export function CustomerJobsTable() {
                   {totalCandidates(job)}
                 </TableCell>
                 <TableCell className="text-right">{job.daysOpen}</TableCell>
-                <TableCell>{getStatusBadge(job.status)}</TableCell>
+                
                 <TableCell>
                   <Button
                     variant="outline"
