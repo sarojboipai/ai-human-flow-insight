@@ -2024,6 +2024,7 @@ const getSLADetails = (daysOpen: number, slaRisk: "green" | "amber" | "red"): st
 
 export interface JobPipelineHealthRow {
   jobId: string;
+  jobTitle: string;
   customer: string;
   currentStage: string;
   bottleneckStage: string;
@@ -2037,6 +2038,7 @@ export const jobPipelineHealth: JobPipelineHealthRow[] = jobs.map((job) => {
   const slaRisk = calculateSLARisk(job.daysOpen, job.status);
   return {
     jobId: job.id,
+    jobTitle: job.title,
     customer: job.employer,
     currentStage: getCurrentStage(job.daysOpen),
     bottleneckStage: getBottleneckStage(job.funnel),
@@ -2054,4 +2056,178 @@ export const dashboardKPIs = {
   aiAutomationCoverage: 68,
   hiringSLACompliance: 87,
   grossMargin: 44.7,
+};
+
+// ============================================
+// Customer Workflow Schemas
+// ============================================
+
+export interface PipelineWorkflowStage {
+  id: string;
+  type: "source" | "candidate" | "automation" | "ai" | "recruiter" | "decision" | "outcome";
+  label: string;
+  icon: string;
+  position: { x: number; y: number };
+}
+
+export interface CustomerWorkflowSchema {
+  customerId: string;
+  customerName: string;
+  workflowId: string;
+  stages: PipelineWorkflowStage[];
+  outcomeStages: PipelineWorkflowStage[];
+}
+
+export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
+  {
+    customerId: "cust-001",
+    customerName: "Ankura Hospital",
+    workflowId: "wf-ankura",
+    stages: [
+      { id: "source", type: "source", label: "Ankura\nHospital", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nAnkura", icon: "eye", position: { x: 200, y: 130 } },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search", position: { x: 370, y: 130 } },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 540, y: 130 } },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send", position: { x: 710, y: 130 } },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 880, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 1050, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1200, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1200, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1200, y: 260 } },
+    ],
+  },
+  {
+    customerId: "cust-002",
+    customerName: "Oasis Fertility",
+    workflowId: "wf-oasis",
+    stages: [
+      { id: "source", type: "source", label: "Oasis\nFertility", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nOasis", icon: "eye", position: { x: 200, y: 130 } },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search", position: { x: 370, y: 130 } },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 540, y: 130 } },
+      // No prescreen stage for Oasis Fertility
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 710, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 880, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1030, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1030, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1030, y: 260 } },
+    ],
+  },
+  {
+    customerId: "cust-003",
+    customerName: "Manipal Hospitals",
+    workflowId: "wf-manipal",
+    stages: [
+      { id: "source", type: "source", label: "Manipal\nHospitals", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nManipal", icon: "eye", position: { x: 200, y: 130 } },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search", position: { x: 370, y: 130 } },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 540, y: 130 } },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send", position: { x: 710, y: 130 } },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 880, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 1050, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1200, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1200, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1200, y: 260 } },
+    ],
+  },
+  {
+    customerId: "cust-004",
+    customerName: "KIMS Hospital",
+    workflowId: "wf-kims",
+    stages: [
+      { id: "source", type: "source", label: "KIMS\nHospital", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nKIMS", icon: "eye", position: { x: 200, y: 130 } },
+      // No job-discovery stage for KIMS
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 370, y: 130 } },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send", position: { x: 540, y: 130 } },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 710, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 880, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1030, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1030, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1030, y: 260 } },
+    ],
+  },
+  {
+    customerId: "cust-005",
+    customerName: "Yashoda Hospitals",
+    workflowId: "wf-yashoda",
+    stages: [
+      { id: "source", type: "source", label: "Yashoda\nHospitals", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nYashoda", icon: "eye", position: { x: 200, y: 130 } },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search", position: { x: 370, y: 130 } },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 540, y: 130 } },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send", position: { x: 710, y: 130 } },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 880, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 1050, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1200, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1200, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1200, y: 260 } },
+    ],
+  },
+  {
+    customerId: "cust-006",
+    customerName: "Aster CMI Hospital",
+    workflowId: "wf-aster",
+    stages: [
+      { id: "source", type: "source", label: "Aster CMI\nHospital", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nAster CMI", icon: "eye", position: { x: 200, y: 130 } },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search", position: { x: 370, y: 130 } },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart", position: { x: 540, y: 130 } },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send", position: { x: 710, y: 130 } },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone", position: { x: 880, y: 130 } },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch", position: { x: 1050, y: 145 } },
+    ],
+    outcomeStages: [
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1200, y: 40 } },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck", position: { x: 1200, y: 150 } },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1200, y: 260 } },
+    ],
+  },
+];
+
+// Helper: Get workflow schema for a customer
+export const getCustomerWorkflowSchema = (customerName: string): CustomerWorkflowSchema => {
+  return customerWorkflowSchemas.find(
+    schema => schema.customerName === customerName
+  ) || customerWorkflowSchemas[0];
+};
+
+// Helper: Filter jobs by customer
+export const getJobsByCustomer = (customerName: string | "all"): Job[] => {
+  if (customerName === "all") return jobs;
+  return jobs.filter(job => job.employer === customerName);
+};
+
+// Helper: Calculate KPIs for filtered jobs
+export const calculateCustomerKPIs = (filteredJobs: Job[]) => {
+  const totalJobs = filteredJobs.length || 1;
+  return {
+    activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
+    candidatesInPipeline: filteredJobs.reduce((acc, job) => acc + job.funnel[0].candidates, 0),
+    aiAutomationCoverage: Math.round(
+      filteredJobs.reduce((acc, job) => acc + job.aiContribution, 0) / totalJobs
+    ),
+    hiringSLACompliance: Math.round(
+      (filteredJobs.filter(j => j.daysOpen <= 21).length / totalJobs) * 100
+    ),
+    grossMargin: Math.round(
+      filteredJobs.reduce((acc, job) => acc + job.margin, 0) / totalJobs * 10
+    ) / 10,
+  };
+};
+
+// Helper: Filter job pipeline health by customer
+export const getJobPipelineHealthByCustomer = (customerName: string | "all"): JobPipelineHealthRow[] => {
+  if (customerName === "all") return jobPipelineHealth;
+  return jobPipelineHealth.filter(row => row.customer === customerName);
 };

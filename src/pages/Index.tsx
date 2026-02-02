@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { ConversionChart } from "@/components/dashboard/ConversionChart";
@@ -20,9 +20,10 @@ import {
   aiWorkloadData,
   revenueMetrics,
   aiEvaluationMetrics,
-  jobPipelineHealth,
-  dashboardKPIs,
   jobs,
+  enterpriseCustomers,
+  getJobPipelineHealthByCustomer,
+  calculateCustomerKPIs,
   type Job,
 } from "@/lib/mockData";
 
@@ -31,6 +32,30 @@ const Index = () => {
   const [customer, setCustomer] = useState("all");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Get customer name from ID
+  const selectedCustomerName = useMemo(() => {
+    if (customer === "all") return "all";
+    const cust = enterpriseCustomers.find(c => c.id === customer);
+    return cust?.name || "all";
+  }, [customer]);
+
+  // Filter jobs by selected customer
+  const filteredJobs = useMemo(() => {
+    if (customer === "all") return jobs;
+    const selectedCustomer = enterpriseCustomers.find(c => c.id === customer);
+    return jobs.filter(job => job.employer === selectedCustomer?.name);
+  }, [customer]);
+
+  // Calculate customer-specific KPIs
+  const filteredKPIs = useMemo(() => {
+    return calculateCustomerKPIs(filteredJobs);
+  }, [filteredJobs]);
+
+  // Get filtered job pipeline health data
+  const filteredJobPipelineHealth = useMemo(() => {
+    return getJobPipelineHealthByCustomer(selectedCustomerName);
+  }, [selectedCustomerName]);
 
   const handleJobClick = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
@@ -63,7 +88,7 @@ const Index = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <MetricCard
             title="Active Job Pipelines"
-            value={dashboardKPIs.activeJobPipelines.toString()}
+            value={filteredKPIs.activeJobPipelines.toString()}
             change={8}
             changeLabel="vs last month"
             icon={<Briefcase className="h-5 w-5" />}
@@ -71,7 +96,7 @@ const Index = () => {
           />
           <MetricCard
             title="Candidates in Pipeline"
-            value={dashboardKPIs.candidatesInPipeline.toLocaleString()}
+            value={filteredKPIs.candidatesInPipeline.toLocaleString()}
             change={12}
             changeLabel="vs last month"
             icon={<Users className="h-5 w-5" />}
@@ -79,7 +104,7 @@ const Index = () => {
           />
           <MetricCard
             title="AI Automation Coverage"
-            value={`${dashboardKPIs.aiAutomationCoverage}%`}
+            value={`${filteredKPIs.aiAutomationCoverage}%`}
             change={5}
             changeLabel="vs last month"
             icon={<Bot className="h-5 w-5" />}
@@ -87,7 +112,7 @@ const Index = () => {
           />
           <MetricCard
             title="Hiring SLA Compliance"
-            value={`${dashboardKPIs.hiringSLACompliance}%`}
+            value={`${filteredKPIs.hiringSLACompliance}%`}
             change={-2}
             changeLabel="vs last month"
             icon={<Clock className="h-5 w-5" />}
@@ -95,7 +120,7 @@ const Index = () => {
           />
           <MetricCard
             title="Gross Margin"
-            value={`${dashboardKPIs.grossMargin}%`}
+            value={`${filteredKPIs.grossMargin}%`}
             change={3.2}
             changeLabel="vs last month"
             icon={<DollarSign className="h-5 w-5" />}
@@ -169,7 +194,7 @@ const Index = () => {
 
         {/* Job Pipeline Health Table */}
         <JobPipelineHealthTable 
-          data={jobPipelineHealth}
+          data={filteredJobPipelineHealth}
           onJobClick={handleJobClick}
         />
       </div>
