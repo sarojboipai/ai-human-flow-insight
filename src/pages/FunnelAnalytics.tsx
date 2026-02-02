@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
-import { funnelData, aggregateFunnelData } from "@/lib/mockData";
+import { funnelData, jobs, aggregateFunnelData } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -44,6 +44,19 @@ const timeToStageData = [
 ];
 
 export default function FunnelAnalytics() {
+  const activeJobs = jobs.filter((j) => j.status === "active").length;
+  const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel[0]?.candidates || 0), 0);
+  const avgDaysOpen = Math.round(jobs.reduce((sum, j) => sum + j.daysOpen, 0) / jobs.length);
+  const totalPipelineValue = jobs.reduce((sum, j) => sum + j.revenue, 0);
+  const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel[6]?.candidates || 0), 0);
+  const avgConversion = totalCandidates > 0 ? ((totalPlacements / totalCandidates) * 100).toFixed(1) : "0";
+
+  const jobMetrics = [
+    { title: "Active Jobs", value: activeJobs, subtitle: `${jobs.length} total jobs`, icon: Briefcase, color: "text-primary" },
+    { title: "Avg Conversion", value: `${avgConversion}%`, subtitle: "Lead to placement", icon: TrendingUp, color: "text-emerald-500" },
+    { title: "Avg Days Open", value: avgDaysOpen, subtitle: "Time to fill", icon: Clock, color: "text-amber-500" },
+    { title: "Pipeline Value", value: `₹${(totalPipelineValue / 100000).toFixed(1)}L`, subtitle: "Total revenue potential", icon: IndianRupee, color: "text-teal-500" },
+  ];
 
   return (
     <DashboardLayout>
@@ -95,9 +108,26 @@ export default function FunnelAnalytics() {
 
           {/* Job Explorer Tab */}
           <TabsContent value="jobs" className="space-y-6">
+            {/* Job Metrics Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {jobMetrics.map((metric) => (
+                <Card key={metric.title}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {metric.title}
+                    </CardTitle>
+                    <metric.icon className={`h-4 w-4 ${metric.color}`} />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{metric.value}</div>
+                    <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
             {/* Aggregate Funnel Chart */}
             <AggregateFunnelChart data={aggregateFunnelData} />
-
           </TabsContent>
 
           {/* Funnel Analytics Tab */}
