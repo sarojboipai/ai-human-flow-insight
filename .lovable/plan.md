@@ -1,8 +1,8 @@
 
 
-# Rebrand Recruiter Dashboard to Human Activity
+# Move "Human vs AI" to Operations Section
 
-Transform the current recruiter-focused page into a leadership-oriented "Human Activity" dashboard that provides executive visibility into human workforce effort, productivity, and operational efficiency.
+Relocate the "Human vs AI" navigation item from the Overview section to the Operations section, positioning it below "AI Activity".
 
 ---
 
@@ -10,88 +10,84 @@ Transform the current recruiter-focused page into a leadership-oriented "Human A
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/App.tsx` | Modify | Change route from `/recruiters` to `/human-activity` |
-| `src/components/layout/AppSidebar.tsx` | Modify | Update navigation URL from `/recruiters` to `/human-activity` |
-| `src/pages/RecruiterDashboard.tsx` | Modify | Update title, description, metrics, and section headers |
+| `src/components/layout/AppSidebar.tsx` | Modify | Move "Human vs AI" from mainNavItems to operationsItems |
 
 ---
 
 ## Technical Details
 
-### 1. Route Changes
+### Current Structure
 
-**App.tsx (line 39)**
-```tsx
-// Before
-<Route path="/recruiters" element={<RecruiterDashboard />} />
+**Overview Section (mainNavItems)**
+- Dashboard
+- Jobs & Funnel
+- Human vs AI ← Currently here
 
-// After
-<Route path="/human-activity" element={<RecruiterDashboard />} />
+**Operations Section (operationsItems)**
+- Human Activity
+- AI Activity
+
+### New Structure
+
+**Overview Section (mainNavItems)**
+- Dashboard
+- Jobs & Funnel
+
+**Operations Section (operationsItems)**
+- Human Activity
+- AI Activity
+- Human vs AI ← Moved here
+
+---
+
+## Code Changes
+
+**Remove from mainNavItems (lines 28-44)**
+```typescript
+const mainNavItems = [
+  {
+    title: "Dashboard",
+    url: "/",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Jobs & Funnel",
+    url: "/funnel",
+    icon: TrendingUp,
+  },
+  // "Human vs AI" removed from here
+];
 ```
 
-**AppSidebar.tsx (line 49)**
-```tsx
-// Before
-{ title: "Human Activity", url: "/recruiters", icon: Users }
-
-// After
-{ title: "Human Activity", url: "/human-activity", icon: Users }
+**Add to operationsItems (lines 46-57)**
+```typescript
+const operationsItems = [
+  {
+    title: "Human Activity",
+    url: "/human-activity",
+    icon: Users,
+  },
+  {
+    title: "AI Activity",
+    url: "/ai-performance",
+    icon: Bot,
+  },
+  {
+    title: "Human vs AI",    // Added here
+    url: "/human-ai",
+    icon: GitBranch,
+  },
+];
 ```
-
-### 2. Page Content Updates (RecruiterDashboard.tsx)
-
-**Page Header (lines 46-50)**
-
-| Current | New |
-|---------|-----|
-| "Recruiter Dashboard" | "Human Activity" |
-| "Track recruiter productivity and performance metrics" | "Evaluate human workforce effort, productivity, and operational contribution" |
-
-**Metric Cards (lines 78-110)**
-
-| Current Metric | New Metric | New Value | Purpose |
-|----------------|------------|-----------|---------|
-| Total Recruiters | Active Team Members | 32 | Total human workforce count |
-| Avg Placements/Recruiter | Tasks Completed/Person | 28.4 | Individual productivity measure |
-| Revenue/Recruiter | Human Contribution Value | ₹14.2K | Value generated per person |
-| Productivity Index | Effort Utilization | 87% | Overall workforce efficiency |
-
-**Section Headers**
-
-| Current | New |
-|---------|-----|
-| "Weekly Productivity Trend" | "Weekly Effort Trend" |
-| "Team Performance" | "Team Contribution" |
-| "Individual Performance" | "Team Member Activity" |
-| "Performance Benchmarks" | "Activity Benchmarks" |
-
-**Chart Data Labels**
-
-| Current | New |
-|---------|-----|
-| "Screened" | "Tasks Processed" |
-| "Interviews" | "Reviews Completed" |
-| "Placements" | "Outcomes Delivered" |
-
-**Benchmark Section Updates (lines 194-198)**
-
-| Current Benchmark | New Benchmark |
-|-------------------|---------------|
-| "Profiles Screened/Day" | "Tasks Processed/Day" |
-| "Interviews/Week" | "Reviews/Week" |
-| "Placements/Month" | "Outcomes/Month" |
-| "Response Time (hrs)" | "Avg Response Time (hrs)" |
 
 ---
 
 ## Result
 
-The page will display:
-- **Title**: "Human Activity"
-- **Description**: "Evaluate human workforce effort, productivity, and operational contribution"
-- Executive-level metrics focused on human workforce performance
-- Charts renamed to reflect general human activity rather than recruiter-specific tasks
-- Consistent terminology that speaks to leadership audience (CEO, Admin, Leaders)
+The sidebar will display:
+- **Overview**: Dashboard, Jobs & Funnel
+- **Operations**: Human Activity, AI Activity, Human vs AI
+- **Business**: Revenue & Costs, Staffing Planner
 
-This aligns the page content with the sidebar label "Human Activity" and provides a higher-level operational view suitable for executive stakeholders.
+This groups the comparative "Human vs AI" view logically with the individual activity dashboards under Operations.
 
