@@ -1,18 +1,20 @@
 
-# Add Jobs Pipeline Widget to Funnel Page
 
-Add the "Jobs Pipeline" table widget to the Job Explorer tab, matching the design shown in the reference image.
+# Add Node Click Details to Pipeline Board
+
+Add interactive click functionality to the React Flow pipeline nodes so that clicking on a stage (like "Pre-screen Questions") displays detailed metrics in a side panel.
 
 ---
 
 ## Approach
 
-The `CustomerJobsTable` component already exists with exactly the functionality needed:
-- Jobs Pipeline table with search and filters
-- Columns: Job ID, Title, Role Type, Current Stage, Candidates, Days Open, Status
-- "View Pipeline" button that opens a React Flow board dialog
+When a user clicks on a pipeline stage node, a side panel (Sheet) will slide in from the right showing:
+- Stage name and icon
+- Key metrics: Screenings Sent, Appeared, Qualified
+- Progress bars for visual representation
+- Breakdown of AI vs Human handling
 
-We will reuse this existing component by importing and adding it to the Job Explorer tab.
+This provides job-specific intelligence at the node level within the pipeline visualization.
 
 ---
 
@@ -20,42 +22,141 @@ We will reuse this existing component by importing and adding it to the Job Expl
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/FunnelAnalytics.tsx` | Modify | Import and add CustomerJobsTable component |
+| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Add node click handler, state for selected node, and Sheet component for details panel |
+| `src/components/customer/pipeline-nodes/StageNode.tsx` | Modify | Make nodes clickable with cursor pointer and visual feedback |
+| `src/lib/mockData.ts` | Modify | Add pre-screen stage metrics data to jobs |
 
 ---
 
 ## Technical Details
 
-### Changes to FunnelAnalytics.tsx
+### 1. Add Stage Metrics Data (mockData.ts)
 
-1. **Add import for the component**:
-   ```tsx
-   import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
-   ```
+Add detailed stage metrics to each job for nodes that need drill-down:
 
-2. **Add the table in the Job Explorer tab** (after the AggregateFunnelChart):
-   ```tsx
-   <TabsContent value="jobs" className="space-y-6">
-     {/* Job Metrics Cards */}
-     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-       {/* ... existing metrics cards ... */}
-     </div>
+```typescript
+export interface StageMetrics {
+  sent: number;
+  appeared: number;
+  qualified: number;
+  disqualified: number;
+  pending: number;
+  avgResponseTime: string;
+}
 
-     {/* Aggregate Funnel Chart */}
-     <AggregateFunnelChart data={aggregateFunnelData} />
-     
-     {/* Jobs Pipeline Table - NEW */}
-     <CustomerJobsTable />
-   </TabsContent>
-   ```
+// Add to each job
+stageMetrics: {
+  "prescreen": { sent: 98, appeared: 72, qualified: 45, disqualified: 18, pending: 9, avgResponseTime: "4 hours" },
+  "voice-agent": { sent: 45, appeared: 38, qualified: 28, disqualified: 8, pending: 2, avgResponseTime: "15 mins" },
+  // ... other stages
+}
+```
+
+### 2. Make StageNode Clickable (StageNode.tsx)
+
+Add click handler prop and visual hover state:
+
+```tsx
+interface StageNodeData {
+  label: string;
+  icon?: string;
+  handlers?: string[];
+  borderColor?: string;
+  onClick?: () => void;  // NEW
+}
+
+// Add to the component
+<div 
+  className={`relative bg-white rounded-lg border-2 ${borderClass} shadow-sm px-4 py-3 min-w-[140px] cursor-pointer hover:shadow-md transition-shadow`}
+  onClick={data.onClick}
+>
+```
+
+### 3. Add Details Panel (PipelineBoardDialog.tsx)
+
+Add Sheet component and node click handling:
+
+```tsx
+// State for selected node
+const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+// Node click handler
+const handleNodeClick = useCallback((nodeId: string) => {
+  setSelectedNodeId(nodeId);
+}, []);
+
+// Update nodes with onClick handlers
+const nodesWithHandlers = useMemo(() => {
+  return initialNodes.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      onClick: () => handleNodeClick(node.id),
+    }
+  }));
+}, [handleNodeClick]);
+
+// Get metrics for selected stage
+const getStageMetrics = (nodeId: string) => {
+  return job?.stageMetrics?.[nodeId] || null;
+};
+```
+
+### 4. Details Panel UI
+
+The Sheet component will display:
+
+```text
++---------------------------+
+| Pre-screen Questions    X |
++---------------------------+
+| Screenings Overview       |
+|                           |
+| Sent         98    100%   |
+| [=========================]|
+|                           |
+| Appeared     72     73%   |
+| [==================      ]|
+|                           |
+| Qualified    45     63%   |
+| [==============          ]|
+|                           |
+| Disqualified 18     25%   |
+| Pending       9     12%   |
+|                           |
++---------------------------+
+| Avg Response: 4 hours     |
+| Handler: Auto Engine (AE) |
++---------------------------+
+```
+
+---
+
+## Implementation Flow
+
+```text
+User clicks "Pre-screen Questions" node
+        |
+        v
+StageNode onClick fires
+        |
+        v
+handleNodeClick(nodeId) called
+        |
+        v
+selectedNodeId state updated
+        |
+        v
+Sheet opens with metrics for that stage
+```
 
 ---
 
 ## Result
 
-The Job Explorer tab will display:
-1. 4 metric cards (Active Jobs, Avg Conversion, Avg Days Open, Pipeline Value)
-2. Aggregate Funnel Chart
-3. Jobs Pipeline table with search, filters, and "View Pipeline" buttons
+- Clicking any stage node in the pipeline board opens a details panel
+- Pre-screen Questions node shows: Sent (98), Appeared (72), Qualified (45)
+- Visual progress bars show conversion rates at each step
+- Panel can be closed by clicking X or outside the panel
+- Other nodes (Voice Agent, Interview, etc.) also show relevant metrics when clicked
 
-Clicking "View Pipeline" will open the full-screen React Flow board showing the dual-path workflow visualization.
