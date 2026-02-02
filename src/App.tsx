@@ -19,6 +19,10 @@ import JobDetail from "./pages/JobDetail";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerBusiness from "./pages/CustomerBusiness";
 import NotFound from "./pages/NotFound";
+import OpsDashboard from "./pages/OpsDashboard";
+import OpsOrchestrationEngine from "./pages/OpsOrchestrationEngine";
+import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
+import OpsAIPerformance from "./pages/OpsAIPerformance";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +48,11 @@ const App = () => (
           <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="/customer" element={<CustomerDashboard />} />
           <Route path="/customer/business" element={<CustomerBusiness />} />
+          {/* Operations Manager routes */}
+          <Route path="/ops" element={<OpsDashboard />} />
+          <Route path="/ops/orchestration" element={<OpsOrchestrationEngine />} />
+          <Route path="/ops/recruiters" element={<OpsRecruiterDashboard />} />
+          <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

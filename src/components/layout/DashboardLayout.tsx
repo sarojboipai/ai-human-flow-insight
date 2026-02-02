@@ -55,7 +55,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                   <DropdownMenuItem onClick={() => navigate("/")}>
                     Admin
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/orchestration")}>
+                  <DropdownMenuItem onClick={() => navigate("/ops")}>
                     Operation Manager
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/hitl")}>

@@ -115,7 +115,7 @@ export default function CustomerBusiness() {
                   <DropdownMenuItem onClick={() => navigate("/")}>
                     Admin
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/orchestration")}>
+                  <DropdownMenuItem onClick={() => navigate("/ops")}>
                     Operation Manager
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/hitl")}>
