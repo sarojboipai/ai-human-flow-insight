@@ -29,53 +29,33 @@ const nodeTypes = {
 };
 
 const initialNodes: Node[] = [
-  // Source nodes
-  { id: "ats", type: "sourceNode", position: { x: 100, y: 50 }, data: { label: "ATS", variant: "ats" } },
-  { id: "phenom", type: "sourceNode", position: { x: 100, y: 250 }, data: { label: "Phenom", variant: "phenom" } },
+  // Source node
+  { id: "phenom", type: "sourceNode", position: { x: 100, y: 120 }, data: { label: "Phenom", variant: "phenom" } },
   
-  // Top row - ATS flow
-  { id: "post-job", type: "stageNode", position: { x: 250, y: 40 }, data: { label: "Post a Job", icon: "briefcase", handlers: ["R"], borderColor: "border-orange-200" } },
-  { id: "app-details", type: "stageNode", position: { x: 420, y: 40 }, data: { label: "Application\nDetails", icon: "fileText", handlers: ["R"], borderColor: "border-orange-200" } },
-  { id: "app-status", type: "stageNode", position: { x: 590, y: 40 }, data: { label: "Application\nStatus Update", icon: "refresh", handlers: ["R"], borderColor: "border-orange-200" } },
-  { id: "interview", type: "stageNode", position: { x: 760, y: 40 }, data: { label: "Interview &\nDecision", icon: "users", handlers: ["R", "H"], borderColor: "border-orange-200" } },
-  { id: "continue-ats", type: "outcomeNode", position: { x: 930, y: 50 }, data: { label: "Continue in ATS", icon: "arrow", variant: "continue" } },
-  
-  // Bottom row - Candidate flow
-  { id: "jobs-phenom", type: "stageNode", position: { x: 250, y: 240 }, data: { label: "Jobs in\nPhenom", icon: "briefcase", handlers: ["C"], borderColor: "border-purple-200" } },
-  { id: "job-discovery", type: "stageNode", position: { x: 420, y: 240 }, data: { label: "Job\nDiscovery", icon: "search", handlers: ["C"], borderColor: "border-purple-200" } },
-  { id: "expression", type: "stageNode", position: { x: 590, y: 240 }, data: { label: "Expression\nof Interest", icon: "heart", handlers: ["C"], borderColor: "border-purple-200" } },
-  { id: "prescreen", type: "stageNode", position: { x: 760, y: 240 }, data: { label: "Pre-screen\nQuestions", icon: "clipboard", handlers: ["AE"], borderColor: "border-amber-200" } },
-  { id: "voice-agent", type: "stageNode", position: { x: 930, y: 240 }, data: { label: "Voice Agent\nScreening", icon: "phone", handlers: ["X+"], borderColor: "border-orange-200" } },
+  // Candidate flow
+  { id: "jobs-phenom", type: "stageNode", position: { x: 250, y: 110 }, data: { label: "Jobs in\nPhenom", icon: "briefcase", handlers: ["C"], borderColor: "border-purple-200" } },
+  { id: "job-discovery", type: "stageNode", position: { x: 420, y: 110 }, data: { label: "Job\nDiscovery", icon: "search", handlers: ["C"], borderColor: "border-purple-200" } },
+  { id: "expression", type: "stageNode", position: { x: 590, y: 110 }, data: { label: "Expression\nof Interest", icon: "heart", handlers: ["C"], borderColor: "border-purple-200" } },
+  { id: "prescreen", type: "stageNode", position: { x: 760, y: 110 }, data: { label: "Pre-screen\nQuestions", icon: "clipboard", handlers: ["AE"], borderColor: "border-amber-200" } },
+  { id: "voice-agent", type: "stageNode", position: { x: 930, y: 110 }, data: { label: "Voice Agent\nScreening", icon: "phone", handlers: ["X+"], borderColor: "border-orange-200" } },
   
   // Decision node
-  { id: "decision", type: "decisionNode", position: { x: 1100, y: 255 }, data: { label: "Decision" } },
+  { id: "decision", type: "decisionNode", position: { x: 1100, y: 125 }, data: { label: "Decision" } },
   
   // Outcome nodes
-  { id: "scheduling", type: "outcomeNode", position: { x: 1230, y: 170 }, data: { label: "Scheduling", icon: "calendar", handlers: ["AE"], variant: "scheduling" } },
-  { id: "silver-med", type: "outcomeNode", position: { x: 1230, y: 260 }, data: { label: "Silver Medalist", icon: "award", handlers: ["AE"], variant: "silver" } },
-  { id: "talent-community", type: "outcomeNode", position: { x: 1230, y: 350 }, data: { label: "Talent\nCommunity", icon: "users", handlers: ["C"], variant: "community" } },
+  { id: "scheduling", type: "outcomeNode", position: { x: 1230, y: 40 }, data: { label: "Scheduling", icon: "calendar", handlers: ["AE"], variant: "scheduling" } },
+  { id: "silver-med", type: "outcomeNode", position: { x: 1230, y: 130 }, data: { label: "Silver Medalist", icon: "award", handlers: ["AE"], variant: "silver" } },
+  { id: "talent-community", type: "outcomeNode", position: { x: 1230, y: 220 }, data: { label: "Talent\nCommunity", icon: "users", handlers: ["C"], variant: "community" } },
 ];
 
 const initialEdges: Edge[] = [
-  // ATS to top flow
-  { id: "e-ats-post", source: "ats", target: "post-job", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-post-details", source: "post-job", target: "app-details", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-details-status", source: "app-details", target: "app-status", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-status-interview", source: "app-status", target: "interview", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-interview-continue", source: "interview", target: "continue-ats", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  
-  // Phenom to bottom flow
+  // Phenom flow
   { id: "e-phenom-jobs", source: "phenom", target: "jobs-phenom", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-jobs-discovery", source: "jobs-phenom", target: "job-discovery", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-discovery-expression", source: "job-discovery", target: "expression", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-expression-prescreen", source: "expression", target: "prescreen", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-prescreen-voice", source: "prescreen", target: "voice-agent", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-voice-decision", source: "voice-agent", target: "decision", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  
-  // Sync lines between rows
-  { id: "e-post-jobs", source: "post-job", sourceHandle: "bottom", target: "jobs-phenom", targetHandle: "top", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "3,3" }, label: "Real-time Sync", labelStyle: { fontSize: 9, fill: "#64748b" } },
-  { id: "e-details-discovery", source: "app-details", sourceHandle: "bottom", target: "job-discovery", targetHandle: "top", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "3,3" }, label: "API Push", labelStyle: { fontSize: 9, fill: "#64748b" } },
-  { id: "e-status-expression", source: "app-status", sourceHandle: "bottom", target: "expression", targetHandle: "top", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "3,3" }, label: "Status Update", labelStyle: { fontSize: 9, fill: "#64748b" } },
   
   // Decision to outcomes
   { id: "e-decision-scheduling", source: "decision", sourceHandle: "top", target: "scheduling", type: "default", style: { stroke: "#10b981" }, label: "Highly Qualified", labelStyle: { fontSize: 10, fill: "#10b981", fontWeight: 600 } },
