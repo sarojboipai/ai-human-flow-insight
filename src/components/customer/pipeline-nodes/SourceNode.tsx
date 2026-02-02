@@ -1,10 +1,11 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Database, Layers } from "lucide-react";
+import { Database } from "lucide-react";
+import swaasaLogo from "@/assets/swaasa-logo.png";
 
 interface SourceNodeData {
   label: string;
-  variant: "ats" | "phenom";
+  variant: "ats" | "swaasa";
 }
 
 interface SourceNodeProps {
@@ -30,7 +31,7 @@ export const SourceNode = memo(({ data }: SourceNodeProps) => {
           {isATS ? (
             <Database className="h-5 w-5" />
           ) : (
-            <Layers className="h-5 w-5" />
+            <img src={swaasaLogo} alt="Swaasa" className="h-5 w-5 object-contain" />
           )}
         </div>
         <span className="text-xs font-semibold">{data.label}</span>

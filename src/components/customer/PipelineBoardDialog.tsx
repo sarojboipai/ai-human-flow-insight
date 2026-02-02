@@ -30,7 +30,7 @@ const nodeTypes = {
 
 const initialNodes: Node[] = [
   // Source node
-  { id: "phenom", type: "sourceNode", position: { x: 100, y: 120 }, data: { label: "Phenom", variant: "phenom" } },
+  { id: "swaasa", type: "sourceNode", position: { x: 100, y: 120 }, data: { label: "Swaasa", variant: "swaasa" } },
   
   // Candidate flow
   { id: "jobs-phenom", type: "stageNode", position: { x: 250, y: 110 }, data: { label: "Jobs in\nPhenom", icon: "briefcase", handlers: ["C"], borderColor: "border-purple-200" } },
@@ -49,8 +49,8 @@ const initialNodes: Node[] = [
 ];
 
 const initialEdges: Edge[] = [
-  // Phenom flow
-  { id: "e-phenom-jobs", source: "phenom", target: "jobs-phenom", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
+  // Swaasa flow
+  { id: "e-swaasa-jobs", source: "swaasa", target: "jobs-phenom", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-jobs-discovery", source: "jobs-phenom", target: "job-discovery", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-discovery-expression", source: "job-discovery", target: "expression", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-expression-prescreen", source: "expression", target: "prescreen", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
