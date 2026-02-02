@@ -1,8 +1,13 @@
 
+# Replace Swaasa with Ankura Hospital in Pipeline Board
 
-# Activate Filters in Jobs Pipeline Table
+Update the pipeline board source node to display "Ankura Hospital" branding instead of "Swaasa".
 
-Add functional filter controls to the Jobs Pipeline table allowing users to filter by Company, Stage, and Location.
+---
+
+## Logo Required
+
+You'll need to provide an Ankura Hospital logo image. Please upload the logo file in your next message so I can add it to the project.
 
 ---
 
@@ -10,100 +15,61 @@ Add functional filter controls to the Jobs Pipeline table allowing users to filt
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/customer/CustomerJobsTable.tsx` | Modify | Add filter state, filter UI popover, and filter logic for Company, Stage, and Location |
+| `src/assets/ankura-logo.png` | Create | Add uploaded Ankura logo to assets (pending upload) |
+| `src/components/customer/pipeline-nodes/SourceNode.tsx` | Modify | Import Ankura logo, update variant type and rendering |
+| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Update node labels and IDs to reference Ankura Hospital |
 
 ---
 
 ## Technical Details
 
-### CustomerJobsTable.tsx
+### 1. SourceNode.tsx
 
-**1. Add new imports:**
+**Update imports:**
 ```tsx
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { X } from "lucide-react";
+import ankuraLogo from "@/assets/ankura-logo.png";
 ```
 
-**2. Add filter state variables:**
+**Update variant type:**
 ```tsx
-const [companyFilter, setCompanyFilter] = useState<string[]>([]);
-const [stageFilter, setStageFilter] = useState<string[]>([]);
-const [locationFilter, setLocationFilter] = useState<string[]>([]);
+variant: "ats" | "ankura";
 ```
 
-**3. Define filter options from data:**
-- **Companies**: Ankura Hospital, Oasis Fertility, Manipal Hospitals, KIMS Hospital, Yashoda Hospitals, Aster CMI Hospital
-- **Stages**: Candidate Lead, Profile Completed, AI Matched, Recruiter Contacted, Interview Scheduled, Offer Released, Placement Confirmed
-- **Locations**: Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Gurugram
+**Update conditional rendering:**
+- Replace `isATS` check with `isATS` vs `ankura` logic
+- Use Ankura logo image instead of Swaasa logo
+- Update alt text to "Ankura Hospital"
 
-**4. Update filter logic:**
-```tsx
-const filteredJobs = jobs.filter((job) => {
-  const matchesSearch = 
-    job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.id.toLowerCase().includes(searchQuery.toLowerCase());
-  
-  const matchesCompany = companyFilter.length === 0 || 
-    companyFilter.includes(job.employer);
-  
-  const jobCurrentStage = currentStage(job);
-  const matchesStage = stageFilter.length === 0 || 
-    (jobCurrentStage && stageFilter.includes(jobCurrentStage));
-  
-  const matchesLocation = locationFilter.length === 0 || 
-    locationFilter.includes(job.geography);
-  
-  return matchesSearch && matchesCompany && matchesStage && matchesLocation;
-});
-```
+### 2. PipelineBoardDialog.tsx
 
-**5. Replace static Filters button with Popover containing checkboxes**
+**Update source node (line 33):**
+- Change id from `"swaasa"` to `"ankura"`
+- Change label from `"Swaasa"` to `"Ankura\nHospital"`
+- Change variant from `"swaasa"` to `"ankura"`
 
----
+**Update stage node (line 36):**
+- Change id from `"jobs-swaasa"` to `"jobs-ankura"`
+- Change label from `"Jobs in\nSwaasa"` to `"Jobs in\nAnkura"`
 
-## Filter UI Layout
+**Update edge references (lines 52-54):**
+- Change source from `"swaasa"` to `"ankura"`
+- Change target from `"jobs-swaasa"` to `"jobs-ankura"`
+- Update edge ids accordingly
 
-```text
-+---------------------------+
-| Company                   |
-| [ ] Ankura Hospital       |
-| [ ] Oasis Fertility       |
-| [ ] Manipal Hospitals     |
-| [ ] KIMS Hospital         |
-| [ ] Yashoda Hospitals     |
-| [ ] Aster CMI Hospital    |
-+---------------------------+
-| Stage                     |
-| [ ] Candidate Lead        |
-| [ ] Profile Completed     |
-| [ ] AI Matched            |
-| [ ] Recruiter Contacted   |
-| [ ] Interview Scheduled   |
-| [ ] Offer Released        |
-| [ ] Placement Confirmed   |
-+---------------------------+
-| Location                  |
-| [ ] Mumbai                |
-| [ ] Delhi                 |
-| [ ] Bangalore             |
-| [ ] Chennai               |
-| [ ] Hyderabad             |
-| [ ] Gurugram              |
-+---------------------------+
-| [Clear All Filters]       |
-+---------------------------+
-```
+**Update nodeMetadata (line 90):**
+- Change `"jobs-swaasa"` to `"jobs-ankura"`
+- Change label from `"Jobs in Swaasa"` to `"Jobs in Ankura Hospital"`
 
 ---
 
 ## Result
 
-The Filters button will:
-- Open a dropdown popover with three filter sections
-- Allow multi-select checkboxes for Company, Stage, and Location
-- Show a badge with active filter count when filters are applied
-- Include a "Clear All" button to reset all filters
+The pipeline board will display:
+- **Source node**: Shows "Ankura Hospital" with the Ankura logo
+- **First stage**: Shows "Jobs in Ankura" instead of "Jobs in Swaasa"
 
+---
+
+## Next Step
+
+Please upload the Ankura Hospital logo so I can implement these changes.
