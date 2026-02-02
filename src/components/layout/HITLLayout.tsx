@@ -12,7 +12,7 @@ export function HITLLayout({ children }: HITLLayoutProps) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <HITLSidebar />
-        <SidebarInset className="flex-1 overflow-hidden">
+        <SidebarInset className="flex-1 flex flex-col h-screen overflow-hidden">
           <AppHeader searchPlaceholder="Search tasks, candidates..." />
           
           <main className="flex-1 p-6 overflow-auto">
