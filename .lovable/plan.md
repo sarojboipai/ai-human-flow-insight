@@ -1,7 +1,8 @@
 
-# Add Company Column to Jobs Pipeline Table
 
-Add a new "Company" column to the Jobs Pipeline table displaying hospital/employer names including Ankura Hospital, Oasis Fertility, and other Indian hospitals.
+# Activate Filters in Jobs Pipeline Table
+
+Add functional filter controls to the Jobs Pipeline table allowing users to filter by Company, Stage, and Location.
 
 ---
 
@@ -9,47 +10,100 @@ Add a new "Company" column to the Jobs Pipeline table displaying hospital/employ
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/lib/mockData.ts` | Modify | Update employer names to include Ankura Hospital, Oasis Fertility, and other Indian hospitals |
-| `src/components/customer/CustomerJobsTable.tsx` | Modify | Add Company column to table header and body |
+| `src/components/customer/CustomerJobsTable.tsx` | Modify | Add filter state, filter UI popover, and filter logic for Company, Stage, and Location |
 
 ---
 
 ## Technical Details
 
-### 1. mockData.ts - Update Employer Names
+### CustomerJobsTable.tsx
 
-Replace some existing employer names with the requested hospitals:
-
-| Job ID | Current Employer | New Employer |
-|--------|-----------------|--------------|
-| JOB-001 | Apollo Hospitals | Ankura Hospital |
-| JOB-002 | Fortis Healthcare | Oasis Fertility |
-| JOB-003 | Max Healthcare | Manipal Hospitals |
-| JOB-004 | Narayana Health | KIMS Hospital |
-| JOB-005 | Rainbow Hospitals | Yashoda Hospitals |
-| JOB-006 | Medanta | Aster CMI Hospital |
-
-### 2. CustomerJobsTable.tsx - Add Company Column
-
-**Add to TableHeader (after Title column):**
+**1. Add new imports:**
 ```tsx
-<TableHead>Company</TableHead>
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 ```
 
-**Add to TableBody (after Title cell):**
+**2. Add filter state variables:**
 ```tsx
-<TableCell>{job.employer}</TableCell>
+const [companyFilter, setCompanyFilter] = useState<string[]>([]);
+const [stageFilter, setStageFilter] = useState<string[]>([]);
+const [locationFilter, setLocationFilter] = useState<string[]>([]);
+```
+
+**3. Define filter options from data:**
+- **Companies**: Ankura Hospital, Oasis Fertility, Manipal Hospitals, KIMS Hospital, Yashoda Hospitals, Aster CMI Hospital
+- **Stages**: Candidate Lead, Profile Completed, AI Matched, Recruiter Contacted, Interview Scheduled, Offer Released, Placement Confirmed
+- **Locations**: Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Gurugram
+
+**4. Update filter logic:**
+```tsx
+const filteredJobs = jobs.filter((job) => {
+  const matchesSearch = 
+    job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.id.toLowerCase().includes(searchQuery.toLowerCase());
+  
+  const matchesCompany = companyFilter.length === 0 || 
+    companyFilter.includes(job.employer);
+  
+  const jobCurrentStage = currentStage(job);
+  const matchesStage = stageFilter.length === 0 || 
+    (jobCurrentStage && stageFilter.includes(jobCurrentStage));
+  
+  const matchesLocation = locationFilter.length === 0 || 
+    locationFilter.includes(job.geography);
+  
+  return matchesSearch && matchesCompany && matchesStage && matchesLocation;
+});
+```
+
+**5. Replace static Filters button with Popover containing checkboxes**
+
+---
+
+## Filter UI Layout
+
+```text
++---------------------------+
+| Company                   |
+| [ ] Ankura Hospital       |
+| [ ] Oasis Fertility       |
+| [ ] Manipal Hospitals     |
+| [ ] KIMS Hospital         |
+| [ ] Yashoda Hospitals     |
+| [ ] Aster CMI Hospital    |
++---------------------------+
+| Stage                     |
+| [ ] Candidate Lead        |
+| [ ] Profile Completed     |
+| [ ] AI Matched            |
+| [ ] Recruiter Contacted   |
+| [ ] Interview Scheduled   |
+| [ ] Offer Released        |
+| [ ] Placement Confirmed   |
++---------------------------+
+| Location                  |
+| [ ] Mumbai                |
+| [ ] Delhi                 |
+| [ ] Bangalore             |
+| [ ] Chennai               |
+| [ ] Hyderabad             |
+| [ ] Gurugram              |
++---------------------------+
+| [Clear All Filters]       |
++---------------------------+
 ```
 
 ---
 
 ## Result
 
-The Jobs Pipeline table will display:
-- Job ID
-- Title
-- **Company** (new column with Indian hospital names)
-- Current Stage
-- Candidates
-- Days Open
-- View Pipeline button
+The Filters button will:
+- Open a dropdown popover with three filter sections
+- Allow multi-select checkboxes for Company, Stage, and Location
+- Show a badge with active filter count when filters are applied
+- Include a "Clear All" button to reset all filters
+
