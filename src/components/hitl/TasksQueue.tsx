@@ -139,7 +139,7 @@ export function TasksQueue({ tasks, onAssign, onResolve }: TasksQueueProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border">
+      <div className="rounded-lg border border-border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
