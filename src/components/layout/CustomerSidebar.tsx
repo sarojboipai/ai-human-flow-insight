@@ -41,7 +41,7 @@ export function CustomerSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center justify-start">
+      <SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center">
         <div className="flex items-center gap-3">
           <img 
             src={swaasaLogo} 

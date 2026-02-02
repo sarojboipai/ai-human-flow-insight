@@ -1,8 +1,8 @@
 
 
-# Align Sidebar Header Logo to the Left
+# Activate Filters in Jobs Pipeline Table
 
-Ensure the SHIP logo and branding text in the sidebar header is explicitly left-aligned across all persona views.
+Add functional filter controls to the Jobs Pipeline table allowing users to filter by Company, Stage, and Location.
 
 ---
 
@@ -10,37 +10,100 @@ Ensure the SHIP logo and branding text in the sidebar header is explicitly left-
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/AppSidebar.tsx` | Modify | Add `justify-start` to SidebarHeader className |
-| `src/components/layout/CustomerSidebar.tsx` | Modify | Add `justify-start` to SidebarHeader className |
-| `src/components/layout/OpsSidebar.tsx` | Modify | Add `justify-start` to SidebarHeader className |
-| `src/components/layout/HITLSidebar.tsx` | Modify | Add `justify-start` to SidebarHeader className |
+| `src/components/customer/CustomerJobsTable.tsx` | Modify | Add filter state, filter UI popover, and filter logic for Company, Stage, and Location |
 
 ---
 
 ## Technical Details
 
-### Current State
-All four sidebars have:
+### CustomerJobsTable.tsx
+
+**1. Add new imports:**
 ```tsx
-<SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center">
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 ```
 
-### Updated State
-Add `justify-start` for explicit left alignment:
+**2. Add filter state variables:**
 ```tsx
-<SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center justify-start">
+const [companyFilter, setCompanyFilter] = useState<string[]>([]);
+const [stageFilter, setStageFilter] = useState<string[]>([]);
+const [locationFilter, setLocationFilter] = useState<string[]>([]);
 ```
 
-### Files to Update
+**3. Define filter options from data:**
+- **Companies**: Ankura Hospital, Oasis Fertility, Manipal Hospitals, KIMS Hospital, Yashoda Hospitals, Aster CMI Hospital
+- **Stages**: Candidate Lead, Profile Completed, AI Matched, Recruiter Contacted, Interview Scheduled, Offer Released, Placement Confirmed
+- **Locations**: Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Gurugram
 
-1. **AppSidebar.tsx** (Admin view) - Line 81
-2. **CustomerSidebar.tsx** (Customer view) - Line 44
-3. **OpsSidebar.tsx** (Ops Manager view) - Line 62
-4. **HITLSidebar.tsx** (HITL view) - Line 49
+**4. Update filter logic:**
+```tsx
+const filteredJobs = jobs.filter((job) => {
+  const matchesSearch = 
+    job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.id.toLowerCase().includes(searchQuery.toLowerCase());
+  
+  const matchesCompany = companyFilter.length === 0 || 
+    companyFilter.includes(job.employer);
+  
+  const jobCurrentStage = currentStage(job);
+  const matchesStage = stageFilter.length === 0 || 
+    (jobCurrentStage && stageFilter.includes(jobCurrentStage));
+  
+  const matchesLocation = locationFilter.length === 0 || 
+    locationFilter.includes(job.geography);
+  
+  return matchesSearch && matchesCompany && matchesStage && matchesLocation;
+});
+```
+
+**5. Replace static Filters button with Popover containing checkboxes**
+
+---
+
+## Filter UI Layout
+
+```text
++---------------------------+
+| Company                   |
+| [ ] Ankura Hospital       |
+| [ ] Oasis Fertility       |
+| [ ] Manipal Hospitals     |
+| [ ] KIMS Hospital         |
+| [ ] Yashoda Hospitals     |
+| [ ] Aster CMI Hospital    |
++---------------------------+
+| Stage                     |
+| [ ] Candidate Lead        |
+| [ ] Profile Completed     |
+| [ ] AI Matched            |
+| [ ] Recruiter Contacted   |
+| [ ] Interview Scheduled   |
+| [ ] Offer Released        |
+| [ ] Placement Confirmed   |
++---------------------------+
+| Location                  |
+| [ ] Mumbai                |
+| [ ] Delhi                 |
+| [ ] Bangalore             |
+| [ ] Chennai               |
+| [ ] Hyderabad             |
+| [ ] Gurugram              |
++---------------------------+
+| [Clear All Filters]       |
++---------------------------+
+```
 
 ---
 
 ## Result
 
-The sidebar header containing the logo and "SHIP / Hiring Intelligence" text will be explicitly aligned to the left edge across all four persona views (Admin, Customer, Ops, HITL).
+The Filters button will:
+- Open a dropdown popover with three filter sections
+- Allow multi-select checkboxes for Company, Stage, and Location
+- Show a badge with active filter count when filters are applied
+- Include a "Clear All" button to reset all filters
 
