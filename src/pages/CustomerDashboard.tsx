@@ -1,6 +1,5 @@
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
-import { CustomerJobFunnelTable } from "@/components/customer/CustomerJobFunnelTable";
-import { jobs } from "@/lib/mockData";
+import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
 
 export default function CustomerDashboard() {
   return (
@@ -27,7 +26,7 @@ export default function CustomerDashboard() {
       
       {/* Jobs Pipeline Table */}
       <div className="mt-6">
-        <CustomerJobFunnelTable jobs={jobs} />
+        <CustomerJobsTable />
       </div>
     </CustomerLayout>
   );
