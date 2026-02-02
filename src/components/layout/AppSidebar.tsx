@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   {
-    title: "Command Center",
+    title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
   },
