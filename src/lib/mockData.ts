@@ -1735,3 +1735,115 @@ export const telemetryMetrics = {
   avgLatency: "1.2s",
   errorRate: 2.4,
 };
+
+// Enterprise Customers
+export const enterpriseCustomers = [
+  { id: "cust-001", name: "Ankura Hospital", tier: "enterprise" },
+  { id: "cust-002", name: "Oasis Fertility", tier: "enterprise" },
+  { id: "cust-003", name: "Manipal Hospitals", tier: "mid-market" },
+  { id: "cust-004", name: "Apollo Hospitals", tier: "enterprise" },
+  { id: "cust-005", name: "Fortis Healthcare", tier: "enterprise" },
+  { id: "cust-006", name: "Max Healthcare", tier: "mid-market" },
+  { id: "cust-007", name: "Narayana Health", tier: "enterprise" },
+];
+
+// Hiring Activity Trend (with HITL Overrides)
+export const hiringActivityTrend = [
+  { date: "Jan 1", aiMatches: 420, humanMatches: 180, hitlOverrides: 28, placements: 45 },
+  { date: "Jan 8", aiMatches: 480, humanMatches: 195, hitlOverrides: 32, placements: 52 },
+  { date: "Jan 15", aiMatches: 510, humanMatches: 210, hitlOverrides: 35, placements: 58 },
+  { date: "Jan 22", aiMatches: 545, humanMatches: 225, hitlOverrides: 38, placements: 61 },
+  { date: "Jan 29", aiMatches: 590, humanMatches: 240, hitlOverrides: 42, placements: 68 },
+  { date: "Feb 5", aiMatches: 620, humanMatches: 250, hitlOverrides: 45, placements: 72 },
+  { date: "Feb 12", aiMatches: 680, humanMatches: 265, hitlOverrides: 48, placements: 78 },
+  { date: "Feb 19", aiMatches: 720, humanMatches: 280, hitlOverrides: 52, placements: 85 },
+];
+
+// AI Evaluation Metrics
+export const aiEvaluationMetrics = {
+  matchAccuracy: 87.4,
+  fitScoreAcceptance: 82.1,
+  overrideRate: 8.2,
+  escalationRate: 5.4,
+  automationFailure: 1.2,
+};
+
+// Job Pipeline Health Data
+const funnelStageMap: Record<number, string> = {
+  0: "Lead Ingested",
+  1: "AI Match Generated",
+  2: "Human Review",
+  3: "Interview Scheduled",
+  4: "Offer Extended",
+  5: "Placement Completed",
+};
+
+const getCurrentStage = (daysOpen: number): string => {
+  if (daysOpen < 5) return "Lead Ingested";
+  if (daysOpen < 10) return "AI Match Generated";
+  if (daysOpen < 15) return "Human Review";
+  if (daysOpen < 20) return "Interview Scheduled";
+  if (daysOpen < 25) return "Offer Extended";
+  return "Placement Completed";
+};
+
+const getBottleneckStage = (funnel: JobFunnelStage[]): string => {
+  let minConversion = 100;
+  let bottleneck = funnel[0]?.name || "Unknown";
+  
+  for (let i = 1; i < funnel.length; i++) {
+    const conversion = (funnel[i].candidates / funnel[i - 1].candidates) * 100;
+    if (conversion < minConversion) {
+      minConversion = conversion;
+      bottleneck = funnel[i].name;
+    }
+  }
+  return bottleneck;
+};
+
+const calculateSLARisk = (daysOpen: number, status: string): "green" | "amber" | "red" => {
+  if (status === "filled") return "green";
+  if (daysOpen > 21) return "red";
+  if (daysOpen > 14) return "amber";
+  return "green";
+};
+
+const getSLADetails = (daysOpen: number, slaRisk: "green" | "amber" | "red"): string => {
+  if (slaRisk === "green") return `${21 - daysOpen} days buffer`;
+  if (slaRisk === "amber") return `${21 - daysOpen} days remaining`;
+  return `${daysOpen - 21} days overdue`;
+};
+
+export interface JobPipelineHealthRow {
+  jobId: string;
+  customer: string;
+  currentStage: string;
+  bottleneckStage: string;
+  aiPercentage: number;
+  humanPercentage: number;
+  slaRisk: "green" | "amber" | "red";
+  slaDetails: string;
+}
+
+export const jobPipelineHealth: JobPipelineHealthRow[] = jobs.map((job) => {
+  const slaRisk = calculateSLARisk(job.daysOpen, job.status);
+  return {
+    jobId: job.id,
+    customer: job.employer,
+    currentStage: getCurrentStage(job.daysOpen),
+    bottleneckStage: getBottleneckStage(job.funnel),
+    aiPercentage: job.aiContribution,
+    humanPercentage: job.humanContribution,
+    slaRisk,
+    slaDetails: getSLADetails(job.daysOpen, slaRisk),
+  };
+});
+
+// Dashboard KPI Metrics
+export const dashboardKPIs = {
+  activeJobPipelines: jobs.filter(j => j.status === "active").length,
+  candidatesInPipeline: jobs.reduce((acc, job) => acc + job.funnel[0].candidates, 0),
+  aiAutomationCoverage: 68,
+  hiringSLACompliance: 87,
+  grossMargin: 44.7,
+};

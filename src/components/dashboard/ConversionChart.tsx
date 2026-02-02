@@ -13,15 +13,17 @@ interface DataPoint {
   date: string;
   aiMatches: number;
   humanMatches: number;
+  hitlOverrides?: number;
   placements: number;
 }
 
 interface ConversionChartProps {
   data: DataPoint[];
   title?: string;
+  showHitlOverrides?: boolean;
 }
 
-export function ConversionChart({ data, title }: ConversionChartProps) {
+export function ConversionChart({ data, title, showHitlOverrides = false }: ConversionChartProps) {
   return (
     <div className="chart-container">
       {title && <h3 className="section-title mb-4">{title}</h3>}
@@ -39,9 +41,13 @@ export function ConversionChart({ data, title }: ConversionChartProps) {
               <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.4} />
               <stop offset="95%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0} />
             </linearGradient>
-            <linearGradient id="colorPlacements" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="colorHITL" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0.4} />
               <stop offset="95%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorPlacements" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(280, 65%, 60%)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(280, 65%, 60%)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -90,11 +96,22 @@ export function ConversionChart({ data, title }: ConversionChartProps) {
             fill="url(#colorHuman)"
             strokeWidth={2}
           />
+          {showHitlOverrides && (
+            <Area
+              type="monotone"
+              dataKey="hitlOverrides"
+              name="HITL Overrides"
+              stroke="hsl(199, 89%, 48%)"
+              fillOpacity={1}
+              fill="url(#colorHITL)"
+              strokeWidth={2}
+            />
+          )}
           <Area
             type="monotone"
             dataKey="placements"
-            name="Placements"
-            stroke="hsl(199, 89%, 48%)"
+            name="Final Placements"
+            stroke="hsl(280, 65%, 60%)"
             fillOpacity={1}
             fill="url(#colorPlacements)"
             strokeWidth={2}
