@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Briefcase, 
   FileText, 
@@ -22,9 +23,11 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Timer
+  Timer,
+  Bot,
+  AlertTriangle,
 } from "lucide-react";
-import type { StageMetrics } from "@/lib/mockData";
+import type { EnhancedStageMetrics } from "@/lib/mockData";
 
 const iconMap: Record<string, React.ElementType> = {
   briefcase: Briefcase,
@@ -61,7 +64,69 @@ interface StageDetailsSheetProps {
   onOpenChange: (open: boolean) => void;
   stageName: string;
   stageIcon?: string;
-  metrics: StageMetrics | null;
+  metrics: EnhancedStageMetrics | null;
+}
+
+function SLAStatusBadge({ status }: { status: "green" | "amber" | "red" }) {
+  const config = {
+    green: { label: "On Track", variant: "default" as const, className: "bg-success text-success-foreground" },
+    amber: { label: "At Risk", variant: "secondary" as const, className: "bg-warning text-warning-foreground" },
+    red: { label: "SLA Breach", variant: "destructive" as const, className: "bg-destructive text-destructive-foreground" },
+  };
+  
+  return (
+    <Badge className={config[status].className}>
+      {status === "amber" && <AlertTriangle className="h-3 w-3 mr-1" />}
+      {config[status].label}
+    </Badge>
+  );
+}
+
+function AttributionBar({ 
+  aiPercentage, 
+  humanPercentage, 
+  hitlPercentage 
+}: { 
+  aiPercentage: number; 
+  humanPercentage: number; 
+  hitlPercentage: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <h4 className="text-sm font-medium text-muted-foreground">AI vs Human vs HITL Attribution</h4>
+      <div className="flex h-3 rounded-full overflow-hidden bg-muted">
+        <div 
+          className="bg-orange-500 transition-all" 
+          style={{ width: `${aiPercentage}%` }}
+          title={`AI: ${aiPercentage}%`}
+        />
+        <div 
+          className="bg-blue-500 transition-all" 
+          style={{ width: `${humanPercentage}%` }}
+          title={`Human: ${humanPercentage}%`}
+        />
+        <div 
+          className="bg-teal-500 transition-all" 
+          style={{ width: `${hitlPercentage}%` }}
+          title={`HITL: ${hitlPercentage}%`}
+        />
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded bg-orange-500" />
+          AI {aiPercentage}%
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded bg-blue-500" />
+          Human {humanPercentage}%
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded bg-teal-500" />
+          HITL {hitlPercentage}%
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function StageDetailsSheet({ 
@@ -100,22 +165,43 @@ export function StageDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-muted">
-              <Icon className="h-5 w-5 text-muted-foreground" />
-            </div>
-            {stageName}
-          </SheetTitle>
-          <SheetDescription>Screening metrics and conversion rates</SheetDescription>
+          <div className="flex items-center justify-between">
+            <SheetTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-muted">
+                <Icon className="h-5 w-5 text-muted-foreground" />
+              </div>
+              {stageName}
+            </SheetTitle>
+            {metrics.slaStatus && <SLAStatusBadge status={metrics.slaStatus} />}
+          </div>
+          <SheetDescription className="flex items-center gap-4 pt-2">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Avg: {metrics.avgTimeInStage}
+            </span>
+            <span className="text-muted-foreground">|</span>
+            <span>SLA: {metrics.slaThreshold}</span>
+          </SheetDescription>
         </SheetHeader>
         
         <div className="mt-6 space-y-6">
+          {/* AI/Human/HITL Attribution Bar */}
+          <Card>
+            <CardContent className="pt-6">
+              <AttributionBar 
+                aiPercentage={metrics.aiPercentage}
+                humanPercentage={metrics.humanPercentage}
+                hitlPercentage={metrics.hitlPercentage}
+              />
+            </CardContent>
+          </Card>
+
           {/* Screenings Overview Card */}
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Screenings Overview</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">Volume Metrics</h4>
               
               {/* Sent */}
               <div className="space-y-2">
@@ -155,6 +241,23 @@ export function StageDetailsSheet({
             </CardContent>
           </Card>
 
+          {/* Conversion & Drop-off */}
+          <Card>
+            <CardContent className="pt-6">
+              <h4 className="text-sm font-medium text-muted-foreground mb-4">Conversion Analysis</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg bg-success/10 p-3 text-center">
+                  <p className="text-2xl font-bold text-success">{metrics.conversionRate}%</p>
+                  <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                </div>
+                <div className="rounded-lg bg-destructive/10 p-3 text-center">
+                  <p className="text-2xl font-bold text-destructive">{metrics.dropOffRate}%</p>
+                  <p className="text-xs text-muted-foreground">Drop-off Rate</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Additional Metrics */}
           <Card>
             <CardContent className="pt-6 space-y-3">
@@ -175,8 +278,38 @@ export function StageDetailsSheet({
                 </span>
                 <span className="font-semibold">{metrics.pending} <span className="text-muted-foreground font-normal">({pendingPercent}%)</span></span>
               </div>
+
+              {metrics.delayCause && (
+                <div className="flex items-center justify-between text-sm pt-2 border-t">
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-warning" />
+                    Delay Cause
+                  </span>
+                  <Badge variant="outline" className="text-warning border-warning">
+                    {metrics.delayCause}
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Channel Breakdown (if available) */}
+          {metrics.channels && (
+            <Card>
+              <CardContent className="pt-6 space-y-3">
+                <h4 className="text-sm font-medium text-muted-foreground">Channel Breakdown</h4>
+                {Object.entries(metrics.channels).map(([channel, percentage]) => (
+                  <div key={channel} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="capitalize">{channel.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <span className="font-medium">{percentage as number}%</span>
+                    </div>
+                    <Progress value={percentage as number} className="h-1.5" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Handler & Response Time */}
           <Card>

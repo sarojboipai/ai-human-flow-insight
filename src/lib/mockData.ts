@@ -404,6 +404,32 @@ export interface StageMetrics {
   handler: string;
 }
 
+export interface EnhancedStageMetrics extends StageMetrics {
+  // AI/Human/HITL attribution
+  aiPercentage: number;
+  humanPercentage: number;
+  hitlPercentage: number;
+  
+  // SLA metrics
+  avgTimeInStage: string;
+  slaThreshold: string;
+  slaStatus: "green" | "amber" | "red";
+  delayCause?: string;
+  
+  // Conversion metrics
+  conversionRate: number;
+  dropOffRate: number;
+  
+  // Channel breakdown (optional, for discovery stages)
+  channels?: {
+    app?: number;
+    web?: number;
+    whatsapp?: number;
+    jobBoards?: number;
+    recruiterOutreach?: number;
+  };
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -423,6 +449,7 @@ export interface Job {
   hitlEvents: JobHITLEvent[];
   workflowId: string;
   stageMetrics?: Record<string, StageMetrics>;
+  enhancedStageMetrics?: Record<string, EnhancedStageMetrics>;
 }
 
 export const jobs: Job[] = [
@@ -462,6 +489,66 @@ export const jobs: Job[] = [
       "job-discovery": { sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8, avgResponseTime: "1 hour", handler: "C" },
       "interview": { sent: 34, appeared: 28, qualified: 12, disqualified: 10, pending: 6, avgResponseTime: "3 days", handler: "R" },
     },
+    enhancedStageMetrics: {
+      "jobs-ankura": {
+        sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8,
+        avgResponseTime: "1 hour", handler: "C",
+        aiPercentage: 85, humanPercentage: 12, hitlPercentage: 3,
+        avgTimeInStage: "1 day", slaThreshold: "3 days", slaStatus: "green",
+        conversionRate: 77.1, dropOffRate: 22.9,
+      },
+      "job-discovery": {
+        sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8,
+        avgResponseTime: "1 hour", handler: "C",
+        aiPercentage: 78, humanPercentage: 18, hitlPercentage: 4,
+        avgTimeInStage: "6 hours", slaThreshold: "24 hours", slaStatus: "green",
+        conversionRate: 77.1, dropOffRate: 22.9,
+        channels: { app: 45, web: 30, whatsapp: 15, jobBoards: 10 },
+      },
+      "expression": {
+        sent: 189, appeared: 156, qualified: 98, disqualified: 42, pending: 16,
+        avgResponseTime: "2 hours", handler: "C",
+        aiPercentage: 65, humanPercentage: 30, hitlPercentage: 5,
+        avgTimeInStage: "12 hours", slaThreshold: "24 hours", slaStatus: "green",
+        conversionRate: 62.8, dropOffRate: 37.2,
+        channels: { app: 52, whatsapp: 28, recruiterOutreach: 20 },
+      },
+      "prescreen": {
+        sent: 98, appeared: 72, qualified: 45, disqualified: 18, pending: 9,
+        avgResponseTime: "4 hours", handler: "AE",
+        aiPercentage: 92, humanPercentage: 5, hitlPercentage: 3,
+        avgTimeInStage: "4 hours", slaThreshold: "12 hours", slaStatus: "green",
+        conversionRate: 62.5, dropOffRate: 37.5,
+      },
+      "voice-agent": {
+        sent: 45, appeared: 38, qualified: 28, disqualified: 8, pending: 2,
+        avgResponseTime: "15 mins", handler: "X+",
+        aiPercentage: 88, humanPercentage: 5, hitlPercentage: 7,
+        avgTimeInStage: "2 hours", slaThreshold: "6 hours", slaStatus: "green",
+        conversionRate: 73.7, dropOffRate: 26.3,
+      },
+      "scheduling": {
+        sent: 28, appeared: 24, qualified: 18, disqualified: 4, pending: 2,
+        avgResponseTime: "6 hours", handler: "AE",
+        aiPercentage: 75, humanPercentage: 20, hitlPercentage: 5,
+        avgTimeInStage: "1 day", slaThreshold: "2 days", slaStatus: "green",
+        conversionRate: 75.0, dropOffRate: 25.0,
+      },
+      "silver-med": {
+        sent: 8, appeared: 8, qualified: 6, disqualified: 0, pending: 2,
+        avgResponseTime: "2 days", handler: "R",
+        aiPercentage: 25, humanPercentage: 70, hitlPercentage: 5,
+        avgTimeInStage: "5 days", slaThreshold: "14 days", slaStatus: "green",
+        conversionRate: 75.0, dropOffRate: 25.0,
+      },
+      "talent-community": {
+        sent: 4, appeared: 4, qualified: 4, disqualified: 0, pending: 0,
+        avgResponseTime: "1 day", handler: "C",
+        aiPercentage: 60, humanPercentage: 35, hitlPercentage: 5,
+        avgTimeInStage: "ongoing", slaThreshold: "N/A", slaStatus: "green",
+        conversionRate: 100, dropOffRate: 0,
+      },
+    },
   },
   {
     id: "JOB-002",
@@ -491,6 +578,67 @@ export const jobs: Job[] = [
       { id: "evt-003", type: "review", reason: "High salary negotiation", assignee: "Ananya Patel", resolution: "Counter-offer approved", duration: "6 hours", timestamp: "3 days ago" },
     ],
     workflowId: "wf-002",
+    enhancedStageMetrics: {
+      "jobs-ankura": {
+        sent: 156, appeared: 112, qualified: 89, disqualified: 15, pending: 8,
+        avgResponseTime: "2 hours", handler: "C",
+        aiPercentage: 72, humanPercentage: 22, hitlPercentage: 6,
+        avgTimeInStage: "2 days", slaThreshold: "3 days", slaStatus: "amber",
+        conversionRate: 71.8, dropOffRate: 28.2,
+      },
+      "job-discovery": {
+        sent: 156, appeared: 112, qualified: 89, disqualified: 15, pending: 8,
+        avgResponseTime: "3 hours", handler: "C",
+        aiPercentage: 68, humanPercentage: 26, hitlPercentage: 6,
+        avgTimeInStage: "8 hours", slaThreshold: "24 hours", slaStatus: "green",
+        conversionRate: 71.8, dropOffRate: 28.2,
+        channels: { app: 38, web: 32, whatsapp: 18, jobBoards: 12 },
+      },
+      "expression": {
+        sent: 112, appeared: 89, qualified: 67, disqualified: 14, pending: 8,
+        avgResponseTime: "4 hours", handler: "C",
+        aiPercentage: 55, humanPercentage: 38, hitlPercentage: 7,
+        avgTimeInStage: "18 hours", slaThreshold: "24 hours", slaStatus: "amber",
+        conversionRate: 75.3, dropOffRate: 24.7,
+        channels: { app: 45, whatsapp: 30, recruiterOutreach: 25 },
+      },
+      "prescreen": {
+        sent: 67, appeared: 52, qualified: 35, disqualified: 12, pending: 5,
+        avgResponseTime: "6 hours", handler: "AE",
+        aiPercentage: 82, humanPercentage: 12, hitlPercentage: 6,
+        avgTimeInStage: "6 hours", slaThreshold: "12 hours", slaStatus: "green",
+        conversionRate: 67.3, dropOffRate: 32.7,
+      },
+      "voice-agent": {
+        sent: 35, appeared: 28, qualified: 22, disqualified: 4, pending: 2,
+        avgResponseTime: "20 mins", handler: "X+",
+        aiPercentage: 78, humanPercentage: 12, hitlPercentage: 10,
+        avgTimeInStage: "3 hours", slaThreshold: "6 hours", slaStatus: "green",
+        conversionRate: 78.6, dropOffRate: 21.4,
+      },
+      "scheduling": {
+        sent: 22, appeared: 18, qualified: 12, disqualified: 4, pending: 2,
+        avgResponseTime: "8 hours", handler: "AE",
+        aiPercentage: 65, humanPercentage: 28, hitlPercentage: 7,
+        avgTimeInStage: "1.5 days", slaThreshold: "2 days", slaStatus: "amber",
+        conversionRate: 66.7, dropOffRate: 33.3,
+        delayCause: "Human Backlog",
+      },
+      "silver-med": {
+        sent: 6, appeared: 6, qualified: 4, disqualified: 0, pending: 2,
+        avgResponseTime: "3 days", handler: "R",
+        aiPercentage: 20, humanPercentage: 75, hitlPercentage: 5,
+        avgTimeInStage: "7 days", slaThreshold: "14 days", slaStatus: "green",
+        conversionRate: 66.7, dropOffRate: 33.3,
+      },
+      "talent-community": {
+        sent: 2, appeared: 2, qualified: 2, disqualified: 0, pending: 0,
+        avgResponseTime: "2 days", handler: "C",
+        aiPercentage: 55, humanPercentage: 40, hitlPercentage: 5,
+        avgTimeInStage: "ongoing", slaThreshold: "N/A", slaStatus: "green",
+        conversionRate: 100, dropOffRate: 0,
+      },
+    },
   },
   {
     id: "JOB-003",
@@ -518,6 +666,66 @@ export const jobs: Job[] = [
     margin: 73.4,
     hitlEvents: [],
     workflowId: "wf-003",
+    enhancedStageMetrics: {
+      "jobs-ankura": {
+        sent: 312, appeared: 256, qualified: 200, disqualified: 40, pending: 16,
+        avgResponseTime: "45 mins", handler: "C",
+        aiPercentage: 90, humanPercentage: 8, hitlPercentage: 2,
+        avgTimeInStage: "12 hours", slaThreshold: "2 days", slaStatus: "green",
+        conversionRate: 82.1, dropOffRate: 17.9,
+      },
+      "job-discovery": {
+        sent: 312, appeared: 256, qualified: 200, disqualified: 40, pending: 16,
+        avgResponseTime: "30 mins", handler: "C",
+        aiPercentage: 88, humanPercentage: 10, hitlPercentage: 2,
+        avgTimeInStage: "4 hours", slaThreshold: "12 hours", slaStatus: "green",
+        conversionRate: 82.1, dropOffRate: 17.9,
+        channels: { app: 55, web: 25, whatsapp: 12, jobBoards: 8 },
+      },
+      "expression": {
+        sent: 256, appeared: 200, qualified: 178, disqualified: 15, pending: 7,
+        avgResponseTime: "1 hour", handler: "C",
+        aiPercentage: 85, humanPercentage: 12, hitlPercentage: 3,
+        avgTimeInStage: "6 hours", slaThreshold: "24 hours", slaStatus: "green",
+        conversionRate: 89.0, dropOffRate: 11.0,
+        channels: { app: 60, whatsapp: 25, recruiterOutreach: 15 },
+      },
+      "prescreen": {
+        sent: 178, appeared: 145, qualified: 120, disqualified: 18, pending: 7,
+        avgResponseTime: "2 hours", handler: "AE",
+        aiPercentage: 95, humanPercentage: 3, hitlPercentage: 2,
+        avgTimeInStage: "3 hours", slaThreshold: "8 hours", slaStatus: "green",
+        conversionRate: 82.8, dropOffRate: 17.2,
+      },
+      "voice-agent": {
+        sent: 120, appeared: 105, qualified: 85, disqualified: 15, pending: 5,
+        avgResponseTime: "10 mins", handler: "X+",
+        aiPercentage: 92, humanPercentage: 5, hitlPercentage: 3,
+        avgTimeInStage: "1 hour", slaThreshold: "4 hours", slaStatus: "green",
+        conversionRate: 81.0, dropOffRate: 19.0,
+      },
+      "scheduling": {
+        sent: 85, appeared: 72, qualified: 60, disqualified: 8, pending: 4,
+        avgResponseTime: "4 hours", handler: "AE",
+        aiPercentage: 88, humanPercentage: 10, hitlPercentage: 2,
+        avgTimeInStage: "8 hours", slaThreshold: "1 day", slaStatus: "green",
+        conversionRate: 83.3, dropOffRate: 16.7,
+      },
+      "silver-med": {
+        sent: 12, appeared: 12, qualified: 10, disqualified: 0, pending: 2,
+        avgResponseTime: "1 day", handler: "R",
+        aiPercentage: 35, humanPercentage: 60, hitlPercentage: 5,
+        avgTimeInStage: "3 days", slaThreshold: "7 days", slaStatus: "green",
+        conversionRate: 83.3, dropOffRate: 16.7,
+      },
+      "talent-community": {
+        sent: 8, appeared: 8, qualified: 8, disqualified: 0, pending: 0,
+        avgResponseTime: "12 hours", handler: "C",
+        aiPercentage: 70, humanPercentage: 25, hitlPercentage: 5,
+        avgTimeInStage: "ongoing", slaThreshold: "N/A", slaStatus: "green",
+        conversionRate: 100, dropOffRate: 0,
+      },
+    },
   },
   {
     id: "JOB-004",
