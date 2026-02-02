@@ -1,8 +1,8 @@
 
 
-# Job Workflow Explorer Overlay - Implementation Plan
+# Admin Dashboard - Customer-Aware Hiring Operations Control Center
 
-Transform the existing PipelineBoardDialog into a comprehensive Job Workflow Explorer Overlay with enhanced PRD-compliant analytics, new node types, and rich stage-level metrics.
+Enhance the Admin Dashboard with customer-scoped data behavior, improved Job Pipeline Health table with Job Title column, and customer-specific workflow variations in the Pipeline Board Dialog.
 
 ---
 
@@ -10,315 +10,346 @@ Transform the existing PipelineBoardDialog into a comprehensive Job Workflow Exp
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/customer/PipelineBoardDialog.tsx` | Major Update | Add job context header, enhanced node structure, mini-map |
-| `src/components/customer/StageDetailsSheet.tsx` | Major Update | Expand to show AI/Human/HITL attribution, SLA indicators, enhanced metrics |
-| `src/components/customer/pipeline-nodes/CandidateNode.tsx` | Create | New purple node for candidate journey steps |
-| `src/components/customer/pipeline-nodes/AIAgentNode.tsx` | Create | New orange node for AI automated steps |
-| `src/components/customer/pipeline-nodes/RecruiterNode.tsx` | Create | New blue node for human recruiter steps |
-| `src/components/customer/pipeline-nodes/AutomationNode.tsx` | Create | New green node for automation engine actions |
-| `src/components/customer/pipeline-nodes/index.ts` | Update | Export new node types |
-| `src/lib/mockData.ts` | Update | Add stage-specific metrics for all jobs with AI/Human/HITL split |
-| `src/pages/Index.tsx` | Update | Wire up handleJobClick to open the workflow explorer |
+| `src/pages/Index.tsx` | Modify | Add customer filtering logic to filter all dashboard data by selected customer |
+| `src/lib/mockData.ts` | Modify | Add customer workflow schemas, helper functions for customer filtering, and update job data |
+| `src/components/dashboard/JobPipelineHealthTable.tsx` | Modify | Add Job Title column per PRD requirements |
+| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Implement customer-specific workflow rendering based on workflow schema |
 
 ---
 
-## Visual Architecture
+## Feature Implementation
 
-```text
-+-----------------------------------------------------------------------+
-| [Job Title] - [Job ID]                        [Legend] [X]            |
-| [Customer: Ankura Hospital] [Status: Active] [Days Open: 14]          |
-+-----------------------------------------------------------------------+
-|                                                                       |
-|  +-------+    +----------+    +----------+    +----------+            |
-|  |Ankura | -> | Jobs in  | -> |   Job    | -> |Expression|            |
-|  |Hospital|   | Ankura   |    | Discovery|    |of Interest            |
-|  +-------+    +----------+    +----------+    +----------+            |
-|       |           |               |               |                   |
-|       v           v               v               v                   |
-|  +----------+    +----------+    +---------+                          |
-|  |Pre-screen| -> |Voice Agent| -> |Decision|                          |
-|  |Questions |    |Screening  |    |  Node  |                          |
-|  +----------+    +----------+    +---------+                          |
-|                                      |                                |
-|                       +-----------------------------------+           |
-|                       |              |                    |           |
-|                       v              v                    v           |
-|                  +----------+  +----------+  +----------+             |
-|                  |Scheduling|  |Silver Med|  |Talent    |             |
-|                  |          |  |          |  |Community |             |
-|                  +----------+  +----------+  +----------+             |
-|                                                                       |
-+-----------------------------------------------------------------------+
-| [Zoom Controls]                                    [Mini-map]         |
-+-----------------------------------------------------------------------+
+### 1. Customer-Scoped Dashboard Filtering
+
+When a customer is selected from the dropdown, the entire dashboard refreshes to show only that customer's data:
+
+- **KPI Cards**: Recalculated based on filtered jobs
+- **Hiring Activity Trends**: Filtered by customer
+- **Workload Chart**: Recalculated from filtered jobs
+- **AI Evaluation Metrics**: Customer-specific values
+- **Revenue Intelligence**: Customer-specific revenue data
+- **Job Pipeline Health Table**: Shows only selected customer's jobs
+
+**Implementation in Index.tsx:**
+
+```tsx
+// Filter jobs based on selected customer
+const filteredJobs = useMemo(() => {
+  if (customer === "all") return jobs;
+  const selectedCustomer = enterpriseCustomers.find(c => c.id === customer);
+  return jobs.filter(job => job.employer === selectedCustomer?.name);
+}, [customer]);
+
+// Recalculate all metrics based on filtered jobs
+const filteredKPIs = useMemo(() => ({
+  activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
+  candidatesInPipeline: filteredJobs.reduce((acc, job) => acc + job.funnel[0].candidates, 0),
+  aiAutomationCoverage: calculateAIAutomationCoverage(filteredJobs),
+  hiringSLACompliance: calculateSLACompliance(filteredJobs),
+  grossMargin: calculateGrossMargin(filteredJobs),
+}), [filteredJobs]);
 ```
 
 ---
 
-## Technical Details
+### 2. Job Pipeline Health Table Enhancement
 
-### 1. New Node Types (per PRD color coding)
+Add the **Job Title** column as specified in the PRD:
 
-| Node Type | Color | Icon | Purpose |
-|-----------|-------|------|---------|
-| CandidateNode | Purple (#a855f7) | User | Candidate journey steps |
-| AIAgentNode | Orange (#f97316) | Bot | AI automated processing |
-| RecruiterNode | Blue (#3b82f6) | Users | Human recruiter actions |
-| DecisionNode | Black (#1e293b) | GitBranch | Qualification branching |
-| AutomationNode | Green (#10b981) | Zap | Scheduling/CRM actions |
+| Column | Description |
+|--------|-------------|
+| Job ID | Unique identifier (existing) |
+| **Job Title** | Role title - **NEW** |
+| Enterprise Customer | Hospital name (existing) |
+| Funnel Stage | Current stage (existing) |
+| Bottleneck | Delay-causing stage (existing) |
+| AI vs Human | Workload split (existing) |
+| SLA Risk | Status indicator (existing) |
+| Action | Open dialog button (existing) |
 
-Each node will display:
-- Stage name
-- AI/Human/HITL percentage badges
-- SLA indicator (colored border: green/amber/red)
-- Click handler to open analytics panel
+**Data Structure Update:**
 
-### 2. Enhanced Stage Details Sheet
-
-The right-side panel (StageDetailsSheet) will be expanded to include:
-
-**Header Section:**
-- Stage name with icon
-- SLA status badge (On Track/At Risk/Breached)
-- Avg time in stage
-
-**Metrics Cards:**
 ```tsx
-interface EnhancedStageMetrics {
-  // Volume metrics
-  sent: number;
-  appeared: number;
-  qualified: number;
-  disqualified: number;
-  pending: number;
-  
-  // AI/Human/HITL attribution
+export interface JobPipelineHealthRow {
+  jobId: string;
+  jobTitle: string;    // NEW FIELD
+  customer: string;
+  currentStage: string;
+  bottleneckStage: string;
   aiPercentage: number;
   humanPercentage: number;
-  hitlPercentage: number;
-  
-  // SLA metrics
-  avgTimeInStage: string;
-  slaThreshold: string;
-  slaStatus: "green" | "amber" | "red";
-  delayCause?: string;
-  
-  // Stage-specific metrics
-  conversionRate: number;
-  dropOffRate: number;
-  
-  // Handler info
-  handler: string;
-  avgResponseTime: string;
+  slaRisk: "green" | "amber" | "red";
+  slaDetails: string;
 }
 ```
 
-**Attribution Bar:**
-- Visual bar showing 78% AI | 15% Human | 7% HITL
+---
 
-**Charts Section (per stage type):**
-- Pre-screen: Questions answered breakdown
-- Voice Agent: AI confidence score distribution
-- Discovery: Channel breakdown (App, Web, WhatsApp)
+### 3. Customer-Specific Workflow Schemas
 
-### 3. PipelineBoardDialog Enhancements
+Each enterprise customer has a configurable workflow schema that determines which stages appear in their pipeline:
 
-**Header Updates:**
-```tsx
-// Add job context to header
-<DialogHeader>
-  <DialogTitle>{job.title}</DialogTitle>
-  <div className="flex gap-4 text-sm text-muted-foreground">
-    <span>Customer: {job.employer}</span>
-    <Badge variant={job.status === "active" ? "default" : "secondary"}>
-      {job.status}
-    </Badge>
-    <span>Days Open: {job.daysOpen}</span>
-  </div>
-</DialogHeader>
+**Example Workflow Definitions:**
+
+```text
++----------------------------------------------------------+
+| ANKURA HOSPITAL (Full Workflow)                          |
++----------------------------------------------------------+
+Jobs -> Discovery -> Expression -> Pre-screen -> Voice -> Decision -> Outcomes
+
++----------------------------------------------------------+
+| KIMS HOSPITAL (No Discovery Stage)                       |
++----------------------------------------------------------+
+Jobs -> Expression -> Pre-screen -> Voice -> Decision -> Outcomes
+
++----------------------------------------------------------+
+| OASIS FERTILITY (No Pre-screen Stage)                    |
++----------------------------------------------------------+
+Jobs -> Discovery -> Expression -> Voice -> Decision -> Outcomes
 ```
 
-**Node Configuration:**
-- Update nodes to use new node types based on handler
-- Add AI/Human/HITL percentages to node data
-- Add SLA indicators per node
-
-**Mini-map:**
-```tsx
-import { MiniMap } from "@xyflow/react";
-
-<MiniMap 
-  nodeColor={(node) => {
-    switch (node.type) {
-      case "candidateNode": return "#a855f7";
-      case "aiAgentNode": return "#f97316";
-      case "recruiterNode": return "#3b82f6";
-      case "automationNode": return "#10b981";
-      default: return "#94a3b8";
-    }
-  }}
-/>
-```
-
-### 4. MockData Enhancements
-
-Add comprehensive stage metrics for each job:
+**Workflow Schema Data Structure:**
 
 ```tsx
-// Enhanced stage metrics structure
-stageMetrics: {
-  "jobs-ankura": {
-    sent: 245,
-    appeared: 189,
-    qualified: 156,
-    // ... existing fields
-    aiPercentage: 85,
-    humanPercentage: 12,
-    hitlPercentage: 3,
-    slaStatus: "green",
-    avgTimeInStage: "1 day",
-    slaThreshold: "3 days",
-    conversionRate: 77.1,
-    dropOffRate: 22.9,
-    channels: {
-      app: 45,
-      web: 30,
-      whatsapp: 15,
-      jobBoards: 10
-    }
+interface WorkflowStage {
+  id: string;
+  type: "source" | "candidate" | "automation" | "ai" | "recruiter" | "decision" | "outcome";
+  label: string;
+  icon: string;
+}
+
+interface CustomerWorkflowSchema {
+  customerId: string;
+  customerName: string;
+  workflowId: string;
+  stages: WorkflowStage[];
+}
+
+export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
+  {
+    customerId: "cust-001",
+    customerName: "Ankura Hospital",
+    workflowId: "wf-ankura",
+    stages: [
+      { id: "source", type: "source", label: "Ankura\nHospital", icon: "hospital" },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nAnkura", icon: "eye" },
+      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search" },
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart" },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send" },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone" },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch" },
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar" },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck" },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user" },
+    ],
   },
-  // ... other stages
-}
+  {
+    customerId: "cust-004", // KIMS Hospital
+    customerName: "KIMS Hospital",
+    workflowId: "wf-kims",
+    stages: [
+      { id: "source", type: "source", label: "KIMS\nHospital", icon: "hospital" },
+      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nKIMS", icon: "eye" },
+      // NO job-discovery stage
+      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart" },
+      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send" },
+      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone" },
+      { id: "decision", type: "decision", label: "Decision", icon: "branch" },
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar" },
+      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck" },
+      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user" },
+    ],
+  },
+  // ... other customers with varying workflows
+];
 ```
 
-### 5. Index.tsx Integration
+---
 
-Wire up the workflow explorer:
+### 4. Dynamic Workflow Rendering in PipelineBoardDialog
+
+The dialog dynamically builds nodes based on the customer's workflow schema:
+
+**Key Changes:**
+
+1. Look up customer workflow schema based on job's employer
+2. Generate nodes dynamically from schema stages
+3. Auto-rewire edges between stages (skip missing stages)
+4. Update source node to show correct customer branding
+
+**Node Building Logic:**
 
 ```tsx
-import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
-import { jobs } from "@/lib/mockData";
+const buildNodesFromSchema = (job: Job, schema: CustomerWorkflowSchema): Node[] => {
+  const metrics = job.enhancedStageMetrics || {};
+  let xPosition = 50;
+  
+  return schema.stages.map((stage, index) => {
+    const node = {
+      id: stage.id,
+      type: getNodeType(stage.type),
+      position: calculatePosition(index, stage.type),
+      data: {
+        label: stage.label.replace('Ankura', job.employer.split(' ')[0]),
+        icon: stage.icon,
+        aiPercentage: metrics[stage.id]?.aiPercentage,
+        humanPercentage: metrics[stage.id]?.humanPercentage,
+        hitlPercentage: metrics[stage.id]?.hitlPercentage,
+        slaStatus: metrics[stage.id]?.slaStatus,
+        onClick: () => handleNodeClick(stage.id),
+      },
+    };
+    return node;
+  });
+};
 
-const Index = () => {
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleJobClick = (jobId: string) => {
-    const job = jobs.find(j => j.id === jobId);
-    if (job) {
-      setSelectedJob(job);
-      setDialogOpen(true);
-    }
-  };
-
-  return (
-    <>
-      {/* ... existing dashboard content */}
-      <JobPipelineHealthTable 
-        data={jobPipelineHealth}
-        onJobClick={handleJobClick}
-      />
-      
-      <PipelineBoardDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        job={selectedJob}
-      />
-    </>
-  );
+const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
+  const edges: Edge[] = [];
+  const mainStages = schema.stages.filter(s => s.type !== "outcome");
+  
+  for (let i = 0; i < mainStages.length - 1; i++) {
+    edges.push({
+      id: `e-${mainStages[i].id}-${mainStages[i+1].id}`,
+      source: mainStages[i].id,
+      target: mainStages[i+1].id,
+      style: { stroke: getEdgeColor(mainStages[i].type) },
+    });
+  }
+  
+  // Add decision node outcomes
+  // ...
+  
+  return edges;
 };
 ```
 
 ---
 
-## Node Interaction Flow
+### 5. Helper Functions for Customer Filtering
 
-1. **Click Stage Node** - Opens StageDetailsSheet with full analytics
-2. **Hover Node** - Shows quick tooltip with key metrics
-3. **Zoom Controls** - Standard ReactFlow zoom in/out/fit
-4. **Mini-map** - Navigate large workflows quickly
-5. **Pan Canvas** - Drag to explore workflow
+Add utility functions to mockData.ts for calculating customer-specific metrics:
 
----
+```tsx
+// Filter jobs by customer
+export const getJobsByCustomer = (customerName: string | "all") => {
+  if (customerName === "all") return jobs;
+  return jobs.filter(job => job.employer === customerName);
+};
 
-## Stage-Specific Metrics Panels
+// Calculate KPIs for filtered jobs
+export const calculateCustomerKPIs = (filteredJobs: Job[]) => ({
+  activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
+  candidatesInPipeline: filteredJobs.reduce((acc, job) => 
+    acc + job.funnel[0].candidates, 0),
+  aiAutomationCoverage: Math.round(
+    filteredJobs.reduce((acc, job) => acc + job.aiContribution, 0) / 
+    (filteredJobs.length || 1)
+  ),
+  hiringSLACompliance: Math.round(
+    (filteredJobs.filter(j => j.daysOpen <= 21).length / 
+    (filteredJobs.length || 1)) * 100
+  ),
+  grossMargin: Math.round(
+    filteredJobs.reduce((acc, job) => acc + job.margin, 0) / 
+    (filteredJobs.length || 1) * 10
+  ) / 10,
+});
 
-### Jobs in Ankura
-- Total Jobs Posted
-- Active vs Closed breakdown
-- Source distribution (ATS, API, Manual)
-
-### Job Discovery
-- Job Views count
-- Search Impressions
-- Click-through Rate (CTR)
-- Channel breakdown chart
-
-### Expression of Interest
-- Candidates Expressed Interest
-- Source Breakdown (Swaasa App, WhatsApp Bot, Job Boards, Recruiter Outreach)
-- Conversion Rate (Discovery to Interest)
-
-### Pre-screen Questions
-- Screening Invites Sent
-- Candidates Appeared
-- Candidates Cleared
-- Drop-off Rate
-- AI vs Human Screening Split bar
-
-### Voice Agent Screening (AI)
-- Voice Screening Invites
-- Candidates Appeared/Cleared
-- AI Confidence Score histogram
-- Human Override Rate (HITL)
-
-### Decision Node
-- Qualified Candidates
-- Knockout Candidates
-- Qualification Rate
-- Rule Engine Criteria badges
-
-### Outcomes (Scheduling/Silver Medalist/Talent Community)
-- Stage-specific metrics
-- Re-engagement rates
-- Future job reuse rates
+// Get workflow schema for a customer
+export const getCustomerWorkflowSchema = (customerName: string) => {
+  return customerWorkflowSchemas.find(
+    schema => schema.customerName === customerName
+  ) || customerWorkflowSchemas[0]; // Default to first schema
+};
+```
 
 ---
 
-## File Structure
+## Updated File Structure
 
 ```text
 src/
-  components/
-    customer/
-      PipelineBoardDialog.tsx (update)
-      StageDetailsSheet.tsx (update)
-      pipeline-nodes/
-        index.ts (update)
-        SourceNode.tsx (exists)
-        StageNode.tsx (exists)
-        DecisionNode.tsx (exists)
-        OutcomeNode.tsx (exists)
-        CandidateNode.tsx (new)
-        AIAgentNode.tsx (new)
-        RecruiterNode.tsx (new)
-        AutomationNode.tsx (new)
   pages/
-    Index.tsx (update)
+    Index.tsx                        (update - add filtering logic)
+  components/
+    dashboard/
+      JobPipelineHealthTable.tsx     (update - add Job Title column)
+      GlobalFilters.tsx              (exists - no changes needed)
+    customer/
+      PipelineBoardDialog.tsx        (update - dynamic workflow rendering)
   lib/
-    mockData.ts (update)
+    mockData.ts                      (update - add schemas, helpers)
 ```
+
+---
+
+## Data Flow Diagram
+
+```text
+User selects Customer
+        |
+        v
++-------------------+
+| GlobalFilters     |
+| customer state    |
++-------------------+
+        |
+        v
++-------------------+
+| Index.tsx         |
+| - Filter jobs     |
+| - Recalc KPIs     |
+| - Update charts   |
++-------------------+
+        |
+        +---> KPI Cards (filtered)
+        |
+        +---> Hiring Activity Chart (filtered)
+        |
+        +---> Workload Chart (filtered)
+        |
+        +---> AI Evaluation (filtered)
+        |
+        +---> Revenue Panel (filtered)
+        |
+        v
++------------------------+
+| JobPipelineHealthTable |
+| (filtered rows)        |
++------------------------+
+        |
+        | User clicks row
+        v
++------------------------+
+| PipelineBoardDialog    |
+| - Get job.employer     |
+| - Lookup workflow      |
+| - Build dynamic nodes  |
+| - Auto-wire edges      |
++------------------------+
+```
+
+---
+
+## Acceptance Criteria Verification
+
+| Requirement | Implementation |
+|-------------|----------------|
+| Admin can switch customers and entire dashboard updates | Customer state filters all data via useMemo hooks |
+| Job Pipeline Health table shows Job Title column | Added jobTitle field to interface and table column |
+| Clicking a job opens Pipeline Board with accurate job data | Job passed to dialog with employer-specific workflow lookup |
+| Workflow stages differ per customer | CustomerWorkflowSchema defines per-customer stages |
+| Node-level metrics reflect the selected job | enhancedStageMetrics keyed by stage ID |
 
 ---
 
 ## Result
 
-When completed, Admins will be able to:
-- Click any job row in the Pipeline Health Table to open the workflow explorer
-- See the complete hiring journey visualized as an interactive node-based canvas
-- Click individual stages to view detailed analytics including AI/Human/HITL split
-- Identify bottlenecks via SLA indicators on each stage
-- Navigate the workflow using zoom, pan, and mini-map controls
-- Understand exactly where candidates drop off and why
+When complete, the Admin Dashboard will:
+
+- Dynamically filter all metrics when a customer is selected
+- Show Job Title in the pipeline health table for quick role identification
+- Render customer-specific workflows in the Pipeline Board Dialog
+- Automatically skip missing stages and rewire connections
+- Maintain accurate job-level metrics per stage
 
