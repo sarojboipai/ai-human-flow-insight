@@ -39,9 +39,9 @@ export default function AIPerformance() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="dashboard-title">AI Performance</h1>
+          <h1 className="dashboard-title">AI Activity</h1>
           <p className="text-muted-foreground mt-1">
-            Evaluate AI agent accuracy, bias metrics, and SLA adherence
+            Monitor AI agent actions, decisions, and automation outcomes
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function AIPerformance() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Performance Trend */}
           <div className="chart-container">
-            <h3 className="section-title mb-4">Weekly Performance Trend</h3>
+            <h3 className="section-title mb-4">Weekly Activity Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={performanceTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -125,7 +125,7 @@ export default function AIPerformance() {
 
           {/* Radar Chart */}
           <div className="chart-container">
-            <h3 className="section-title mb-4">AI Health Score</h3>
+            <h3 className="section-title mb-4">AI Decision Quality</h3>
             <ResponsiveContainer width="100%" height={300}>
               <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                 <PolarGrid stroke="hsl(var(--border))" />
@@ -157,7 +157,7 @@ export default function AIPerformance() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Core Metrics */}
           <div className="chart-container">
-            <h3 className="section-title mb-4">Core AI Metrics</h3>
+            <h3 className="section-title mb-4">AI Action Metrics</h3>
             <div className="space-y-5">
               {[
                 { label: "Match Precision", value: aiPerformanceMetrics.matchPrecision, target: 90 },
@@ -233,7 +233,7 @@ export default function AIPerformance() {
 
         {/* AI Failure Detection */}
         <div className="chart-container">
-          <h3 className="section-title mb-4">AI Failure Detection</h3>
+          <h3 className="section-title mb-4">AI Activity Alerts</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
               {
