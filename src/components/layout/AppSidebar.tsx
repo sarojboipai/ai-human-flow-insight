@@ -8,6 +8,7 @@ import {
   Settings,
   BarChart3,
   Target,
+  Network,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -40,6 +41,14 @@ const mainNavItems = [
     title: "Human vs AI",
     url: "/human-ai",
     icon: GitBranch,
+  },
+];
+
+const orchestrationItems = [
+  {
+    title: "Orchestration Engine",
+    url: "/orchestration",
+    icon: Network,
   },
 ];
 
@@ -104,6 +113,30 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                  >
+                    <NavLink to={item.url}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
+            Orchestration
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {orchestrationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild

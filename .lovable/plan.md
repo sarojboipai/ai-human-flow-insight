@@ -1,14 +1,14 @@
 
 
-# Remove Orchestration Section from Admin Sidebar
+# Remove HITL Queue from Home Page Sidebar
 
-This plan removes the "Orchestration" navigation section from the Admin sidebar.
+This plan removes the "HITL Queue" navigation item from the Admin sidebar on the home page.
 
 ---
 
 ## Overview
 
-The Orchestration Engine section will be removed from the Admin page sidebar to streamline the navigation.
+The HITL Queue is accessible via the dedicated HITL persona (through the "Change Persona" dropdown), so it doesn't need to appear in the main Admin sidebar navigation.
 
 ---
 
@@ -16,63 +16,60 @@ The Orchestration Engine section will be removed from the Admin page sidebar to 
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/AppSidebar.tsx` | Modify | Remove orchestrationItems array and its SidebarGroup |
+| `src/components/layout/AppSidebar.tsx` | Modify | Remove HITL Queue from operationsItems array |
 
 ---
 
 ## Specific Changes
 
-### 1. Remove orchestrationItems array (lines 47-53)
+### 1. Remove HITL Queue item from operationsItems array
 
-Delete:
+**Before (lines 56-72):**
 ```tsx
-const orchestrationItems = [
+const operationsItems = [
   {
-    title: "Orchestration Engine",
-    url: "/orchestration",
-    icon: Network,
+    title: "Recruiter Dashboard",
+    url: "/recruiters",
+    icon: Users,
+  },
+  {
+    title: "AI Performance",
+    url: "/ai-performance",
+    icon: Bot,
+  },
+  {
+    title: "HITL Queue",
+    url: "/hitl",
+    icon: Zap,
   },
 ];
 ```
 
-### 2. Remove Orchestration SidebarGroup (lines 133-155)
-
-Delete the entire Orchestration section:
+**After:**
 ```tsx
-<SidebarGroup>
-  <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-    Orchestration
-  </SidebarGroupLabel>
-  <SidebarGroupContent>
-    <SidebarMenu>
-      {orchestrationItems.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive(item.url)}
-            tooltip={item.title}
-          >
-            <NavLink to={item.url}>
-              <item.icon className="h-4 w-4" />
-              <span>{item.title}</span>
-            </NavLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
-  </SidebarGroupContent>
-</SidebarGroup>
+const operationsItems = [
+  {
+    title: "Recruiter Dashboard",
+    url: "/recruiters",
+    icon: Users,
+  },
+  {
+    title: "AI Performance",
+    url: "/ai-performance",
+    icon: Bot,
+  },
+];
 ```
 
-### 3. Remove unused Network import
+### 2. Remove unused Zap import
 
-Remove `Network` from the lucide-react imports since it will no longer be used.
+Remove `Zap` from the lucide-react imports since it's no longer used.
 
 ---
 
 ## Result
 
-- The sidebar will show: Overview, Operations, and Business sections
-- The Orchestration Engine page still exists and can be accessed directly via URL if needed
-- Cleaner, more focused Admin navigation
+- The Operations section will show only "Recruiter Dashboard" and "AI Performance"
+- HITL Queue remains accessible via the HITL persona dropdown in the header
+- Clean, focused navigation for the Admin view
 
