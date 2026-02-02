@@ -1,24 +1,24 @@
 
-# Fix HITL Page Responsiveness Issue
+# Create CustomerJobFunnelTable - Customer-Specific Jobs Pipeline
 
-The HITL Queue page content is being clipped on the right side because the layout lacks proper width constraints to handle wide content like the tasks table.
-
----
-
-## Problem Analysis
-
-Looking at the screenshot, multiple elements are being cut off:
-1. The "Completed Today" metric card is partially hidden
-2. The table's rightmost columns are clipped
-3. Content extends beyond the visible viewport
-
-The root cause is that in flexbox layouts, child elements with `flex-1` don't automatically constrain their children's width. Without `min-w-0` or `overflow-hidden`, the content can push beyond the container boundaries.
+This plan creates a new `CustomerJobFunnelTable` component tailored for the Customer persona, based on the Admin's `JobFunnelTable` but without internal metrics.
 
 ---
 
-## Solution
+## Columns Comparison
 
-Add proper overflow handling to the layouts and table components to ensure content stays within bounds while remaining scrollable when needed.
+| Column | Admin (JobFunnelTable) | Customer (CustomerJobFunnelTable) | Reason |
+|--------|------------------------|-----------------------------------|--------|
+| Job ID | Yes | Yes | Useful for reference |
+| Title | Yes | Yes | Core info |
+| Employer | Yes | **No** | Customer IS the employer |
+| Role Type | Yes | Yes | Core info |
+| Current Stage | Yes | Yes | Core info |
+| Candidates | Yes | Yes | Core info |
+| AI % | Yes | **No** | Internal metric |
+| Days Open | Yes | Yes | Useful for customer |
+| Revenue | Yes | **No** | Internal metric |
+| Status | Yes | Yes | Core info |
 
 ---
 
@@ -26,81 +26,70 @@ Add proper overflow handling to the layouts and table components to ensure conte
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/HITLLayout.tsx` | Modify | Add `overflow-hidden` and `min-w-0` to SidebarInset and main |
-| `src/components/layout/DashboardLayout.tsx` | Modify | Same fix for consistency |
-| `src/components/layout/OpsLayout.tsx` | Modify | Same fix for consistency |
-| `src/components/layout/CustomerLayout.tsx` | Modify | Same fix for consistency |
-| `src/components/hitl/TasksQueue.tsx` | Modify | Add `overflow-x-auto` wrapper to ensure table scrolls horizontally |
+| `src/components/customer/CustomerJobFunnelTable.tsx` | Create | New customer-specific table without Employer, AI %, Revenue columns |
+| `src/pages/CustomerDashboard.tsx` | Modify | Replace `CustomerJobsTable` with `CustomerJobFunnelTable` |
 
 ---
 
 ## Technical Details
 
-### 1. Layout Files (All 4 layouts)
+### 1. CustomerJobFunnelTable Component
 
-Update the `SidebarInset` and `main` elements to properly constrain content:
+A new component based on `JobFunnelTable` with these differences:
 
-**Current:**
+- **Removed columns**: Employer, AI %, Revenue
+- **Click behavior**: Row click navigates to Job Detail page (`/jobs/:id`) - same as Admin
+- **Search**: Searches by job title and ID only (no employer search needed)
+
 ```tsx
-<SidebarInset className="flex-1">
-  <AppHeader ... />
-  <main className="flex-1 p-6">
-    {children}
-  </main>
-</SidebarInset>
+// Columns shown:
+// Job ID | Title | Role Type | Current Stage | Candidates | Days Open | Status
+
+<TableRow
+  key={job.id}
+  className="cursor-pointer hover:bg-muted/50"
+  onClick={() => navigate(`/jobs/${job.id}`)}
+>
+  <TableCell>{job.id}</TableCell>
+  <TableCell>{job.title}</TableCell>
+  <TableCell>{job.roleType}</TableCell>
+  <TableCell><Badge>{currentStage(job)}</Badge></TableCell>
+  <TableCell>{totalCandidates(job)}</TableCell>
+  <TableCell>{job.daysOpen}</TableCell>
+  <TableCell>{getStatusBadge(job.status)}</TableCell>
+</TableRow>
 ```
 
-**Updated:**
+### 2. CustomerDashboard Update
+
+Replace the import and usage:
+
 ```tsx
-<SidebarInset className="flex-1 overflow-hidden">
-  <AppHeader ... />
-  <main className="flex-1 p-6 overflow-auto">
-    {children}
-  </main>
-</SidebarInset>
+// Before
+import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
+<CustomerJobsTable />
+
+// After
+import { CustomerJobFunnelTable } from "@/components/customer/CustomerJobFunnelTable";
+import { jobs } from "@/lib/mockData";
+<CustomerJobFunnelTable jobs={jobs} />
 ```
-
-Key changes:
-- `overflow-hidden` on `SidebarInset`: Prevents content from expanding beyond its bounds
-- `overflow-auto` on `main`: Allows the main content area to scroll when content exceeds available space
-
-### 2. TasksQueue Component
-
-Wrap the table in a proper scrollable container:
-
-**Current:**
-```tsx
-<div className="rounded-lg border border-border">
-  <Table>
-    ...
-  </Table>
-</div>
-```
-
-**Updated:**
-```tsx
-<div className="rounded-lg border border-border overflow-x-auto">
-  <Table>
-    ...
-  </Table>
-</div>
-```
-
-This ensures the table scrolls horizontally on smaller screens rather than clipping.
 
 ---
 
-## Why This Works
+## Behavior Changes
 
-1. **`overflow-hidden` on SidebarInset**: This creates a new formatting context that prevents child content from overflowing the flex container
-2. **`overflow-auto` on main**: Enables scrolling within the main content area when content exceeds bounds
-3. **`overflow-x-auto` on table container**: Specifically allows horizontal scrolling for wide tables
+| Feature | Before (CustomerJobsTable) | After (CustomerJobFunnelTable) |
+|---------|---------------------------|--------------------------------|
+| Row click | No action | Navigates to Job Detail |
+| View Pipeline button | Opens dialog | Removed (row click instead) |
+| Columns | 7 columns | 7 columns (different set) |
 
 ---
 
 ## Result
 
-- All 4 persona layouts will handle overflow consistently
-- Tables with many columns will scroll horizontally instead of being clipped
-- Metric cards and other wide content will remain visible within the viewport
-- The page will be responsive across different screen sizes
+- Customer sees a clean table without internal business metrics
+- Consistent navigation pattern with row-click to Job Detail
+- No redundant "Employer" column since customer IS the employer
+- Hides AI % and Revenue which are internal operational metrics
