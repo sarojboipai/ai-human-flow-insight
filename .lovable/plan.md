@@ -1,8 +1,8 @@
 
 
-# Hide Jobs Pipeline Table from Job Explorer Page
+# Restore Job Metrics Cards to Funnel Page
 
-A minimal change to remove only the `JobFunnelTable` component from the Job Explorer tab while keeping the metric cards and aggregate funnel chart.
+The 4 metric cards were accidentally removed in the last edit. This plan restores them to the Job Explorer tab.
 
 ---
 
@@ -10,7 +10,7 @@ A minimal change to remove only the `JobFunnelTable` component from the Job Expl
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/FunnelAnalytics.tsx` | Modify | Remove JobFunnelTable component and import |
+| `src/pages/FunnelAnalytics.tsx` | Modify | Restore jobs import, metrics calculations, and metric cards grid |
 
 ---
 
@@ -18,34 +18,55 @@ A minimal change to remove only the `JobFunnelTable` component from the Job Expl
 
 ### Changes to FunnelAnalytics.tsx
 
-1. **Remove the import** (line 7):
+1. **Restore `jobs` to the data import**:
    ```tsx
-   // Remove this line
-   import { JobFunnelTable } from "@/components/jobs/JobFunnelTable";
-   ```
-
-2. **Remove `jobs` from the data import** (line 9):
-   ```tsx
-   // Change from:
    import { funnelData, jobs, aggregateFunnelData } from "@/lib/mockData";
-   // Change to:
-   import { funnelData, aggregateFunnelData } from "@/lib/mockData";
    ```
 
-3. **Remove the table component** (lines 157-158):
+2. **Restore the metrics calculations** inside the component:
    ```tsx
-   // Remove these lines
-   {/* Jobs Table */}
-   <JobFunnelTable jobs={jobs} />
+   const activeJobs = jobs.filter((j) => j.status === "active").length;
+   const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel[0]?.candidates || 0), 0);
+   const avgDaysOpen = Math.round(jobs.reduce((sum, j) => sum + j.daysOpen, 0) / jobs.length);
+   const totalPipelineValue = jobs.reduce((sum, j) => sum + j.revenue, 0);
+   const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel[6]?.candidates || 0), 0);
+   const avgConversion = totalCandidates > 0 ? ((totalPlacements / totalCandidates) * 100).toFixed(1) : "0";
+
+   const jobMetrics = [
+     { title: "Active Jobs", value: activeJobs, subtitle: `${jobs.length} total jobs`, icon: Briefcase, color: "text-primary" },
+     { title: "Avg Conversion", value: `${avgConversion}%`, subtitle: "Lead to placement", icon: TrendingUp, color: "text-emerald-500" },
+     { title: "Avg Days Open", value: avgDaysOpen, subtitle: "Time to fill", icon: Clock, color: "text-amber-500" },
+     { title: "Pipeline Value", value: `₹${(totalPipelineValue / 100000).toFixed(1)}L`, subtitle: "Total revenue potential", icon: IndianRupee, color: "text-teal-500" },
+   ];
+   ```
+
+3. **Restore the metric cards grid** in the Job Explorer tab (before the AggregateFunnelChart):
+   ```tsx
+   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+     {jobMetrics.map((metric) => (
+       <Card key={metric.title}>
+         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+           <CardTitle className="text-sm font-medium text-muted-foreground">
+             {metric.title}
+           </CardTitle>
+           <metric.icon className={`h-4 w-4 ${metric.color}`} />
+         </CardHeader>
+         <CardContent>
+           <div className="text-2xl font-bold">{metric.value}</div>
+           <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
+         </CardContent>
+       </Card>
+     ))}
+   </div>
    ```
 
 ---
 
 ## Result
 
-The Job Explorer tab will keep:
-- 4 metric cards (Active Jobs, Avg Conversion, Avg Days Open, Pipeline Value)
+The Job Explorer tab will display:
+- 4 metric cards: Active Jobs, Avg Conversion, Avg Days Open, Pipeline Value
 - Aggregate Funnel Chart
 
-Only the Jobs Pipeline table at the bottom will be removed.
+The Jobs Pipeline table remains hidden as requested.
 
