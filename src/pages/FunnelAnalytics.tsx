@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
+import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
 import { funnelData, jobs, aggregateFunnelData } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,6 +129,9 @@ export default function FunnelAnalytics() {
 
             {/* Aggregate Funnel Chart */}
             <AggregateFunnelChart data={aggregateFunnelData} />
+
+            {/* Jobs Pipeline Table */}
+            <CustomerJobsTable />
           </TabsContent>
 
           {/* Funnel Analytics Tab */}
