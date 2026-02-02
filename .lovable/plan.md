@@ -1,8 +1,8 @@
 
 
-# Move "Human vs AI" to Operations Section
+# Move Aggregate Funnel Chart Below Jobs Pipeline
 
-Relocate the "Human vs AI" navigation item from the Overview section to the Operations section, positioning it below "AI Activity".
+Reorder the widgets in the Job Explorer tab so the "Aggregate Funnel - AI vs Human Split" chart appears after the Jobs Pipeline table.
 
 ---
 
@@ -10,84 +10,64 @@ Relocate the "Human vs AI" navigation item from the Overview section to the Oper
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/AppSidebar.tsx` | Modify | Move "Human vs AI" from mainNavItems to operationsItems |
+| `src/pages/FunnelAnalytics.tsx` | Modify | Swap order of AggregateFunnelChart and CustomerJobsTable |
 
 ---
 
 ## Technical Details
 
-### Current Structure
+### Current Order (lines 130-134)
 
-**Overview Section (mainNavItems)**
-- Dashboard
-- Jobs & Funnel
-- Human vs AI ← Currently here
+```text
+Job Metrics Cards
+     |
+     v
+AggregateFunnelChart  <-- Currently first
+     |
+     v
+CustomerJobsTable     <-- Currently second
+```
 
-**Operations Section (operationsItems)**
-- Human Activity
-- AI Activity
+### New Order
 
-### New Structure
-
-**Overview Section (mainNavItems)**
-- Dashboard
-- Jobs & Funnel
-
-**Operations Section (operationsItems)**
-- Human Activity
-- AI Activity
-- Human vs AI ← Moved here
+```text
+Job Metrics Cards
+     |
+     v
+CustomerJobsTable     <-- Moved up
+     |
+     v
+AggregateFunnelChart  <-- Moved down
+```
 
 ---
 
-## Code Changes
+## Code Change
 
-**Remove from mainNavItems (lines 28-44)**
-```typescript
-const mainNavItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Jobs & Funnel",
-    url: "/funnel",
-    icon: TrendingUp,
-  },
-  // "Human vs AI" removed from here
-];
-```
+**File: `src/pages/FunnelAnalytics.tsx` (lines 130-134)**
 
-**Add to operationsItems (lines 46-57)**
-```typescript
-const operationsItems = [
-  {
-    title: "Human Activity",
-    url: "/human-activity",
-    icon: Users,
-  },
-  {
-    title: "AI Activity",
-    url: "/ai-performance",
-    icon: Bot,
-  },
-  {
-    title: "Human vs AI",    // Added here
-    url: "/human-ai",
-    icon: GitBranch,
-  },
-];
+```tsx
+// Before
+{/* Aggregate Funnel Chart */}
+<AggregateFunnelChart data={aggregateFunnelData} />
+
+{/* Jobs Pipeline Table */}
+<CustomerJobsTable />
+
+// After
+{/* Jobs Pipeline Table */}
+<CustomerJobsTable />
+
+{/* Aggregate Funnel Chart */}
+<AggregateFunnelChart data={aggregateFunnelData} />
 ```
 
 ---
 
 ## Result
 
-The sidebar will display:
-- **Overview**: Dashboard, Jobs & Funnel
-- **Operations**: Human Activity, AI Activity, Human vs AI
-- **Business**: Revenue & Costs, Staffing Planner
-
-This groups the comparative "Human vs AI" view logically with the individual activity dashboards under Operations.
+On the Jobs & Funnel page (Job Explorer tab), the layout will be:
+1. **Job Metrics Cards** - Active Jobs, Avg Conversion, Avg Days Open, Pipeline Value
+2. **Jobs Pipeline Table** - Detailed list of jobs with View Pipeline button
+3. **Aggregate Funnel Chart** - AI vs Human Split visualization
 
