@@ -1,8 +1,7 @@
 
+# Add Company Column to Jobs Pipeline Table
 
-# Hide Role Type and Status Columns
-
-Remove the "Role Type" and "Status" columns from the Jobs Pipeline table on the /funnel page.
+Add a new "Company" column to the Jobs Pipeline table displaying hospital/employer names including Ankura Hospital, Oasis Fertility, and other Indian hospitals.
 
 ---
 
@@ -10,34 +9,47 @@ Remove the "Role Type" and "Status" columns from the Jobs Pipeline table on the 
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/customer/CustomerJobsTable.tsx` | Modify | Remove Role Type and Status columns from table header and body |
+| `src/lib/mockData.ts` | Modify | Update employer names to include Ankura Hospital, Oasis Fertility, and other Indian hospitals |
+| `src/components/customer/CustomerJobsTable.tsx` | Modify | Add Company column to table header and body |
 
 ---
 
 ## Technical Details
 
-### CustomerJobsTable.tsx
+### 1. mockData.ts - Update Employer Names
 
-**Remove from TableHeader:**
-- Line 74: Delete `<TableHead>Role Type</TableHead>`
-- Line 78: Delete `<TableHead>Status</TableHead>`
+Replace some existing employer names with the requested hospitals:
 
-**Remove from TableBody:**
-- Line 87: Delete `<TableCell className="capitalize">{job.roleType}</TableCell>`
-- Line 95: Delete `<TableCell>{getStatusBadge(job.status)}</TableCell>`
+| Job ID | Current Employer | New Employer |
+|--------|-----------------|--------------|
+| JOB-001 | Apollo Hospitals | Ankura Hospital |
+| JOB-002 | Fortis Healthcare | Oasis Fertility |
+| JOB-003 | Max Healthcare | Manipal Hospitals |
+| JOB-004 | Narayana Health | KIMS Hospital |
+| JOB-005 | Rainbow Hospitals | Yashoda Hospitals |
+| JOB-006 | Medanta | Aster CMI Hospital |
 
-**Optional cleanup:**
-- The `getStatusBadge` helper function (lines 16-23) can be removed since it will no longer be used
+### 2. CustomerJobsTable.tsx - Add Company Column
+
+**Add to TableHeader (after Title column):**
+```tsx
+<TableHead>Company</TableHead>
+```
+
+**Add to TableBody (after Title cell):**
+```tsx
+<TableCell>{job.employer}</TableCell>
+```
 
 ---
 
-## Resulting Table Columns
+## Result
 
 The Jobs Pipeline table will display:
 - Job ID
 - Title
+- **Company** (new column with Indian hospital names)
 - Current Stage
 - Candidates
 - Days Open
 - View Pipeline button
-
