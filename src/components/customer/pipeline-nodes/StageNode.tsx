@@ -41,6 +41,7 @@ interface StageNodeData {
   icon?: string;
   handlers?: string[];
   borderColor?: string;
+  onClick?: () => void;
 }
 
 interface StageNodeProps {
@@ -52,7 +53,10 @@ export const StageNode = memo(({ data }: StageNodeProps) => {
   const borderClass = data.borderColor || "border-blue-200";
 
   return (
-    <div className={`relative bg-white rounded-lg border-2 ${borderClass} shadow-sm px-4 py-3 min-w-[140px]`}>
+    <div 
+      className={`relative bg-white rounded-lg border-2 ${borderClass} shadow-sm px-4 py-3 min-w-[140px] cursor-pointer hover:shadow-md transition-shadow`}
+      onClick={data.onClick}
+    >
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground/50 !w-2 !h-2" />
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground/50 !w-2 !h-2" />
       <Handle type="target" position={Position.Top} id="top" className="!bg-muted-foreground/50 !w-2 !h-2" />

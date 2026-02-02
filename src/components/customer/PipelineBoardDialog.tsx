@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   ReactFlow,
   Controls,
@@ -17,9 +17,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { StageNode, SourceNode, DecisionNode, OutcomeNode } from "./pipeline-nodes";
-import type { Job } from "@/lib/mockData";
+import { StageDetailsSheet } from "./StageDetailsSheet";
+import type { Job, StageMetrics } from "@/lib/mockData";
 
 const nodeTypes = {
   stageNode: StageNode,
@@ -97,9 +97,48 @@ interface PipelineBoardDialogProps {
   job: Job | null;
 }
 
+// Map node IDs to their display labels and icons
+const nodeMetadata: Record<string, { label: string; icon?: string }> = {
+  "prescreen": { label: "Pre-screen Questions", icon: "clipboard" },
+  "voice-agent": { label: "Voice Agent Screening", icon: "phone" },
+  "expression": { label: "Expression of Interest", icon: "heart" },
+  "job-discovery": { label: "Job Discovery", icon: "search" },
+  "interview": { label: "Interview & Decision", icon: "users" },
+  "post-job": { label: "Post a Job", icon: "briefcase" },
+  "app-details": { label: "Application Details", icon: "fileText" },
+  "app-status": { label: "Application Status Update", icon: "refresh" },
+  "jobs-phenom": { label: "Jobs in Phenom", icon: "briefcase" },
+};
+
 export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDialogProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const handleNodeClick = useCallback((nodeId: string) => {
+    setSelectedNodeId(nodeId);
+  }, []);
+
+  const nodesWithHandlers = useMemo(() => {
+    return initialNodes.map(node => {
+      if (node.type === "stageNode") {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            onClick: () => handleNodeClick(node.id),
+          }
+        };
+      }
+      return node;
+    });
+  }, [handleNodeClick]);
+
+  const selectedMetrics: StageMetrics | null = selectedNodeId && job?.stageMetrics 
+    ? job.stageMetrics[selectedNodeId] || null 
+    : null;
+
+  const selectedNodeInfo = selectedNodeId ? nodeMetadata[selectedNodeId] : null;
 
   if (!job) return null;
 
@@ -127,7 +166,7 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
         
         <div className="flex-1 min-h-0">
           <ReactFlow
-            nodes={nodes}
+            nodes={nodesWithHandlers}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
@@ -145,6 +184,14 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
             />
           </ReactFlow>
         </div>
+
+        <StageDetailsSheet
+          open={!!selectedNodeId}
+          onOpenChange={(open) => !open && setSelectedNodeId(null)}
+          stageName={selectedNodeInfo?.label || "Stage Details"}
+          stageIcon={selectedNodeInfo?.icon}
+          metrics={selectedMetrics}
+        />
       </DialogContent>
     </Dialog>
   );
