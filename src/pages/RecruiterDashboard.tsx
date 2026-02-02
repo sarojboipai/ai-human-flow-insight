@@ -44,9 +44,9 @@ export default function RecruiterDashboard() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="dashboard-title">Recruiter Dashboard</h1>
+            <h1 className="dashboard-title">Human Activity</h1>
             <p className="text-muted-foreground mt-1">
-              Track recruiter productivity and performance metrics
+              Evaluate human workforce effort, productivity, and operational contribution
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function RecruiterDashboard() {
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Recruiters"
+            title="Active Team Members"
             value="32"
             change={2}
             changeLabel="new this month"
@@ -85,15 +85,15 @@ export default function RecruiterDashboard() {
             variant="primary"
           />
           <MetricCard
-            title="Avg Placements/Recruiter"
-            value="3.2"
+            title="Tasks Completed/Person"
+            value="28.4"
             change={8}
             changeLabel="vs last month"
             icon={<Target className="h-5 w-5" />}
             variant="success"
           />
           <MetricCard
-            title="Revenue/Recruiter"
+            title="Human Contribution Value"
             value="₹14.2K"
             change={12}
             changeLabel="vs last month"
@@ -101,8 +101,8 @@ export default function RecruiterDashboard() {
             variant="warning"
           />
           <MetricCard
-            title="Productivity Index"
-            value="87"
+            title="Effort Utilization"
+            value="87%"
             change={5}
             changeLabel="vs last month"
             icon={<TrendingUp className="h-5 w-5" />}
@@ -112,9 +112,9 @@ export default function RecruiterDashboard() {
 
         {/* Charts */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Productivity Trend */}
+          {/* Effort Trend */}
           <div className="chart-container">
-            <h3 className="section-title mb-4">Weekly Productivity Trend</h3>
+            <h3 className="section-title mb-4">Weekly Effort Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={productivityTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -134,7 +134,7 @@ export default function RecruiterDashboard() {
                 <Line
                   type="monotone"
                   dataKey="screened"
-                  name="Screened"
+                  name="Tasks Processed"
                   stroke="hsl(173, 58%, 45%)"
                   strokeWidth={2}
                   dot={{ fill: "hsl(173, 58%, 45%)" }}
@@ -142,7 +142,7 @@ export default function RecruiterDashboard() {
                 <Line
                   type="monotone"
                   dataKey="interviews"
-                  name="Interviews"
+                  name="Reviews Completed"
                   stroke="hsl(38, 92%, 50%)"
                   strokeWidth={2}
                   dot={{ fill: "hsl(38, 92%, 50%)" }}
@@ -150,7 +150,7 @@ export default function RecruiterDashboard() {
                 <Line
                   type="monotone"
                   dataKey="placements"
-                  name="Placements"
+                  name="Outcomes Delivered"
                   stroke="hsl(199, 89%, 48%)"
                   strokeWidth={2}
                   dot={{ fill: "hsl(199, 89%, 48%)" }}
@@ -159,9 +159,9 @@ export default function RecruiterDashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Team Performance */}
+          {/* Team Contribution */}
           <div className="chart-container">
-            <h3 className="section-title mb-4">Team Performance</h3>
+            <h3 className="section-title mb-4">Team Contribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={teamPerformance}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -178,24 +178,24 @@ export default function RecruiterDashboard() {
                     borderRadius: "8px",
                   }}
                 />
-                <Bar dataKey="placements" name="Placements" fill="hsl(173, 58%, 45%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="placements" name="Outcomes Delivered" fill="hsl(173, 58%, 45%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Recruiter Table */}
-        <RecruiterTable recruiters={recruiters} title="Individual Performance" />
+        {/* Team Member Table */}
+        <RecruiterTable recruiters={recruiters} title="Team Member Activity" />
 
         {/* Benchmarks */}
         <div className="chart-container">
-          <h3 className="section-title mb-4">Performance Benchmarks</h3>
+          <h3 className="section-title mb-4">Activity Benchmarks</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { metric: "Profiles Screened/Day", benchmark: 25, top: 45, avg: 22 },
-              { metric: "Interviews/Week", benchmark: 8, top: 15, avg: 7 },
-              { metric: "Placements/Month", benchmark: 3, top: 6, avg: 2.8 },
-              { metric: "Response Time (hrs)", benchmark: 4, top: 1.5, avg: 5.2 },
+              { metric: "Tasks Processed/Day", benchmark: 25, top: 45, avg: 22 },
+              { metric: "Reviews/Week", benchmark: 8, top: 15, avg: 7 },
+              { metric: "Outcomes/Month", benchmark: 3, top: 6, avg: 2.8 },
+              { metric: "Avg Response Time (hrs)", benchmark: 4, top: 1.5, avg: 5.2 },
             ].map((item) => (
               <div key={item.metric} className="rounded-lg border border-border p-4">
                 <p className="text-sm font-medium">{item.metric}</p>

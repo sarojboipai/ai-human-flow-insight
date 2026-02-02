@@ -46,7 +46,7 @@ const mainNavItems = [
 const operationsItems = [
   {
     title: "Human Activity",
-    url: "/recruiters",
+    url: "/human-activity",
     icon: Users,
   },
   {
