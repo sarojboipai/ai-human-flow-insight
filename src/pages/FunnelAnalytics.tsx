@@ -127,11 +127,11 @@ export default function FunnelAnalytics() {
               ))}
             </div>
 
-            {/* Aggregate Funnel Chart */}
-            <AggregateFunnelChart data={aggregateFunnelData} />
-
             {/* Jobs Pipeline Table */}
             <CustomerJobsTable />
+
+            {/* Aggregate Funnel Chart */}
+            <AggregateFunnelChart data={aggregateFunnelData} />
           </TabsContent>
 
           {/* Funnel Analytics Tab */}
