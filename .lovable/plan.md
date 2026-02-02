@@ -1,8 +1,19 @@
 
 
-# Replace Sidebar Logo with New Swaasa Icon
+# Align Sidebar and App Header Heights
 
-Replace the current sidebar logo image with the newly uploaded Swaasa icon across all sidebar components.
+Ensure the sidebar header section and the main app header are aligned at the same height (h-16 / 64px) across all pages.
+
+---
+
+## Current Issue
+
+| Component | Current Height | Notes |
+|-----------|----------------|-------|
+| AppHeader | `h-16` (64px) | Fixed height |
+| SidebarHeader | Variable | Uses `p-4` padding, height depends on content |
+
+The sidebar header and app header are misaligned because they use different height strategies.
 
 ---
 
@@ -10,31 +21,35 @@ Replace the current sidebar logo image with the newly uploaded Swaasa icon acros
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/assets/swaasa-logo.png` | Replace | Overwrite with new uploaded icon |
+| `src/components/layout/AppSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
+| `src/components/layout/CustomerSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
+| `src/components/layout/OpsSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
+| `src/components/layout/HITLSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
 
 ---
 
 ## Technical Details
 
-### Asset Replacement
+### All Sidebar Headers
 
-The new logo will replace the existing file at the same path, so no code changes are needed in the sidebar components since they already import from `@/assets/swaasa-logo.png`.
-
+Change the SidebarHeader from:
+```tsx
+<SidebarHeader className="border-b border-sidebar-border p-4">
 ```
-user-uploads://Swaasa_Logo_192x192-2.png → src/assets/swaasa-logo.png
+
+To:
+```tsx
+<SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center">
 ```
 
-### Files Already Configured
-
-The following files already import and use `swaasaLogo`:
-- `src/components/layout/AppSidebar.tsx`
-- `src/components/layout/CustomerSidebar.tsx`
-- `src/components/layout/OpsSidebar.tsx`
-- `src/components/layout/HITLSidebar.tsx`
+This ensures:
+- Fixed height of `h-16` (64px) matching the AppHeader
+- Horizontal padding `px-4` for consistent spacing
+- Flexbox with `items-center` to vertically center the logo and text
 
 ---
 
 ## Result
 
-All four persona sidebars will display the new Swaasa "S" icon (blue stylized S with curved underline) in place of the previous logo. No code changes required - only the asset file needs to be replaced.
+Both the sidebar header and the main app header will have identical heights (64px), creating perfect horizontal alignment across the top of the application for all personas.
 
