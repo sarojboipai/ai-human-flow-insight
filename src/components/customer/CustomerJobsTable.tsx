@@ -61,6 +61,7 @@ export function CustomerJobsTable() {
             <TableRow>
               <TableHead>Job ID</TableHead>
               <TableHead>Title</TableHead>
+              <TableHead>Company</TableHead>
               
               <TableHead>Current Stage</TableHead>
               <TableHead className="text-right">Candidates</TableHead>
@@ -74,6 +75,7 @@ export function CustomerJobsTable() {
               <TableRow key={job.id}>
                 <TableCell className="font-mono text-xs">{job.id}</TableCell>
                 <TableCell className="font-medium">{job.title}</TableCell>
+                <TableCell>{job.employer}</TableCell>
                 
                 <TableCell>
                   <Badge variant="secondary">{currentStage(job)}</Badge>
