@@ -394,6 +394,16 @@ export interface JobHITLEvent {
   timestamp: string;
 }
 
+export interface StageMetrics {
+  sent: number;
+  appeared: number;
+  qualified: number;
+  disqualified: number;
+  pending: number;
+  avgResponseTime: string;
+  handler: string;
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -411,7 +421,8 @@ export interface Job {
   cost: number;
   margin: number;
   hitlEvents: JobHITLEvent[];
-  workflowId: string;  // Links job to a workflow
+  workflowId: string;
+  stageMetrics?: Record<string, StageMetrics>;
 }
 
 export const jobs: Job[] = [
@@ -444,6 +455,13 @@ export const jobs: Job[] = [
       { id: "evt-002", type: "override", reason: "Candidate requested specific shift", assignee: "Rahul Mehta", resolution: "Manual scheduling", duration: "4 hours", timestamp: "1 day ago" },
     ],
     workflowId: "wf-001",
+    stageMetrics: {
+      "prescreen": { sent: 98, appeared: 72, qualified: 45, disqualified: 18, pending: 9, avgResponseTime: "4 hours", handler: "AE" },
+      "voice-agent": { sent: 45, appeared: 38, qualified: 28, disqualified: 8, pending: 2, avgResponseTime: "15 mins", handler: "X+" },
+      "expression": { sent: 189, appeared: 156, qualified: 98, disqualified: 42, pending: 16, avgResponseTime: "2 hours", handler: "C" },
+      "job-discovery": { sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8, avgResponseTime: "1 hour", handler: "C" },
+      "interview": { sent: 34, appeared: 28, qualified: 12, disqualified: 10, pending: 6, avgResponseTime: "3 days", handler: "R" },
+    },
   },
   {
     id: "JOB-002",
