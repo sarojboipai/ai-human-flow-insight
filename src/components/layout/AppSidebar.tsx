@@ -36,11 +36,6 @@ const mainNavItems = [
     url: "/funnel",
     icon: TrendingUp,
   },
-  {
-    title: "Human vs AI",
-    url: "/human-ai",
-    icon: GitBranch,
-  },
 ];
 
 const operationsItems = [
@@ -53,6 +48,11 @@ const operationsItems = [
     title: "AI Activity",
     url: "/ai-performance",
     icon: Bot,
+  },
+  {
+    title: "Human vs AI",
+    url: "/human-ai",
+    icon: GitBranch,
   },
 ];
 
