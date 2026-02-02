@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -31,24 +30,19 @@ export function GlobalFilters({
 }: GlobalFiltersProps) {
   return (
     <div className="flex items-center gap-3">
-      {/* Duration Selector - Segmented Control Style */}
-      <div className="flex items-center gap-1 rounded-lg bg-secondary/50 p-1">
-        {durationOptions.slice(0, 4).map((option) => (
-          <Button
-            key={option.value}
-            variant={duration === option.value ? "default" : "ghost"}
-            size="sm"
-            className={`h-8 px-3 text-xs ${
-              duration === option.value
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            onClick={() => onDurationChange(option.value)}
-          >
-            {option.label}
-          </Button>
-        ))}
-      </div>
+      {/* Duration Selector - Dropdown */}
+      <Select value={duration} onValueChange={onDurationChange}>
+        <SelectTrigger className="w-[160px] h-9 bg-secondary/50 border-none">
+          <SelectValue placeholder="Select duration" />
+        </SelectTrigger>
+        <SelectContent>
+          {durationOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Customer Selector */}
       <Select value={customer} onValueChange={onCustomerChange}>
