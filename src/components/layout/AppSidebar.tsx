@@ -6,9 +6,9 @@ import {
   DollarSign,
   GitBranch,
   Settings,
-  BarChart3,
   Target,
 } from "lucide-react";
+import swaasaLogo from "@/assets/swaasa-logo.png";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -80,9 +80,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <BarChart3 className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img 
+            src={swaasaLogo} 
+            alt="Swaasa Logo" 
+            className="h-9 w-9 rounded-lg object-cover"
+          />
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">
