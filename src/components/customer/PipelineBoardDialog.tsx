@@ -30,7 +30,13 @@ import {
   AutomationNode,
 } from "./pipeline-nodes";
 import { StageDetailsSheet } from "./StageDetailsSheet";
-import type { Job, EnhancedStageMetrics } from "@/lib/mockData";
+import { 
+  getCustomerWorkflowSchema, 
+  type Job, 
+  type EnhancedStageMetrics,
+  type CustomerWorkflowSchema,
+  type PipelineWorkflowStage,
+} from "@/lib/mockData";
 
 const nodeTypes = {
   stageNode: StageNode,
@@ -43,163 +49,166 @@ const nodeTypes = {
   automationNode: AutomationNode,
 };
 
-// Build nodes dynamically based on job data
-const buildNodes = (job: Job): Node[] => {
-  const metrics = job.enhancedStageMetrics || {};
-  
-  return [
-    // Source node
-    { 
-      id: "ankura", 
-      type: "sourceNode", 
-      position: { x: 50, y: 140 }, 
-      data: { label: job.employer.split(' ')[0] + "\nHospital", variant: "ankura" } 
-    },
-    
-    // Jobs in Hospital - Candidate journey step (Purple)
-    { 
-      id: "jobs-ankura", 
-      type: "candidateNode", 
-      position: { x: 200, y: 130 }, 
-      data: { 
-        label: "Jobs in\n" + job.employer.split(' ')[0], 
-        icon: "eye",
-        aiPercentage: metrics["jobs-ankura"]?.aiPercentage,
-        humanPercentage: metrics["jobs-ankura"]?.humanPercentage,
-        hitlPercentage: metrics["jobs-ankura"]?.hitlPercentage,
-        slaStatus: metrics["jobs-ankura"]?.slaStatus,
-      } 
-    },
-    
-    // Job Discovery - Candidate journey step (Purple)
-    { 
-      id: "job-discovery", 
-      type: "candidateNode", 
-      position: { x: 370, y: 130 }, 
-      data: { 
-        label: "Job\nDiscovery", 
-        icon: "search",
-        aiPercentage: metrics["job-discovery"]?.aiPercentage,
-        humanPercentage: metrics["job-discovery"]?.humanPercentage,
-        hitlPercentage: metrics["job-discovery"]?.hitlPercentage,
-        slaStatus: metrics["job-discovery"]?.slaStatus,
-      } 
-    },
-    
-    // Expression of Interest - Candidate journey step (Purple)
-    { 
-      id: "expression", 
-      type: "candidateNode", 
-      position: { x: 540, y: 130 }, 
-      data: { 
-        label: "Expression\nof Interest", 
-        icon: "heart",
-        aiPercentage: metrics["expression"]?.aiPercentage,
-        humanPercentage: metrics["expression"]?.humanPercentage,
-        hitlPercentage: metrics["expression"]?.hitlPercentage,
-        slaStatus: metrics["expression"]?.slaStatus,
-      } 
-    },
-    
-    // Pre-screen Questions - Automation (Green)
-    { 
-      id: "prescreen", 
-      type: "automationNode", 
-      position: { x: 710, y: 130 }, 
-      data: { 
-        label: "Pre-screen\nQuestions", 
-        icon: "send",
-        aiPercentage: metrics["prescreen"]?.aiPercentage,
-        humanPercentage: metrics["prescreen"]?.humanPercentage,
-        hitlPercentage: metrics["prescreen"]?.hitlPercentage,
-        slaStatus: metrics["prescreen"]?.slaStatus,
-      } 
-    },
-    
-    // Voice Agent Screening - AI Agent (Orange)
-    { 
-      id: "voice-agent", 
-      type: "aiAgentNode", 
-      position: { x: 880, y: 130 }, 
-      data: { 
-        label: "Voice Agent\nScreening", 
-        icon: "phone",
-        aiPercentage: metrics["voice-agent"]?.aiPercentage,
-        humanPercentage: metrics["voice-agent"]?.humanPercentage,
-        hitlPercentage: metrics["voice-agent"]?.hitlPercentage,
-        slaStatus: metrics["voice-agent"]?.slaStatus,
-      } 
-    },
-    
-    // Decision node
-    { 
-      id: "decision", 
-      type: "decisionNode", 
-      position: { x: 1050, y: 145 }, 
-      data: { label: "Decision" } 
-    },
-    
-    // Scheduling - Automation (Green)
-    { 
-      id: "scheduling", 
-      type: "automationNode", 
-      position: { x: 1200, y: 40 }, 
-      data: { 
-        label: "Interview\nScheduling", 
-        icon: "calendar",
-        aiPercentage: metrics["scheduling"]?.aiPercentage,
-        humanPercentage: metrics["scheduling"]?.humanPercentage,
-        hitlPercentage: metrics["scheduling"]?.hitlPercentage,
-        slaStatus: metrics["scheduling"]?.slaStatus,
-      } 
-    },
-    
-    // Silver Medalist - Human Recruiter (Blue)
-    { 
-      id: "silver-med", 
-      type: "recruiterNode", 
-      position: { x: 1200, y: 150 }, 
-      data: { 
-        label: "Silver\nMedalist", 
-        icon: "userCheck",
-        aiPercentage: metrics["silver-med"]?.aiPercentage,
-        humanPercentage: metrics["silver-med"]?.humanPercentage,
-        hitlPercentage: metrics["silver-med"]?.hitlPercentage,
-        slaStatus: metrics["silver-med"]?.slaStatus,
-      } 
-    },
-    
-    // Talent Community - Candidate (Purple)
-    { 
-      id: "talent-community", 
-      type: "candidateNode", 
-      position: { x: 1200, y: 260 }, 
-      data: { 
-        label: "Talent\nCommunity", 
-        icon: "user",
-        aiPercentage: metrics["talent-community"]?.aiPercentage,
-        humanPercentage: metrics["talent-community"]?.humanPercentage,
-        hitlPercentage: metrics["talent-community"]?.hitlPercentage,
-        slaStatus: metrics["talent-community"]?.slaStatus,
-      } 
-    },
-  ];
+// Map stage type to node type
+const getNodeType = (stageType: PipelineWorkflowStage["type"]): string => {
+  switch (stageType) {
+    case "source": return "sourceNode";
+    case "candidate": return "candidateNode";
+    case "automation": return "automationNode";
+    case "ai": return "aiAgentNode";
+    case "recruiter": return "recruiterNode";
+    case "decision": return "decisionNode";
+    case "outcome": return "outcomeNode";
+    default: return "stageNode";
+  }
 };
 
-const initialEdges: Edge[] = [
-  // Main flow
-  { id: "e-ankura-jobs", source: "ankura", target: "jobs-ankura", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-jobs-discovery", source: "jobs-ankura", target: "job-discovery", type: "default", style: { stroke: "#a855f7", strokeWidth: 2 } },
-  { id: "e-discovery-expression", source: "job-discovery", target: "expression", type: "default", style: { stroke: "#a855f7", strokeWidth: 2 } },
-  { id: "e-expression-prescreen", source: "expression", target: "prescreen", type: "default", style: { stroke: "#10b981", strokeWidth: 2 } },
-  { id: "e-prescreen-voice", source: "prescreen", target: "voice-agent", type: "default", style: { stroke: "#f97316", strokeWidth: 2 } },
-  { id: "e-voice-decision", source: "voice-agent", target: "decision", type: "default", style: { stroke: "#1e293b", strokeWidth: 2 } },
+// Get edge color based on stage type
+const getEdgeColor = (stageType: PipelineWorkflowStage["type"]): string => {
+  switch (stageType) {
+    case "source": return "#94a3b8";
+    case "candidate": return "#a855f7";
+    case "automation": return "#10b981";
+    case "ai": return "#f97316";
+    case "recruiter": return "#3b82f6";
+    case "decision": return "#1e293b";
+    default: return "#94a3b8";
+  }
+};
+
+// Build nodes dynamically based on customer workflow schema
+const buildNodesFromSchema = (
+  job: Job, 
+  schema: CustomerWorkflowSchema
+): Node[] => {
+  const metrics = job.enhancedStageMetrics || {};
+  const nodes: Node[] = [];
   
-  // Decision to outcomes
-  { id: "e-decision-scheduling", source: "decision", sourceHandle: "top", target: "scheduling", type: "default", style: { stroke: "#10b981", strokeWidth: 2 }, label: "Qualified", labelStyle: { fontSize: 10, fill: "#10b981", fontWeight: 600 } },
-  { id: "e-decision-silver", source: "decision", sourceHandle: "right", target: "silver-med", type: "default", style: { stroke: "#3b82f6", strokeWidth: 2 }, label: "Hold", labelStyle: { fontSize: 10, fill: "#3b82f6", fontWeight: 600 } },
-  { id: "e-decision-community", source: "decision", sourceHandle: "bottom", target: "talent-community", type: "default", style: { stroke: "#a855f7", strokeWidth: 2 }, label: "Knockout", labelStyle: { fontSize: 10, fill: "#a855f7", fontWeight: 600 } },
-];
+  // Build main stage nodes
+  schema.stages.forEach((stage) => {
+    // Customize label based on customer name
+    let label = stage.label;
+    if (stage.id === "source") {
+      const customerShortName = job.employer.split(' ')[0];
+      label = `${customerShortName}\nHospital`;
+    } else if (stage.id === "jobs-ankura") {
+      const customerShortName = job.employer.split(' ')[0];
+      label = `Jobs in\n${customerShortName}`;
+    }
+    
+    const nodeType = getNodeType(stage.type);
+    const nodeData: Record<string, unknown> = {
+      label,
+      icon: stage.icon,
+      variant: stage.id === "source" ? "ankura" : undefined,
+    };
+    
+    // Add metrics for non-source, non-decision nodes
+    if (stage.type !== "source" && stage.type !== "decision" && metrics[stage.id]) {
+      nodeData.aiPercentage = metrics[stage.id]?.aiPercentage;
+      nodeData.humanPercentage = metrics[stage.id]?.humanPercentage;
+      nodeData.hitlPercentage = metrics[stage.id]?.hitlPercentage;
+      nodeData.slaStatus = metrics[stage.id]?.slaStatus;
+    }
+    
+    nodes.push({
+      id: stage.id,
+      type: nodeType,
+      position: stage.position,
+      data: nodeData,
+    });
+  });
+  
+  // Build outcome stage nodes
+  schema.outcomeStages.forEach((stage) => {
+    const nodeType = getNodeType(stage.type);
+    const nodeData: Record<string, unknown> = {
+      label: stage.label,
+      icon: stage.icon,
+    };
+    
+    if (metrics[stage.id]) {
+      nodeData.aiPercentage = metrics[stage.id]?.aiPercentage;
+      nodeData.humanPercentage = metrics[stage.id]?.humanPercentage;
+      nodeData.hitlPercentage = metrics[stage.id]?.hitlPercentage;
+      nodeData.slaStatus = metrics[stage.id]?.slaStatus;
+    }
+    
+    nodes.push({
+      id: stage.id,
+      type: nodeType,
+      position: stage.position,
+      data: nodeData,
+    });
+  });
+  
+  return nodes;
+};
+
+// Build edges dynamically based on schema
+const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
+  const edges: Edge[] = [];
+  const mainStages = schema.stages;
+  
+  // Connect main stages in sequence
+  for (let i = 0; i < mainStages.length - 1; i++) {
+    const sourceStage = mainStages[i];
+    const targetStage = mainStages[i + 1];
+    
+    edges.push({
+      id: `e-${sourceStage.id}-${targetStage.id}`,
+      source: sourceStage.id,
+      target: targetStage.id,
+      type: "default",
+      style: { 
+        stroke: getEdgeColor(sourceStage.type), 
+        strokeWidth: sourceStage.type === "source" ? 1 : 2,
+        strokeDasharray: sourceStage.type === "source" ? "5,5" : undefined,
+      },
+    });
+  }
+  
+  // Connect decision node to outcomes
+  const decisionStage = mainStages.find(s => s.type === "decision");
+  if (decisionStage && schema.outcomeStages.length >= 3) {
+    const [scheduling, silverMed, talentCommunity] = schema.outcomeStages;
+    
+    edges.push({
+      id: `e-decision-scheduling`,
+      source: decisionStage.id,
+      sourceHandle: "top",
+      target: scheduling.id,
+      type: "default",
+      style: { stroke: "#10b981", strokeWidth: 2 },
+      label: "Qualified",
+      labelStyle: { fontSize: 10, fill: "#10b981", fontWeight: 600 },
+    });
+    
+    edges.push({
+      id: `e-decision-silver`,
+      source: decisionStage.id,
+      sourceHandle: "right",
+      target: silverMed.id,
+      type: "default",
+      style: { stroke: "#3b82f6", strokeWidth: 2 },
+      label: "Hold",
+      labelStyle: { fontSize: 10, fill: "#3b82f6", fontWeight: 600 },
+    });
+    
+    edges.push({
+      id: `e-decision-community`,
+      source: decisionStage.id,
+      sourceHandle: "bottom",
+      target: talentCommunity.id,
+      type: "default",
+      style: { stroke: "#a855f7", strokeWidth: 2 },
+      label: "Knockout",
+      labelStyle: { fontSize: 10, fill: "#a855f7", fontWeight: 600 },
+    });
+  }
+  
+  return edges;
+};
 
 const legendItems = [
   { color: "bg-purple-500", name: "Candidate Journey", description: "User journey steps" },
@@ -216,16 +225,20 @@ interface PipelineBoardDialogProps {
 }
 
 // Map node IDs to their display labels and icons
-const nodeMetadata: Record<string, { label: string; icon?: string }> = {
-  "jobs-ankura": { label: "Jobs in Ankura Hospital", icon: "briefcase" },
-  "job-discovery": { label: "Job Discovery", icon: "search" },
-  "expression": { label: "Expression of Interest", icon: "heart" },
-  "prescreen": { label: "Pre-screen Questions", icon: "clipboard" },
-  "voice-agent": { label: "Voice Agent Screening", icon: "phone" },
-  "decision": { label: "Decision Node", icon: "users" },
-  "scheduling": { label: "Interview Scheduling", icon: "calendar" },
-  "silver-med": { label: "Silver Medalist Pool", icon: "award" },
-  "talent-community": { label: "Talent Community", icon: "users" },
+const getNodeMetadata = (nodeId: string, customerName: string): { label: string; icon?: string } => {
+  const shortName = customerName.split(' ')[0];
+  const metadata: Record<string, { label: string; icon?: string }> = {
+    "jobs-ankura": { label: `Jobs in ${shortName}`, icon: "briefcase" },
+    "job-discovery": { label: "Job Discovery", icon: "search" },
+    "expression": { label: "Expression of Interest", icon: "heart" },
+    "prescreen": { label: "Pre-screen Questions", icon: "clipboard" },
+    "voice-agent": { label: "Voice Agent Screening", icon: "phone" },
+    "decision": { label: "Decision Node", icon: "users" },
+    "scheduling": { label: "Interview Scheduling", icon: "calendar" },
+    "silver-med": { label: "Silver Medalist Pool", icon: "award" },
+    "talent-community": { label: "Talent Community", icon: "users" },
+  };
+  return metadata[nodeId] || { label: "Stage Details" };
 };
 
 export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDialogProps) {
@@ -235,11 +248,25 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
     setSelectedNodeId(nodeId);
   }, []);
 
-  const dynamicNodes = useMemo(() => {
-    if (!job) return [];
-    return buildNodes(job);
+  // Get customer-specific workflow schema
+  const workflowSchema = useMemo(() => {
+    if (!job) return null;
+    return getCustomerWorkflowSchema(job.employer);
   }, [job]);
 
+  // Build nodes from schema
+  const dynamicNodes = useMemo(() => {
+    if (!job || !workflowSchema) return [];
+    return buildNodesFromSchema(job, workflowSchema);
+  }, [job, workflowSchema]);
+
+  // Build edges from schema
+  const dynamicEdges = useMemo(() => {
+    if (!workflowSchema) return [];
+    return buildEdgesFromSchema(workflowSchema);
+  }, [workflowSchema]);
+
+  // Add click handlers to nodes
   const nodesWithHandlers = useMemo(() => {
     return dynamicNodes.map(node => {
       if (node.type !== "sourceNode" && node.type !== "decisionNode") {
@@ -256,13 +283,15 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
   }, [dynamicNodes, handleNodeClick]);
 
   const [nodes, , onNodesChange] = useNodesState(nodesWithHandlers);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [edges, , onEdgesChange] = useEdgesState(dynamicEdges);
 
   const selectedMetrics: EnhancedStageMetrics | null = selectedNodeId && job?.enhancedStageMetrics 
     ? job.enhancedStageMetrics[selectedNodeId] || null 
     : null;
 
-  const selectedNodeInfo = selectedNodeId ? nodeMetadata[selectedNodeId] : null;
+  const selectedNodeInfo = selectedNodeId && job 
+    ? getNodeMetadata(selectedNodeId, job.employer) 
+    : null;
 
   if (!job) return null;
 
@@ -296,7 +325,7 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
         <div className="flex-1 min-h-0">
           <ReactFlow
             nodes={nodesWithHandlers}
-            edges={edges}
+            edges={dynamicEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}

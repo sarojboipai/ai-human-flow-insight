@@ -12,6 +12,7 @@ import { ExternalLink } from "lucide-react";
 
 export interface JobPipelineHealthRow {
   jobId: string;
+  jobTitle: string;
   customer: string;
   currentStage: string;
   bottleneckStage: string;
@@ -96,6 +97,7 @@ export function JobPipelineHealthTable({
         <TableHeader>
           <TableRow>
             <TableHead>Job ID</TableHead>
+            <TableHead>Job Title</TableHead>
             <TableHead>Enterprise Customer</TableHead>
             <TableHead>Funnel Stage</TableHead>
             <TableHead>Bottleneck</TableHead>
@@ -114,6 +116,7 @@ export function JobPipelineHealthTable({
               <TableCell className="font-medium text-primary">
                 {row.jobId}
               </TableCell>
+              <TableCell className="font-medium">{row.jobTitle}</TableCell>
               <TableCell>{row.customer}</TableCell>
               <TableCell>
                 <StageBadge stage={row.currentStage} />
