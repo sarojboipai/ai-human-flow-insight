@@ -1,8 +1,7 @@
 
+# Replace Sidebar Logo with Swaasa Logo Across All Pages
 
-# Move Aggregate Funnel Chart Below Jobs Pipeline
-
-Reorder the widgets in the Job Explorer tab so the "Aggregate Funnel - AI vs Human Split" chart appears after the Jobs Pipeline table.
+Replace the icon-based logos in all four sidebar components with the uploaded Swaasa logo image for consistent branding across all personas.
 
 ---
 
@@ -10,64 +9,123 @@ Reorder the widgets in the Job Explorer tab so the "Aggregate Funnel - AI vs Hum
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/FunnelAnalytics.tsx` | Modify | Swap order of AggregateFunnelChart and CustomerJobsTable |
+| `src/assets/swaasa-logo.png` | Create | Add logo image to assets folder |
+| `src/components/layout/AppSidebar.tsx` | Modify | Replace BarChart3 icon with Swaasa logo |
+| `src/components/layout/CustomerSidebar.tsx` | Modify | Replace BarChart3 icon with Swaasa logo |
+| `src/components/layout/OpsSidebar.tsx` | Modify | Replace Network icon with Swaasa logo |
+| `src/components/layout/HITLSidebar.tsx` | Modify | Replace ListTodo icon with Swaasa logo |
 
 ---
 
 ## Technical Details
 
-### Current Order (lines 130-134)
+### 1. Create Assets Folder and Add Logo
 
-```text
-Job Metrics Cards
-     |
-     v
-AggregateFunnelChart  <-- Currently first
-     |
-     v
-CustomerJobsTable     <-- Currently second
+```
+src/assets/swaasa-logo.png  ← Copy uploaded logo here
 ```
 
-### New Order
+### 2. AppSidebar.tsx Changes
 
-```text
-Job Metrics Cards
-     |
-     v
-CustomerJobsTable     <-- Moved up
-     |
-     v
-AggregateFunnelChart  <-- Moved down
+**Add import**
+```tsx
+import swaasaLogo from "@/assets/swaasa-logo.png";
 ```
 
----
+**Remove BarChart3 from imports (line 9)**
 
-## Code Change
-
-**File: `src/pages/FunnelAnalytics.tsx` (lines 130-134)**
-
+**Replace icon container (lines 83-85)**
 ```tsx
 // Before
-{/* Aggregate Funnel Chart */}
-<AggregateFunnelChart data={aggregateFunnelData} />
-
-{/* Jobs Pipeline Table */}
-<CustomerJobsTable />
+<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+  <BarChart3 className="h-5 w-5 text-primary-foreground" />
+</div>
 
 // After
-{/* Jobs Pipeline Table */}
-<CustomerJobsTable />
+<img 
+  src={swaasaLogo} 
+  alt="Swaasa Logo" 
+  className="h-9 w-9 rounded-lg object-cover"
+/>
+```
 
-{/* Aggregate Funnel Chart */}
-<AggregateFunnelChart data={aggregateFunnelData} />
+### 3. CustomerSidebar.tsx Changes
+
+**Add import**
+```tsx
+import swaasaLogo from "@/assets/swaasa-logo.png";
+```
+
+**Remove BarChart3 from imports (line 5)**
+
+**Replace icon container (lines 46-48)**
+```tsx
+// Before
+<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+  <BarChart3 className="h-5 w-5 text-primary-foreground" />
+</div>
+
+// After
+<img 
+  src={swaasaLogo} 
+  alt="Swaasa Logo" 
+  className="h-9 w-9 rounded-lg object-cover"
+/>
+```
+
+### 4. OpsSidebar.tsx Changes
+
+**Add import**
+```tsx
+import swaasaLogo from "@/assets/swaasa-logo.png";
+```
+
+**Replace icon container (lines 63-65)**
+```tsx
+// Before
+<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+  <Network className="h-5 w-5 text-primary-foreground" />
+</div>
+
+// After
+<img 
+  src={swaasaLogo} 
+  alt="Swaasa Logo" 
+  className="h-9 w-9 rounded-lg object-cover"
+/>
+```
+
+### 5. HITLSidebar.tsx Changes
+
+**Add import**
+```tsx
+import swaasaLogo from "@/assets/swaasa-logo.png";
+```
+
+**Replace icon container (lines 50-52)**
+```tsx
+// Before
+<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+  <ListTodo className="h-5 w-5 text-primary-foreground" />
+</div>
+
+// After
+<img 
+  src={swaasaLogo} 
+  alt="Swaasa Logo" 
+  className="h-9 w-9 rounded-lg object-cover"
+/>
 ```
 
 ---
 
 ## Result
 
-On the Jobs & Funnel page (Job Explorer tab), the layout will be:
-1. **Job Metrics Cards** - Active Jobs, Avg Conversion, Avg Days Open, Pipeline Value
-2. **Jobs Pipeline Table** - Detailed list of jobs with View Pipeline button
-3. **Aggregate Funnel Chart** - AI vs Human Split visualization
+All four persona sidebars (Admin, Customer, Operations, HITL) will display the Swaasa "S" logo in the header instead of generic Lucide icons, providing consistent branding across the entire application.
 
+| Sidebar | Current Icon | New Logo |
+|---------|--------------|----------|
+| AppSidebar (Admin) | BarChart3 | Swaasa Logo |
+| CustomerSidebar | BarChart3 | Swaasa Logo |
+| OpsSidebar | Network | Swaasa Logo |
+| HITLSidebar | ListTodo | Swaasa Logo |
