@@ -45,12 +45,12 @@ const mainNavItems = [
 
 const operationsItems = [
   {
-    title: "Recruiter Dashboard",
+    title: "Human Activity",
     url: "/recruiters",
     icon: Users,
   },
   {
-    title: "AI Performance",
+    title: "AI Activity",
     url: "/ai-performance",
     icon: Bot,
   },
