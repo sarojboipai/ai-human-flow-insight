@@ -6,6 +6,7 @@ import { AIWorkloadChart } from "@/components/dashboard/AIWorkloadChart";
 import { GlobalFilters } from "@/components/dashboard/GlobalFilters";
 import { AIEvaluationMetrics } from "@/components/dashboard/AIEvaluationMetrics";
 import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealthTable";
+import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
 import {
   Users,
   DollarSign,
@@ -21,15 +22,22 @@ import {
   aiEvaluationMetrics,
   jobPipelineHealth,
   dashboardKPIs,
+  jobs,
+  type Job,
 } from "@/lib/mockData";
 
 const Index = () => {
   const [duration, setDuration] = useState("30days");
   const [customer, setCustomer] = useState("all");
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleJobClick = (jobId: string) => {
-    // Navigate to job detail or open pipeline dialog
-    console.log("Opening job:", jobId);
+    const job = jobs.find(j => j.id === jobId);
+    if (job) {
+      setSelectedJob(job);
+      setDialogOpen(true);
+    }
   };
 
   return (
@@ -165,6 +173,13 @@ const Index = () => {
           onJobClick={handleJobClick}
         />
       </div>
+
+      {/* Job Workflow Explorer Overlay */}
+      <PipelineBoardDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        job={selectedJob}
+      />
     </DashboardLayout>
   );
 };
