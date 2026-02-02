@@ -36,7 +36,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/funnel" element={<FunnelAnalytics />} />
           <Route path="/human-ai" element={<HumanAIWorkload />} />
-          <Route path="/recruiters" element={<RecruiterDashboard />} />
+          <Route path="/human-activity" element={<RecruiterDashboard />} />
           <Route path="/ai-performance" element={<AIPerformance />} />
           <Route path="/hitl" element={<HITLQueue />} />
           <Route path="/hitl/analytics" element={<HITLAnalytics />} />
