@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { HITLSidebar } from "./HITLSidebar";
+import { OpsSidebar } from "./OpsSidebar";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { Bell, Search, User, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 
-interface HITLLayoutProps {
+interface OpsLayoutProps {
   children: ReactNode;
 }
 
-export function HITLLayout({ children }: HITLLayoutProps) {
+export function OpsLayout({ children }: OpsLayoutProps) {
   const navigate = useNavigate();
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <HITLSidebar />
+        <OpsSidebar />
         <SidebarInset className="flex-1">
           <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
             <SidebarTrigger className="-ml-2" />
@@ -31,7 +31,7 @@ export function HITLLayout({ children }: HITLLayoutProps) {
               <div className="relative max-w-md flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search tasks, candidates..."
+                  placeholder="Search workflows, agents, connectors..."
                   className="pl-9 bg-secondary/50 border-0 focus-visible:ring-1 focus-visible:ring-primary"
                 />
               </div>
