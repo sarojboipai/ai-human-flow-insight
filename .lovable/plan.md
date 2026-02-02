@@ -1,19 +1,8 @@
 
 
-# Align Sidebar and App Header Heights
+# Hide Role Type and Status Columns
 
-Ensure the sidebar header section and the main app header are aligned at the same height (h-16 / 64px) across all pages.
-
----
-
-## Current Issue
-
-| Component | Current Height | Notes |
-|-----------|----------------|-------|
-| AppHeader | `h-16` (64px) | Fixed height |
-| SidebarHeader | Variable | Uses `p-4` padding, height depends on content |
-
-The sidebar header and app header are misaligned because they use different height strategies.
+Remove the "Role Type" and "Status" columns from the Jobs Pipeline table on the /funnel page.
 
 ---
 
@@ -21,35 +10,34 @@ The sidebar header and app header are misaligned because they use different heig
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/layout/AppSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
-| `src/components/layout/CustomerSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
-| `src/components/layout/OpsSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
-| `src/components/layout/HITLSidebar.tsx` | Modify | Set SidebarHeader to `h-16` with centered content |
+| `src/components/customer/CustomerJobsTable.tsx` | Modify | Remove Role Type and Status columns from table header and body |
 
 ---
 
 ## Technical Details
 
-### All Sidebar Headers
+### CustomerJobsTable.tsx
 
-Change the SidebarHeader from:
-```tsx
-<SidebarHeader className="border-b border-sidebar-border p-4">
-```
+**Remove from TableHeader:**
+- Line 74: Delete `<TableHead>Role Type</TableHead>`
+- Line 78: Delete `<TableHead>Status</TableHead>`
 
-To:
-```tsx
-<SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center">
-```
+**Remove from TableBody:**
+- Line 87: Delete `<TableCell className="capitalize">{job.roleType}</TableCell>`
+- Line 95: Delete `<TableCell>{getStatusBadge(job.status)}</TableCell>`
 
-This ensures:
-- Fixed height of `h-16` (64px) matching the AppHeader
-- Horizontal padding `px-4` for consistent spacing
-- Flexbox with `items-center` to vertically center the logo and text
+**Optional cleanup:**
+- The `getStatusBadge` helper function (lines 16-23) can be removed since it will no longer be used
 
 ---
 
-## Result
+## Resulting Table Columns
 
-Both the sidebar header and the main app header will have identical heights (64px), creating perfect horizontal alignment across the top of the application for all personas.
+The Jobs Pipeline table will display:
+- Job ID
+- Title
+- Current Stage
+- Candidates
+- Days Open
+- View Pipeline button
 
