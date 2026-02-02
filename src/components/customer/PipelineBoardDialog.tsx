@@ -33,7 +33,7 @@ const initialNodes: Node[] = [
   { id: "swaasa", type: "sourceNode", position: { x: 100, y: 120 }, data: { label: "Swaasa", variant: "swaasa" } },
   
   // Candidate flow
-  { id: "jobs-phenom", type: "stageNode", position: { x: 250, y: 110 }, data: { label: "Jobs in\nPhenom", icon: "briefcase", handlers: ["C"], borderColor: "border-purple-200" } },
+  { id: "jobs-swaasa", type: "stageNode", position: { x: 250, y: 110 }, data: { label: "Jobs in\nSwaasa", icon: "briefcase", handlers: ["C"], borderColor: "border-purple-200" } },
   { id: "job-discovery", type: "stageNode", position: { x: 420, y: 110 }, data: { label: "Job\nDiscovery", icon: "search", handlers: ["C"], borderColor: "border-purple-200" } },
   { id: "expression", type: "stageNode", position: { x: 590, y: 110 }, data: { label: "Expression\nof Interest", icon: "heart", handlers: ["C"], borderColor: "border-purple-200" } },
   { id: "prescreen", type: "stageNode", position: { x: 760, y: 110 }, data: { label: "Pre-screen\nQuestions", icon: "clipboard", handlers: ["AE"], borderColor: "border-amber-200" } },
@@ -50,8 +50,8 @@ const initialNodes: Node[] = [
 
 const initialEdges: Edge[] = [
   // Swaasa flow
-  { id: "e-swaasa-jobs", source: "swaasa", target: "jobs-phenom", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
-  { id: "e-jobs-discovery", source: "jobs-phenom", target: "job-discovery", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
+  { id: "e-swaasa-jobs", source: "swaasa", target: "jobs-swaasa", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
+  { id: "e-jobs-discovery", source: "jobs-swaasa", target: "job-discovery", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-discovery-expression", source: "job-discovery", target: "expression", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-expression-prescreen", source: "expression", target: "prescreen", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
   { id: "e-prescreen-voice", source: "prescreen", target: "voice-agent", type: "default", style: { stroke: "#94a3b8", strokeDasharray: "5,5" } },
@@ -87,7 +87,7 @@ const nodeMetadata: Record<string, { label: string; icon?: string }> = {
   "post-job": { label: "Post a Job", icon: "briefcase" },
   "app-details": { label: "Application Details", icon: "fileText" },
   "app-status": { label: "Application Status Update", icon: "refresh" },
-  "jobs-phenom": { label: "Jobs in Phenom", icon: "briefcase" },
+  "jobs-swaasa": { label: "Jobs in Swaasa", icon: "briefcase" },
 };
 
 export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDialogProps) {
