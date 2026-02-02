@@ -1,8 +1,8 @@
 
 
-# Update AI Performance Page to AI Activity
+# Rebrand Recruiter Dashboard to Human Activity
 
-Rename and reframe the page content to align with the new "AI Activity" sidebar label.
+Transform the current recruiter-focused page into a leadership-oriented "Human Activity" dashboard that provides executive visibility into human workforce effort, productivity, and operational efficiency.
 
 ---
 
@@ -10,43 +10,88 @@ Rename and reframe the page content to align with the new "AI Activity" sidebar 
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/AIPerformance.tsx` | Modify | Update title, description, and section headers to use "Activity" framing |
+| `src/App.tsx` | Modify | Change route from `/recruiters` to `/human-activity` |
+| `src/components/layout/AppSidebar.tsx` | Modify | Update navigation URL from `/recruiters` to `/human-activity` |
+| `src/pages/RecruiterDashboard.tsx` | Modify | Update title, description, metrics, and section headers |
 
 ---
 
 ## Technical Details
 
-### Changes to AIPerformance.tsx
+### 1. Route Changes
 
-**1. Update Page Header (lines 41-46)**
+**App.tsx (line 39)**
+```tsx
+// Before
+<Route path="/recruiters" element={<RecruiterDashboard />} />
+
+// After
+<Route path="/human-activity" element={<RecruiterDashboard />} />
+```
+
+**AppSidebar.tsx (line 49)**
+```tsx
+// Before
+{ title: "Human Activity", url: "/recruiters", icon: Users }
+
+// After
+{ title: "Human Activity", url: "/human-activity", icon: Users }
+```
+
+### 2. Page Content Updates (RecruiterDashboard.tsx)
+
+**Page Header (lines 46-50)**
 
 | Current | New |
 |---------|-----|
-| AI Performance | AI Activity |
-| "Evaluate AI agent accuracy, bias metrics, and SLA adherence" | "Monitor AI agent actions, decisions, and automation outcomes" |
+| "Recruiter Dashboard" | "Human Activity" |
+| "Track recruiter productivity and performance metrics" | "Evaluate human workforce effort, productivity, and operational contribution" |
 
-**2. Update Section Headers**
+**Metric Cards (lines 78-110)**
 
-| Current Header | New Header |
-|----------------|------------|
-| Weekly Performance Trend | Weekly Activity Trend |
-| AI Health Score | AI Decision Quality |
-| Core AI Metrics | AI Action Metrics |
-| AI Failure Detection | AI Activity Alerts |
+| Current Metric | New Metric | New Value | Purpose |
+|----------------|------------|-----------|---------|
+| Total Recruiters | Active Team Members | 32 | Total human workforce count |
+| Avg Placements/Recruiter | Tasks Completed/Person | 28.4 | Individual productivity measure |
+| Revenue/Recruiter | Human Contribution Value | ₹14.2K | Value generated per person |
+| Productivity Index | Effort Utilization | 87% | Overall workforce efficiency |
 
-**3. Update Metric Card Titles (optional reframe)**
+**Section Headers**
 
-Keep the technical metrics (Match Precision, Match Recall, etc.) as they are accurate descriptors, but the surrounding context will be "activity" focused through the headers and descriptions.
+| Current | New |
+|---------|-----|
+| "Weekly Productivity Trend" | "Weekly Effort Trend" |
+| "Team Performance" | "Team Contribution" |
+| "Individual Performance" | "Team Member Activity" |
+| "Performance Benchmarks" | "Activity Benchmarks" |
+
+**Chart Data Labels**
+
+| Current | New |
+|---------|-----|
+| "Screened" | "Tasks Processed" |
+| "Interviews" | "Reviews Completed" |
+| "Placements" | "Outcomes Delivered" |
+
+**Benchmark Section Updates (lines 194-198)**
+
+| Current Benchmark | New Benchmark |
+|-------------------|---------------|
+| "Profiles Screened/Day" | "Tasks Processed/Day" |
+| "Interviews/Week" | "Reviews/Week" |
+| "Placements/Month" | "Outcomes/Month" |
+| "Response Time (hrs)" | "Avg Response Time (hrs)" |
 
 ---
 
 ## Result
 
 The page will display:
-- **Title**: "AI Activity"
-- **Description**: "Monitor AI agent actions, decisions, and automation outcomes"
-- Section headers reframed around "activity" language
-- All underlying metrics and visualizations remain unchanged
+- **Title**: "Human Activity"
+- **Description**: "Evaluate human workforce effort, productivity, and operational contribution"
+- Executive-level metrics focused on human workforce performance
+- Charts renamed to reflect general human activity rather than recruiter-specific tasks
+- Consistent terminology that speaks to leadership audience (CEO, Admin, Leaders)
 
-This creates consistency between the sidebar label ("AI Activity") and the page content.
+This aligns the page content with the sidebar label "Human Activity" and provides a higher-level operational view suitable for executive stakeholders.
 
