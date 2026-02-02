@@ -429,7 +429,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-001",
     title: "Senior ICU Nurse",
-    employer: "Apollo Hospitals",
+    employer: "Ankura Hospital",
     employerTier: "enterprise",
     roleType: "nurse",
     geography: "Mumbai",
@@ -466,7 +466,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-002",
     title: "General Physician",
-    employer: "Fortis Healthcare",
+    employer: "Oasis Fertility",
     employerTier: "enterprise",
     roleType: "doctor",
     geography: "Delhi",
@@ -495,7 +495,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-003",
     title: "Emergency Paramedic",
-    employer: "Max Healthcare",
+    employer: "Manipal Hospitals",
     employerTier: "mid-market",
     roleType: "paramedic",
     geography: "Bangalore",
@@ -522,7 +522,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-004",
     title: "Lab Technician",
-    employer: "Narayana Health",
+    employer: "KIMS Hospital",
     employerTier: "mid-market",
     roleType: "technician",
     geography: "Chennai",
@@ -551,7 +551,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-005",
     title: "Pediatric Nurse",
-    employer: "Rainbow Hospitals",
+    employer: "Yashoda Hospitals",
     employerTier: "smb",
     roleType: "nurse",
     geography: "Hyderabad",
@@ -578,7 +578,7 @@ export const jobs: Job[] = [
   {
     id: "JOB-006",
     title: "Cardiologist",
-    employer: "Medanta",
+    employer: "Aster CMI Hospital",
     employerTier: "enterprise",
     roleType: "doctor",
     geography: "Gurugram",
