@@ -1,196 +1,103 @@
 
 
-# Persist Pipelines & Table View for Active Pipelines
+# Add Ops Manager Dashboard Metrics
 
-This implementation adds state persistence for newly created pipelines and converts the Active Pipelines display from card format to a table format optimized for Operations Managers.
-
----
-
-## Overview
-
-When a pipeline is saved as draft or published, it will be added to the workflow list and displayed in the appropriate section. Active pipelines will use a table format showing key operational metrics.
+Enhance the Operations Dashboard with 8 key hiring metrics to provide a comprehensive operational view.
 
 ---
 
-## Current State Analysis
+## Requested Metrics
 
-| Component | Current Behavior |
-|-----------|-----------------|
-| `PipelineTemplateBuilder.tsx` | Save/Publish actions show toast but don't persist data |
-| `WorkflowList.tsx` | Uses local state initialized from `mockWorkflows`, displays all in cards |
-| `WorkflowCard.tsx` | Card-based display with detailed metrics |
+| Metric | Description | Data Type |
+|--------|-------------|-----------|
+| Active Jobs | Total number of open job requisitions | Count |
+| AI vs Human Split | Percentage distribution of AI vs Human tasks | Percentage |
+| HITL Queue Volume | Number of tasks awaiting human review | Count + trend |
+| Positions Required vs Filled | Comparison of demand vs fulfillment | Ratio (e.g., 156/89) |
+| Job Fulfilment Rate (%) | Percentage of positions successfully filled | Percentage |
+| Avg Time to Fill (TTF) | Average days to fill a position | Days |
+| SLA Breach Count | Number of jobs exceeding SLA thresholds | Count |
+| At-risk Jobs (Red flagged) | Jobs approaching or in breach status | Count |
+
+---
+
+## Current vs New Layout
+
+**Current (4 metrics):**
+- Active Pipelines
+- AI vs Human Split
+- HITL Queue Volume
+- Pipeline SLA Status
+
+**New (8 metrics):**
+Row 1: Active Jobs, AI vs Human Split, HITL Queue Volume, Positions Required vs Filled
+Row 2: Job Fulfilment Rate, Avg Time to Fill, SLA Breach Count, At-risk Jobs
 
 ---
 
 ## Changes
 
-### 1. Create Pipeline Table Component
-
-**File:** `src/components/orchestration/PipelineTable.tsx` (New)
-
-A table view for active/paused pipelines with columns relevant to Operations Managers:
-
-| Column | Data |
-|--------|------|
-| Pipeline Name | Name + version badge |
-| Type | Bulk / Fast Track / Niche |
-| Profession | Nurse / Doctor / etc. |
-| Zone | 1, 2, 3, 4 |
-| Location | Tier 1, 2, 3 |
-| Industry | Hospital / Diagnostic Lab / Pharma |
-| Jobs | Count of active jobs using this pipeline |
-| AI/Human Split | Visual indicator of stage distribution |
-| Success Rate | Percentage with color coding |
-| SLA Status | Green/Amber/Red indicator |
-| Last Updated | Date + author |
-| Actions | Edit, Pause/Activate buttons |
-
-### 2. Create Shared Workflow Context
-
-**File:** `src/contexts/WorkflowContext.tsx` (New)
-
-A React Context to share workflow state between `WorkflowList` and `PipelineTemplateBuilder`:
-
-```typescript
-interface WorkflowContextType {
-  workflows: Workflow[];
-  addWorkflow: (workflow: Workflow) => void;
-  updateWorkflow: (id: string, updates: Partial<Workflow>) => void;
-  deleteWorkflow: (id: string) => void;
-}
-```
-
-This enables the builder page to add/update pipelines that immediately appear in the list.
-
-### 3. Update PipelineTemplateBuilder.tsx
-
-Modify save/publish handlers to persist pipeline data:
-
-**Save Draft:**
-- Creates new workflow with `status: "draft"`
-- Adds to workflow context
-- Navigates back with success message
-
-**Publish:**
-- Creates new workflow with `status: "active"` 
-- Adds to workflow context
-- Navigates back with success message
-
-Include the new metadata fields (locationTier, industry, jobZone) in the persisted data.
-
-### 4. Update WorkflowList.tsx
-
-**Changes:**
-- Consume workflow context instead of local state
-- Use `PipelineTable` for Active and Paused sections
-- Keep `WorkflowCard` for Draft section (allows delete action)
-
-**Layout:**
-```text
-Active Pipelines (Table View)
-├── Sortable columns
-├── Row click → Edit in builder
-└── Inline actions
-
-Paused Pipelines (Table View)
-└── Same format as Active
-
-Draft Pipelines (Card View)
-└── Shows stages, allows delete
-```
-
-### 5. Extend Workflow Interface
+### 1. Extend Mock Data
 
 **File:** `src/lib/mockData.ts`
 
-Add new metadata fields to `Workflow` interface:
+Add new KPI fields to `opsDashboardKPIs`:
 
 ```typescript
-export interface Workflow {
-  // ... existing fields
-  profession?: "nurse" | "doctor" | "pharmacist" | "technician";
-  jobZone?: 1 | 2 | 3 | 4;
-  locationTier?: "tier_1" | "tier_2" | "tier_3";
-  industry?: "hospital" | "diagnostic_lab" | "pharmaceuticals";
-  nodePositions?: Record<string, { x: number; y: number }>;
-  connections?: Array<{ source: string; target: string }>;
-}
+export const opsDashboardKPIs = {
+  // Existing
+  activePipelines: 12,
+  aiTaskDistribution: 68,
+  humanTaskDistribution: 32,
+  hitlQueueVolume: 47,
+  hitlQueueTrend: 12,
+  pipelineSLAStatus: { green: 8, amber: 3, red: 1 },
+  topTemplates: [...],
+  
+  // NEW metrics
+  activeJobs: 156,
+  positionsRequired: 156,
+  positionsFilled: 89,
+  jobFulfilmentRate: 57.1,  // (89/156)*100
+  avgTimeToFill: 18,        // Days
+  slaBreachCount: 4,
+  atRiskJobs: 7,
+};
 ```
+
+### 2. Update Dashboard Metrics
+
+**File:** `src/pages/OpsDashboard.tsx`
+
+Replace the current 4-metric grid with an 8-metric layout (2 rows of 4):
+
+| Metric | Icon | Color | Subtitle |
+|--------|------|-------|----------|
+| Active Jobs | Briefcase | Primary | Open positions across all pipelines |
+| AI vs Human Split | Bot | Emerald | Shows % breakdown |
+| HITL Queue Volume | Users | Amber | Trend indicator (+/-%) |
+| Positions Required vs Filled | Target | Blue | Shows ratio X/Y |
+| Job Fulfilment Rate | CheckCircle | Success | Percentage with trend |
+| Avg Time to Fill | Clock | Warning | Days with benchmark |
+| SLA Breach Count | AlertTriangle | Destructive | Critical count |
+| At-risk Jobs | AlertCircle | Destructive | Jobs needing attention |
 
 ---
 
-## Pipeline Table Columns (Detail)
+## Visual Design
 
-| Column | Width | Content |
-|--------|-------|---------|
-| Pipeline | 200px | Icon + Name + `v{version}` |
-| Type | 100px | Badge (Bulk/Fast Track/Niche) |
-| Profession | 100px | Text |
-| Zone | 60px | Zone 1-4 |
-| Tier | 80px | Tier 1-3 |
-| Industry | 120px | Hospital/Lab/Pharma |
-| Jobs | 60px | Count with link |
-| AI/Human | 100px | Mini bar chart (visual) |
-| Success | 80px | Percentage + color |
-| Updated | 100px | Relative date |
-| Actions | 100px | Edit, Pause/Play icons |
-
----
-
-## Data Flow
-
-### Creating a New Pipeline
+The metrics will use the existing Card component with consistent styling:
 
 ```text
-User creates pipeline in builder
-        ↓
-Clicks "Save Draft"
-        ↓
-Builder creates Workflow object with:
-  - status: "draft"
-  - All metadata fields
-  - Node positions
-  - Connections
-        ↓
-Adds to WorkflowContext
-        ↓
-Navigates to /ops/orchestration
-        ↓
-WorkflowList displays new draft in Draft section
-```
-
-### Publishing a Pipeline
-
-```text
-User clicks "Publish" in builder
-        ↓
-Validation passes
-        ↓
-Builder creates Workflow object with:
-  - status: "active"
-  - All metadata fields
-        ↓
-Adds to WorkflowContext
-        ↓
-Navigates to /ops/orchestration
-        ↓
-WorkflowList displays new pipeline in Active table
-```
-
-### Editing an Existing Pipeline
-
-```text
-User clicks Edit on row/card
-        ↓
-Navigates to /ops/template-builder/{id}
-        ↓
-Builder loads existing workflow data
-        ↓
-User makes changes
-        ↓
-Save/Publish updates workflow in context
-        ↓
-Returns to list with updated data
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Active Jobs    │  AI vs Human   │  HITL Queue    │  Positions Filled      │
+│      156        │  Split 68%/32% │     47 (+12%)  │     89 / 156           │
+│  Open positions │  AI automation │  From last wk  │  Positions filled      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Fulfilment %   │  Avg TTF       │  SLA Breaches  │  At-risk Jobs          │
+│     57.1%       │    18 days     │       4        │        7               │
+│  +3.2% vs last  │  Target: 21d   │  Exceeded SLA  │  Red flagged           │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -199,32 +106,16 @@ Returns to list with updated data
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/contexts/WorkflowContext.tsx` | Create | Shared state for workflows across pages |
-| `src/components/orchestration/PipelineTable.tsx` | Create | Table view component for active/paused pipelines |
-| `src/pages/PipelineTemplateBuilder.tsx` | Modify | Add context integration, persist data on save/publish |
-| `src/components/orchestration/WorkflowList.tsx` | Modify | Use context, render table for active/paused |
-| `src/lib/mockData.ts` | Modify | Extend Workflow interface with new metadata |
-| `src/App.tsx` | Modify | Wrap relevant routes with WorkflowProvider |
+| `src/lib/mockData.ts` | Modify | Add new KPI fields to opsDashboardKPIs |
+| `src/pages/OpsDashboard.tsx` | Modify | Update metrics array with 8 new cards in 2-row layout |
 
 ---
 
-## Table Visual Design
+## Technical Details
 
-The table will use existing UI components for consistency:
-
-- `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell` from `@/components/ui/table`
-- `Badge` for status and type indicators
-- `Button` with icon variants for actions
-- Hover states for row highlighting
-- Sortable column headers (click to sort)
-
----
-
-## Result
-
-- **Save Draft**: Pipeline appears in "Draft Pipelines" section
-- **Publish**: Pipeline appears in "Active Pipelines" table
-- **Active Pipelines**: Displayed in dense table format with all operational metrics
-- **Paused Pipelines**: Same table format as Active
-- **Draft Pipelines**: Displayed as cards (allows full preview before publishing)
+The metrics grid will use `grid-cols-4` for desktop and `grid-cols-2` for tablet with a `gap-4` spacing. Each metric card uses the existing Card component with:
+- Icon with color-coded background
+- Large value display
+- Descriptive subtitle
+- Optional trend indicator where applicable
 
