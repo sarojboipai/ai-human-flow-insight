@@ -23,6 +23,8 @@ export interface TemplateMetadata {
   hiringType: "bulk" | "fast_track" | "niche";
   profession: "nurse" | "doctor" | "pharmacist" | "technician";
   jobZone: 1 | 2 | 3 | 4;
+  locationTier: "tier_1" | "tier_2" | "tier_3";
+  industry: "hospital" | "diagnostic_lab" | "pharmaceuticals";
   defaultSLAProfile: string;
   defaultAICoverage: number;
   enterpriseOverrideAllowed: boolean;
@@ -48,7 +50,7 @@ export function TemplateMetadataForm({ metadata, onChange }: TemplateMetadataFor
             <span className="font-medium text-sm">Template Configuration</span>
             {metadata.name && (
               <span className="text-sm text-muted-foreground">
-                {metadata.name} • {metadata.profession} • Zone {metadata.jobZone}
+                {metadata.name} • {metadata.profession} • Zone {metadata.jobZone} • {metadata.locationTier.replace("_", " ")} • {metadata.industry.replace("_", " ")}
               </span>
             )}
           </div>
@@ -62,7 +64,7 @@ export function TemplateMetadataForm({ metadata, onChange }: TemplateMetadataFor
 
       <CollapsibleContent>
         <div className="px-4 py-4 bg-muted/30 border-t">
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-8 gap-4">
             {/* Template Name */}
             <div className="col-span-2 space-y-2">
               <Label htmlFor="templateName">Template Name *</Label>
@@ -122,10 +124,46 @@ export function TemplateMetadataForm({ metadata, onChange }: TemplateMetadataFor
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Zone 1 (Metro)</SelectItem>
-                  <SelectItem value="2">Zone 2 (Tier 1)</SelectItem>
-                  <SelectItem value="3">Zone 3 (Tier 2)</SelectItem>
-                  <SelectItem value="4">Zone 4 (Tier 3+)</SelectItem>
+                  <SelectItem value="1">Zone 1</SelectItem>
+                  <SelectItem value="2">Zone 2</SelectItem>
+                  <SelectItem value="3">Zone 3</SelectItem>
+                  <SelectItem value="4">Zone 4</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location Tier */}
+            <div className="space-y-2">
+              <Label>Location *</Label>
+              <Select
+                value={metadata.locationTier}
+                onValueChange={(v) => onChange({ locationTier: v as TemplateMetadata["locationTier"] })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tier_1">Tier 1 (Metro)</SelectItem>
+                  <SelectItem value="tier_2">Tier 2 (Urban)</SelectItem>
+                  <SelectItem value="tier_3">Tier 3 (Rural)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Industry */}
+            <div className="space-y-2">
+              <Label>Industry *</Label>
+              <Select
+                value={metadata.industry}
+                onValueChange={(v) => onChange({ industry: v as TemplateMetadata["industry"] })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hospital">Hospital</SelectItem>
+                  <SelectItem value="diagnostic_lab">Diagnostic Lab</SelectItem>
+                  <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
