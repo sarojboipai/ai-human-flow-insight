@@ -1,8 +1,8 @@
 
 
-# Admin Dashboard - Customer-Aware Hiring Operations Control Center
+# Operations Manager Console - Implementation Plan
 
-Enhance the Admin Dashboard with customer-scoped data behavior, improved Job Pipeline Health table with Job Title column, and customer-specific workflow variations in the Pipeline Board Dialog.
+Transform the existing Ops pages into a comprehensive Operations Manager Console with enhanced dashboard widgets, Job Pipeline module (replacing Workflows), specialized pipeline templates, and improved navigation structure per the PRD.
 
 ---
 
@@ -10,346 +10,389 @@ Enhance the Admin Dashboard with customer-scoped data behavior, improved Job Pip
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/Index.tsx` | Modify | Add customer filtering logic to filter all dashboard data by selected customer |
-| `src/lib/mockData.ts` | Modify | Add customer workflow schemas, helper functions for customer filtering, and update job data |
-| `src/components/dashboard/JobPipelineHealthTable.tsx` | Modify | Add Job Title column per PRD requirements |
-| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Implement customer-specific workflow rendering based on workflow schema |
+| `src/components/layout/OpsSidebar.tsx` | Modify | Update navigation labels (Human Activity, AI Activity) and add filter dropdown |
+| `src/pages/OpsDashboard.tsx` | Major Update | Add comprehensive widgets: Pipeline SLA Status, AI vs Human Distribution, HITL Queue Volume, Top Templates |
+| `src/pages/OpsOrchestrationEngine.tsx` | Major Update | Rename Workflows tab to "Job Pipeline", update terminology, enhance templates |
+| `src/pages/OpsRecruiterDashboard.tsx` | Modify | Rename to "Human Activity" and add job pipeline + enterprise filters |
+| `src/pages/OpsAIPerformance.tsx` | Modify | Rename to "AI Activity" and add additional filter dropdowns |
+| `src/lib/mockData.ts` | Modify | Add pipeline templates data with profession/tier/zone metadata |
+| `src/components/orchestration/WorkflowTemplatesDialog.tsx` | Major Update | Rename to pipeline templates with PRD-specified templates |
+| `src/components/orchestration/PipelineTemplatesDialog.tsx` | Create | New specialized pipeline template selector per PRD |
 
 ---
 
 ## Feature Implementation
 
-### 1. Customer-Scoped Dashboard Filtering
+### 1. Navigation Updates (OpsSidebar)
 
-When a customer is selected from the dropdown, the entire dashboard refreshes to show only that customer's data:
+Update sidebar labels to match PRD terminology:
 
-- **KPI Cards**: Recalculated based on filtered jobs
-- **Hiring Activity Trends**: Filtered by customer
-- **Workload Chart**: Recalculated from filtered jobs
-- **AI Evaluation Metrics**: Customer-specific values
-- **Revenue Intelligence**: Customer-specific revenue data
-- **Job Pipeline Health Table**: Shows only selected customer's jobs
-
-**Implementation in Index.tsx:**
-
-```tsx
-// Filter jobs based on selected customer
-const filteredJobs = useMemo(() => {
-  if (customer === "all") return jobs;
-  const selectedCustomer = enterpriseCustomers.find(c => c.id === customer);
-  return jobs.filter(job => job.employer === selectedCustomer?.name);
-}, [customer]);
-
-// Recalculate all metrics based on filtered jobs
-const filteredKPIs = useMemo(() => ({
-  activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
-  candidatesInPipeline: filteredJobs.reduce((acc, job) => acc + job.funnel[0].candidates, 0),
-  aiAutomationCoverage: calculateAIAutomationCoverage(filteredJobs),
-  hiringSLACompliance: calculateSLACompliance(filteredJobs),
-  grossMargin: calculateGrossMargin(filteredJobs),
-}), [filteredJobs]);
+**Current Navigation:**
+```text
+OVERVIEW
+  - Dashboard
+ORCHESTRATION  
+  - Orchestration Engine
+OPERATIONS
+  - Recruiter Dashboard
+  - AI Performance
 ```
 
----
+**Updated Navigation:**
+```text
+OVERVIEW
+  - Dashboard
+ORCHESTRATION  
+  - Orchestration Engine
+OPERATIONS
+  - Human Activity
+  - AI Activity
+```
 
-### 2. Job Pipeline Health Table Enhancement
+### 2. Enhanced Dashboard (OpsDashboard)
 
-Add the **Job Title** column as specified in the PRD:
+Add comprehensive operational widgets per PRD Section 4.1:
 
-| Column | Description |
-|--------|-------------|
-| Job ID | Unique identifier (existing) |
-| **Job Title** | Role title - **NEW** |
-| Enterprise Customer | Hospital name (existing) |
-| Funnel Stage | Current stage (existing) |
-| Bottleneck | Delay-causing stage (existing) |
-| AI vs Human | Workload split (existing) |
-| SLA Risk | Status indicator (existing) |
-| Action | Open dialog button (existing) |
+**New Widget Layout:**
+```text
++------------------+------------------+------------------+------------------+
+| Active Pipelines | AI vs Human      | HITL Queue       | Pipeline SLA     |
+| (existing)       | Distribution     | Volume           | Status           |
++------------------+------------------+------------------+------------------+
+|        Top Hiring Templates in Use (New Card)                            |
++--------------------------------------------------------------------------+
+|        Pipeline SLA Overview (New Card with status breakdown)            |
++--------------------------------------------------------------------------+
+|        Quick Actions (existing, updated text)                            |
++--------------------------------------------------------------------------+
+```
 
-**Data Structure Update:**
+**New Metrics to Add:**
+- AI vs Human Task Distribution (donut chart showing percentage split)
+- HITL Queue Volume (count with trend)
+- Pipeline SLA Status (Green/Amber/Red breakdown)
+- Top Hiring Templates in Use (table showing template usage stats)
 
+**New Filters to Add:**
+- Customer / Enterprise dropdown
+- Job Role filter
+- City Tier filter
+- Date Range selector
+
+### 3. Orchestration Engine - Job Pipeline Module
+
+Transform the current Workflows tab into "Job Pipeline" with enhanced features:
+
+**Tab Rename:**
 ```tsx
-export interface JobPipelineHealthRow {
-  jobId: string;
-  jobTitle: string;    // NEW FIELD
-  customer: string;
-  currentStage: string;
-  bottleneckStage: string;
-  aiPercentage: number;
-  humanPercentage: number;
-  slaRisk: "green" | "amber" | "red";
-  slaDetails: string;
+// From:
+<TabsTrigger value="workflows">Workflows</TabsTrigger>
+
+// To:
+<TabsTrigger value="job-pipeline">Job Pipeline</TabsTrigger>
+```
+
+**Updated Tabs Structure:**
+```text
+[Job Pipeline] [Agents] [Rules]
+     ^             ^        ^
+  Pipelines    Agent    HITL Rules
+  Templates   Registry  (existing)
+```
+
+Note: Removing "Connectors" and "Telemetry" tabs to match PRD which specifies only 3 sub-modules.
+
+**Pipeline Templates (per PRD Section 5.2):**
+
+| Template Name | Hiring Type | Profession | Job Zone | Default AI % |
+|---------------|-------------|------------|----------|--------------|
+| Nurse Hiring - Tier 1 City | Bulk | Nurse | 1 | 85% |
+| Doctor Hiring - Tier 1 City | Fast Track | Doctor | 1 | 55% |
+| Nurse Hiring - Tier 2 City | Bulk | Nurse | 2 | 80% |
+| Technician Hiring - Standard | Bulk | Technician | 1 | 90% |
+
+**Template Metadata Fields:**
+```tsx
+interface PipelineTemplate {
+  id: string;
+  name: string;
+  description: string;
+  hiringType: "bulk" | "fast_track";
+  profession: "nurse" | "doctor" | "pharmacist" | "technician";
+  jobZone: 1 | 2 | 3 | 4;
+  defaultAICoverage: number;
+  defaultHITLRuleset: string;
+  stages: PipelineStage[];
 }
 ```
 
----
+### 4. Pipeline Configuration UI Enhancements
 
-### 3. Customer-Specific Workflow Schemas
+Add Miro-like board characteristics per PRD:
 
-Each enterprise customer has a configurable workflow schema that determines which stages appear in their pipeline:
+**Stage Types (Node Colors):**
+- AI Stage (Orange)
+- Automation Stage (Green)
+- Human Stage (Blue)
+- Decision Gateway (Black diamond)
 
-**Example Workflow Definitions:**
+**Pipeline Stages Examples:**
+1. Job Discovery (optional per enterprise)
+2. Expression of Interest
+3. AI Resume Screening
+4. AI Fit Score
+5. Human Review
+6. Scheduling Agent
+7. Interview
+8. Offer Generation
+9. Joining Confirmation
 
-```text
-+----------------------------------------------------------+
-| ANKURA HOSPITAL (Full Workflow)                          |
-+----------------------------------------------------------+
-Jobs -> Discovery -> Expression -> Pre-screen -> Voice -> Decision -> Outcomes
+**Enterprise-Specific Variations:**
+- KIMS Hospital: No Job Discovery stage (entry = Expression of Interest)
+- Other enterprises: Full workflow
 
-+----------------------------------------------------------+
-| KIMS HOSPITAL (No Discovery Stage)                       |
-+----------------------------------------------------------+
-Jobs -> Expression -> Pre-screen -> Voice -> Decision -> Outcomes
+### 5. Agents Module Updates
 
-+----------------------------------------------------------+
-| OASIS FERTILITY (No Pre-screen Stage)                    |
-+----------------------------------------------------------+
-Jobs -> Discovery -> Expression -> Voice -> Decision -> Outcomes
+The existing AgentRegistry aligns with PRD requirements but needs metadata fields:
+
+**Add Agent Configuration Fields:**
+```tsx
+interface ExtendedAgent {
+  // Existing fields...
+  capabilities: ("screening" | "outreach" | "scheduling" | "scoring")[];
+  inputContract: string[]; // resume, profile, job description
+  outputSchema: string[]; // fit score, decision, ranking
+  rateLimits: { requestsPerMinute: number; concurrentTasks: number };
+  fallbackAgentId: string | null;
+}
 ```
 
-**Workflow Schema Data Structure:**
+### 6. Rules Module Enhancements
+
+Add threshold rules per PRD Appendix (Job Pipeline Threshold Rules):
+
+**Rule Categories by Stage:**
+
+| Stage | Threshold | Trigger | Action |
+|-------|-----------|---------|--------|
+| Job Posting | Time to Publish | Job not published within 10 mins | Escalate to HITL |
+| Sourcing | Candidate Supply Gap | Sourced < 50 within 24 hrs | Activate Sourcing Agent |
+| Outreach | Delivery Failure | Failure rate > 10% | Switch to Alternate Channel |
+| Screening | AI Confidence Low | Confidence < 0.7 | Route to HITL Queue |
+| Interview | Scheduling Delay | Not scheduled within 24 hrs | Trigger Scheduling Agent |
+
+**New Rule Types to Add:**
+```tsx
+type ExtendedRuleType = 
+  | "confidence"      // existing
+  | "business"        // existing
+  | "anomaly"         // existing
+  | "sla"             // existing
+  | "posting"         // new
+  | "sourcing"        // new
+  | "outreach"        // new
+  | "interview";      // new
+```
+
+### 7. Human Activity Page Updates
+
+Rename "Recruiter Dashboard" to "Human Activity" and add filters:
+
+**New Filters:**
+- Job Pipeline dropdown
+- Enterprise Customer dropdown
+- Role Type dropdown
+
+**Metrics (already aligned with PRD):**
+- Tasks completed (existing)
+- Average handling time (to add)
+- Queue backlog (to add)
+- SLA compliance (existing via Effort Utilization)
+- Human override decisions (to add)
+
+### 8. AI Activity Page Updates
+
+Rename "AI Performance" to "AI Activity" and add metrics:
+
+**New Metrics to Add:**
+- AI tasks executed (count)
+- Automation success rate (percentage)
+- Error / failure events (count with severity)
+
+---
+
+## Data Structure Updates
+
+### New Pipeline Template Interface
 
 ```tsx
-interface WorkflowStage {
+export interface PipelineTemplate {
   id: string;
-  type: "source" | "candidate" | "automation" | "ai" | "recruiter" | "decision" | "outcome";
-  label: string;
+  name: string;
+  description: string;
+  hiringType: "bulk" | "fast_track";
+  profession: "nurse" | "doctor" | "pharmacist" | "technician";
+  jobZone: 1 | 2 | 3 | 4;
+  defaultAICoverage: number;
+  defaultHITLRuleset: string;
+  characteristics: string[];
+  stages: WorkflowStage[];
   icon: string;
 }
+```
 
-interface CustomerWorkflowSchema {
-  customerId: string;
-  customerName: string;
-  workflowId: string;
-  stages: WorkflowStage[];
-}
+### Pipeline Templates Data
 
-export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
+```tsx
+export const pipelineTemplates: PipelineTemplate[] = [
   {
-    customerId: "cust-001",
-    customerName: "Ankura Hospital",
-    workflowId: "wf-ankura",
-    stages: [
-      { id: "source", type: "source", label: "Ankura\nHospital", icon: "hospital" },
-      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nAnkura", icon: "eye" },
-      { id: "job-discovery", type: "candidate", label: "Job\nDiscovery", icon: "search" },
-      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart" },
-      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send" },
-      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone" },
-      { id: "decision", type: "decision", label: "Decision", icon: "branch" },
-      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar" },
-      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck" },
-      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user" },
-    ],
+    id: "template-nurse-t1",
+    name: "Nurse Hiring - Tier 1 City",
+    description: "High-volume nurse hiring for metro hospitals",
+    hiringType: "bulk",
+    profession: "nurse",
+    jobZone: 1,
+    defaultAICoverage: 85,
+    defaultHITLRuleset: "standard-nursing",
+    characteristics: ["6 stages", "High automation", "AI-first"],
+    stages: [/* standard 6-stage pipeline */],
+    icon: "Zap",
   },
   {
-    customerId: "cust-004", // KIMS Hospital
-    customerName: "KIMS Hospital",
-    workflowId: "wf-kims",
-    stages: [
-      { id: "source", type: "source", label: "KIMS\nHospital", icon: "hospital" },
-      { id: "jobs-ankura", type: "candidate", label: "Jobs in\nKIMS", icon: "eye" },
-      // NO job-discovery stage
-      { id: "expression", type: "candidate", label: "Expression\nof Interest", icon: "heart" },
-      { id: "prescreen", type: "automation", label: "Pre-screen\nQuestions", icon: "send" },
-      { id: "voice-agent", type: "ai", label: "Voice Agent\nScreening", icon: "phone" },
-      { id: "decision", type: "decision", label: "Decision", icon: "branch" },
-      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar" },
-      { id: "silver-med", type: "recruiter", label: "Silver\nMedalist", icon: "userCheck" },
-      { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user" },
-    ],
+    id: "template-doctor-t1",
+    name: "Doctor Hiring - Tier 1 City",
+    description: "Premium physician recruitment with human checkpoints",
+    hiringType: "fast_track",
+    profession: "doctor",
+    jobZone: 1,
+    defaultAICoverage: 55,
+    defaultHITLRuleset: "enterprise-physician",
+    characteristics: ["6 stages", "Human-heavy", "Mandatory approvals"],
+    stages: [/* physician pipeline with more human stages */],
+    icon: "Users",
   },
-  // ... other customers with varying workflows
+  // ... additional templates
 ];
 ```
 
----
-
-### 4. Dynamic Workflow Rendering in PipelineBoardDialog
-
-The dialog dynamically builds nodes based on the customer's workflow schema:
-
-**Key Changes:**
-
-1. Look up customer workflow schema based on job's employer
-2. Generate nodes dynamically from schema stages
-3. Auto-rewire edges between stages (skip missing stages)
-4. Update source node to show correct customer branding
-
-**Node Building Logic:**
+### Dashboard KPIs Data
 
 ```tsx
-const buildNodesFromSchema = (job: Job, schema: CustomerWorkflowSchema): Node[] => {
-  const metrics = job.enhancedStageMetrics || {};
-  let xPosition = 50;
-  
-  return schema.stages.map((stage, index) => {
-    const node = {
-      id: stage.id,
-      type: getNodeType(stage.type),
-      position: calculatePosition(index, stage.type),
-      data: {
-        label: stage.label.replace('Ankura', job.employer.split(' ')[0]),
-        icon: stage.icon,
-        aiPercentage: metrics[stage.id]?.aiPercentage,
-        humanPercentage: metrics[stage.id]?.humanPercentage,
-        hitlPercentage: metrics[stage.id]?.hitlPercentage,
-        slaStatus: metrics[stage.id]?.slaStatus,
-        onClick: () => handleNodeClick(stage.id),
-      },
-    };
-    return node;
-  });
-};
-
-const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
-  const edges: Edge[] = [];
-  const mainStages = schema.stages.filter(s => s.type !== "outcome");
-  
-  for (let i = 0; i < mainStages.length - 1; i++) {
-    edges.push({
-      id: `e-${mainStages[i].id}-${mainStages[i+1].id}`,
-      source: mainStages[i].id,
-      target: mainStages[i+1].id,
-      style: { stroke: getEdgeColor(mainStages[i].type) },
-    });
-  }
-  
-  // Add decision node outcomes
-  // ...
-  
-  return edges;
+export const opsDashboardKPIs = {
+  activePipelines: 12,
+  aiTaskDistribution: 68,
+  humanTaskDistribution: 32,
+  hitlQueueVolume: 47,
+  hitlQueueTrend: 12, // % change
+  pipelineSLAStatus: {
+    green: 8,
+    amber: 3,
+    red: 1,
+  },
+  topTemplates: [
+    { name: "Nurse Hiring - Tier 1", activeJobs: 24, aiCoverage: 85 },
+    { name: "Doctor Hiring - Tier 1", activeJobs: 8, aiCoverage: 55 },
+    { name: "Technician Standard", activeJobs: 15, aiCoverage: 90 },
+  ],
 };
 ```
 
 ---
 
-### 5. Helper Functions for Customer Filtering
-
-Add utility functions to mockData.ts for calculating customer-specific metrics:
-
-```tsx
-// Filter jobs by customer
-export const getJobsByCustomer = (customerName: string | "all") => {
-  if (customerName === "all") return jobs;
-  return jobs.filter(job => job.employer === customerName);
-};
-
-// Calculate KPIs for filtered jobs
-export const calculateCustomerKPIs = (filteredJobs: Job[]) => ({
-  activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
-  candidatesInPipeline: filteredJobs.reduce((acc, job) => 
-    acc + job.funnel[0].candidates, 0),
-  aiAutomationCoverage: Math.round(
-    filteredJobs.reduce((acc, job) => acc + job.aiContribution, 0) / 
-    (filteredJobs.length || 1)
-  ),
-  hiringSLACompliance: Math.round(
-    (filteredJobs.filter(j => j.daysOpen <= 21).length / 
-    (filteredJobs.length || 1)) * 100
-  ),
-  grossMargin: Math.round(
-    filteredJobs.reduce((acc, job) => acc + job.margin, 0) / 
-    (filteredJobs.length || 1) * 10
-  ) / 10,
-});
-
-// Get workflow schema for a customer
-export const getCustomerWorkflowSchema = (customerName: string) => {
-  return customerWorkflowSchemas.find(
-    schema => schema.customerName === customerName
-  ) || customerWorkflowSchemas[0]; // Default to first schema
-};
-```
-
----
-
-## Updated File Structure
+## File Structure
 
 ```text
 src/
-  pages/
-    Index.tsx                        (update - add filtering logic)
   components/
-    dashboard/
-      JobPipelineHealthTable.tsx     (update - add Job Title column)
-      GlobalFilters.tsx              (exists - no changes needed)
-    customer/
-      PipelineBoardDialog.tsx        (update - dynamic workflow rendering)
+    layout/
+      OpsSidebar.tsx                    (update - rename nav items)
+    orchestration/
+      WorkflowList.tsx                  (update - rename to pipeline terminology)
+      WorkflowCard.tsx                  (update - add template metadata display)
+      WorkflowTemplatesDialog.tsx       (major update - rename to PipelineTemplatesDialog)
+      WorkflowBuilderDialog.tsx         (update - add profession/zone fields)
+  pages/
+    OpsDashboard.tsx                    (major update - add widgets and filters)
+    OpsOrchestrationEngine.tsx          (update - rename tabs, remove unused tabs)
+    OpsRecruiterDashboard.tsx           (update - rename title, add filters)
+    OpsAIPerformance.tsx                (update - rename title, add metrics)
   lib/
-    mockData.ts                      (update - add schemas, helpers)
+    mockData.ts                         (update - add pipeline templates, ops KPIs)
 ```
 
 ---
 
-## Data Flow Diagram
+## UI Component Updates
+
+### Dashboard Widget Grid
 
 ```text
-User selects Customer
-        |
-        v
-+-------------------+
-| GlobalFilters     |
-| customer state    |
-+-------------------+
-        |
-        v
-+-------------------+
-| Index.tsx         |
-| - Filter jobs     |
-| - Recalc KPIs     |
-| - Update charts   |
-+-------------------+
-        |
-        +---> KPI Cards (filtered)
-        |
-        +---> Hiring Activity Chart (filtered)
-        |
-        +---> Workload Chart (filtered)
-        |
-        +---> AI Evaluation (filtered)
-        |
-        +---> Revenue Panel (filtered)
-        |
-        v
-+------------------------+
-| JobPipelineHealthTable |
-| (filtered rows)        |
-+------------------------+
-        |
-        | User clicks row
-        v
-+------------------------+
-| PipelineBoardDialog    |
-| - Get job.employer     |
-| - Lookup workflow      |
-| - Build dynamic nodes  |
-| - Auto-wire edges      |
-+------------------------+
+Row 1: [4 KPI Cards - Active Pipelines, AI/Human Split, HITL Queue, SLA Status]
+
+Row 2: [Top Templates Table Card spanning full width]
+       - Template Name | Active Jobs | AI Coverage % | HITL Ruleset
+
+Row 3: [Filters: Customer | Job Role | City Tier | Date Range]
+
+Row 4: [Quick Actions Grid - 3 cards as existing]
+
+Row 5: [System Health - 3 status cards as existing]
+```
+
+### Orchestration Engine Tabs
+
+```text
+Before: [Workflows] [Agents] [Connectors] [Telemetry] [HITL Rules]
+After:  [Job Pipeline] [Agents] [Rules]
 ```
 
 ---
 
-## Acceptance Criteria Verification
+## Key Interactions
+
+### Create Pipeline from Template Flow
+
+1. Ops Manager clicks "Templates" button in Job Pipeline tab
+2. PipelineTemplatesDialog opens showing templates by profession/zone
+3. Ops Manager selects template (e.g., "Nurse Tier 1")
+4. Dialog pre-fills pipeline builder with template stages
+5. Ops Manager customizes stages on Miro-like board
+6. Assigns AI agents and human roles per stage
+7. Adds threshold rules (links to Rules tab)
+8. Clicks "Publish to Phenom Backend"
+
+### Enterprise-Specific Override Flow
+
+1. Select Enterprise from Customer dropdown (e.g., "KIMS Hospital")
+2. Dashboard filters to show only KIMS data
+3. In Job Pipeline, create new pipeline
+4. System auto-loads KIMS-specific schema (no Job Discovery stage)
+5. Entry Stage defaults to "Expression of Interest"
+6. Save as enterprise-specific override
+
+---
+
+## Acceptance Criteria
 
 | Requirement | Implementation |
 |-------------|----------------|
-| Admin can switch customers and entire dashboard updates | Customer state filters all data via useMemo hooks |
-| Job Pipeline Health table shows Job Title column | Added jobTitle field to interface and table column |
-| Clicking a job opens Pipeline Board with accurate job data | Job passed to dialog with employer-specific workflow lookup |
-| Workflow stages differ per customer | CustomerWorkflowSchema defines per-customer stages |
-| Node-level metrics reflect the selected job | enhancedStageMetrics keyed by stage ID |
+| Navigation shows Human Activity / AI Activity | OpsSidebar label updates |
+| Dashboard has 5 widget types per PRD | New cards: HITL Queue, SLA Status, Templates |
+| Orchestration has 3 sub-tabs | Job Pipeline, Agents, Rules |
+| Pipeline templates have profession/zone metadata | PipelineTemplate interface with metadata |
+| Enterprise filters available | Customer dropdown in dashboard and filters |
+| KIMS Hospital flow skips Job Discovery | customerWorkflowSchemas already supports this |
 
 ---
 
 ## Result
 
-When complete, the Admin Dashboard will:
+When complete, the Operations Manager Console will:
 
-- Dynamically filter all metrics when a customer is selected
-- Show Job Title in the pipeline health table for quick role identification
-- Render customer-specific workflows in the Pipeline Board Dialog
-- Automatically skip missing stages and rewire connections
-- Maintain accurate job-level metrics per stage
+- Display comprehensive operational metrics on the dashboard
+- Provide specialized pipeline templates by profession and city tier
+- Enable rapid pipeline configuration without engineering dependency
+- Support enterprise-specific workflow variations
+- Consolidate all orchestration into three focused modules
+- Use consistent "Human Activity" and "AI Activity" terminology
 
