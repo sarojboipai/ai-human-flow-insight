@@ -22,11 +22,10 @@ import CustomerBusiness from "./pages/CustomerBusiness";
 import NotFound from "./pages/NotFound";
 import OpsDashboard from "./pages/OpsDashboard";
 import OpsPipelineConfig from "./pages/OpsPipelineConfig";
-import OpsJobOrchestration from "./pages/OpsJobOrchestration";
-import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
 import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
 import OpsJobDetail from "./pages/OpsJobDetail";
+import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +55,6 @@ const App = () => (
             {/* Operations Manager routes */}
             <Route path="/ops" element={<OpsDashboard />} />
             <Route path="/ops/pipeline-config" element={<OpsPipelineConfig />} />
-            <Route path="/ops/job-orchestration" element={<OpsJobOrchestration />} />
             <Route path="/ops/recruiters" element={<OpsRecruiterDashboard />} />
             <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
             <Route path="/ops/template-builder" element={<PipelineTemplateBuilder />} />
