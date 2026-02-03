@@ -459,8 +459,9 @@ export default function PipelineTemplateBuilder() {
         {/* Header */}
         <div className="border-b px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/ops/orchestration")}>
+            <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate("/ops/orchestration")}>
               <ArrowLeft className="h-4 w-4" />
+              Back
             </Button>
             <div>
               <h1 className="text-lg font-semibold">
