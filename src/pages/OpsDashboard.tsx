@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { OpsLayout } from "@/components/layout/OpsLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { 
-  Briefcase, Bot, Users, Target, ArrowRight, Network, 
+  Briefcase, Bot, Users, Target,
   AlertCircle, AlertTriangle, CheckCircle, Clock
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -24,18 +22,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { agents, workflows, hitlRulesV2, enterpriseCustomers, pipelineTemplates, opsDashboardKPIs } from "@/lib/mockData";
+import { enterpriseCustomers, opsDashboardKPIs } from "@/lib/mockData";
 
 export default function OpsDashboard() {
-  const navigate = useNavigate();
   const [customer, setCustomer] = useState("all");
   const [jobRole, setJobRole] = useState("all");
   const [cityTier, setCityTier] = useState("all");
   const [dateRange, setDateRange] = useState("30days");
-
-  const activeAgents = agents.filter((a) => a.status === "active").length;
-  const activeWorkflows = workflows.filter((w) => w.status === "active").length;
-  const activeRules = hitlRulesV2.filter((r) => r.status === "active").length;
 
   const metrics = [
     // Row 1
@@ -106,29 +99,6 @@ export default function OpsDashboard() {
     },
   ];
 
-  const quickActions = [
-    {
-      title: "Orchestration Engine",
-      description: "Configure job pipelines, agents, and rules",
-      icon: Network,
-      path: "/ops/orchestration",
-      color: "text-primary",
-    },
-    {
-      title: "Human Activity",
-      description: "Track team productivity and performance metrics",
-      icon: Users,
-      path: "/ops/recruiters",
-      color: "text-emerald-500",
-    },
-    {
-      title: "AI Activity",
-      description: "Monitor AI agent activity and automation outcomes",
-      icon: Bot,
-      path: "/ops/ai-performance",
-      color: "text-sky-500",
-    },
-  ];
 
   return (
     <OpsLayout>
@@ -257,36 +227,6 @@ export default function OpsDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            {quickActions.map((action) => (
-              <Card 
-                key={action.title} 
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => navigate(action.path)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-secondary`}>
-                        <action.icon className={`h-5 w-5 ${action.color}`} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{action.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {action.description}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         {/* Pipeline SLA Overview */}
         <div>
@@ -331,45 +271,6 @@ export default function OpsDashboard() {
           </div>
         </div>
 
-        {/* System Health */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">System Health</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-success animate-pulse" />
-                  <span className="font-medium">All Agents Healthy</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {activeAgents} agents running with no errors
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-success animate-pulse" />
-                  <span className="font-medium">Pipelines Active</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {activeWorkflows} active pipelines processing
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full bg-success animate-pulse" />
-                  <span className="font-medium">Rules Active</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {activeRules} HITL rules enforced
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
     </OpsLayout>
   );
