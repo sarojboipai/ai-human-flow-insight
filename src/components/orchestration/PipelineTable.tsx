@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Edit, Pause, Play, GitBranch, Briefcase, Users } from "lucide-react";
+import { Edit, Pause, Play, GitBranch, Briefcase, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,7 +14,9 @@ import { Workflow, jobs } from "@/lib/mockData";
 
 interface PipelineTableProps {
   workflows: Workflow[];
-  onToggleStatus: (workflow: Workflow) => void;
+  onToggleStatus?: (workflow: Workflow) => void;
+  onDelete?: (workflow: Workflow) => void;
+  showDeleteAction?: boolean;
 }
 
 // Helper to get hiring type label
@@ -97,7 +99,7 @@ const getSLAStatus = (workflow: Workflow): "green" | "amber" | "red" => {
   return "red";
 };
 
-export function PipelineTable({ workflows, onToggleStatus }: PipelineTableProps) {
+export function PipelineTable({ workflows, onToggleStatus, onDelete, showDeleteAction }: PipelineTableProps) {
   const navigate = useNavigate();
 
   // Get job count for a workflow
@@ -270,20 +272,34 @@ export function PipelineTable({ workflows, onToggleStatus }: PipelineTableProps)
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleStatus(workflow);
-                      }}
-                    >
-                      {workflow.status === "paused" ? (
-                        <Play className="h-4 w-4" />
-                      ) : (
-                        <Pause className="h-4 w-4" />
-                      )}
-                    </Button>
+                    {showDeleteAction && onDelete ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(workflow);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    ) : onToggleStatus ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleStatus(workflow);
+                        }}
+                      >
+                        {workflow.status === "paused" ? (
+                          <Play className="h-4 w-4" />
+                        ) : (
+                          <Pause className="h-4 w-4" />
+                        )}
+                      </Button>
+                    ) : null}
                   </div>
                 </TableCell>
               </TableRow>

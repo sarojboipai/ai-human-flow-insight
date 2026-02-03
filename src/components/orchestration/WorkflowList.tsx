@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Plus, FileText, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WorkflowCard } from "./WorkflowCard";
 import { PipelineTable } from "./PipelineTable";
 import { useWorkflows } from "@/contexts/WorkflowContext";
 import { jobs } from "@/lib/mockData";
@@ -115,23 +114,17 @@ export function WorkflowList() {
         </div>
       )}
 
-      {/* Draft Workflows - Card View (allows delete) */}
+      {/* Draft Workflows - Table View with Delete */}
       {draftWorkflows.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Draft Pipelines ({draftWorkflows.length})
           </h3>
-          <div className="space-y-4">
-            {draftWorkflows.map((workflow) => (
-              <WorkflowCard
-                key={workflow.id}
-                workflow={workflow}
-                jobsCount={getJobsCount(workflow.id)}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          <PipelineTable
+            workflows={draftWorkflows}
+            onDelete={handleDelete}
+            showDeleteAction
+          />
         </div>
       )}
 
