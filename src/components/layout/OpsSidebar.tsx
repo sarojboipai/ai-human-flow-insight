@@ -4,6 +4,7 @@ import {
   Bot,
   Settings,
   LayoutDashboard,
+  GitBranch,
 } from "lucide-react";
 import swaasaLogo from "@/assets/swaasa-logo.png";
 import { NavLink, useLocation } from "react-router-dom";
@@ -34,6 +35,11 @@ const orchestrationItems = [
     title: "Pipeline Config",
     url: "/ops/pipeline-config",
     icon: Network,
+  },
+  {
+    title: "Job Orchestration",
+    url: "/ops/job-orchestration",
+    icon: GitBranch,
   },
 ];
 
