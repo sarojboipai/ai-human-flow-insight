@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef, DragEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useCallback, useMemo, useRef, DragEvent, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ReactFlow,
   Controls,
@@ -33,7 +33,7 @@ import {
   EditableEntryExitNode,
   EditableAutomationNode,
 } from "@/components/orchestration/pipeline-nodes";
-import { agents } from "@/lib/mockData";
+import { agents, workflows, pipelineTemplates } from "@/lib/mockData";
 
 const nodeTypes = {
   stageNode: EditableStageNode,
@@ -87,6 +87,8 @@ const INITIAL_EDGES: Edge[] = [];
 
 export default function PipelineTemplateBuilder() {
   const { templateId } = useParams();
+  const [searchParams] = useSearchParams();
+  const templateParam = searchParams.get("template");
   const navigate = useNavigate();
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -97,8 +99,78 @@ export default function PipelineTemplateBuilder() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   const isEditing = !!templateId;
+
+  // Load existing workflow or template on mount
+  useEffect(() => {
+    if (isLoaded) return;
+    
+    if (templateId) {
+      // Load existing workflow for editing
+      const workflow = workflows.find(w => w.id === templateId);
+      if (workflow) {
+        setMetadata({
+          name: workflow.name,
+          hiringType: workflow.jobType === "frontline" ? "bulk" : workflow.jobType === "professional" ? "fast_track" : "niche",
+          profession: "nurse",
+          jobZone: 1,
+          defaultSLAProfile: "standard",
+          defaultAICoverage: 70,
+          enterpriseOverrideAllowed: false,
+          complianceRequired: false,
+        });
+        
+        // Convert workflow stages to nodes
+        const stageNodes: Node<StageNodeData>[] = workflow.stages.map((stage, index) => ({
+          id: stage.id,
+          type: stage.assignedActor === "ai" ? "aiStage" : stage.assignedActor === "human" ? "humanStage" : "automationStage",
+          position: { x: 200 + index * 250, y: 200 },
+          data: {
+            label: stage.name,
+            stageType: stage.assignedActor === "ai" ? "ai" : stage.assignedActor === "human" ? "human" : "automation",
+            slaHours: 24,
+          },
+        }));
+        
+        setNodes([...INITIAL_NODES, ...stageNodes] as any);
+        setIsDirty(false);
+      }
+    } else if (templateParam) {
+      // Load from template
+      const template = pipelineTemplates.find(t => t.id === templateParam);
+      if (template) {
+        setMetadata({
+          name: `${template.name} (Copy)`,
+          hiringType: template.hiringType,
+          profession: template.profession,
+          jobZone: template.jobZone,
+          defaultSLAProfile: "standard",
+          defaultAICoverage: template.defaultAICoverage,
+          enterpriseOverrideAllowed: false,
+          complianceRequired: false,
+        });
+        
+        // Convert template stages to nodes
+        const stageNodes: Node<StageNodeData>[] = template.stages.map((stage, index) => ({
+          id: `${stage.id}-${Date.now()}`,
+          type: stage.assignedActor === "ai" ? "aiStage" : stage.assignedActor === "human" ? "humanStage" : "automationStage",
+          position: { x: 200 + index * 250, y: 200 },
+          data: {
+            label: stage.name,
+            stageType: stage.assignedActor === "ai" ? "ai" : stage.assignedActor === "human" ? "human" : "automation",
+            slaHours: 24,
+          },
+        }));
+        
+        setNodes([...INITIAL_NODES, ...stageNodes] as any);
+        setIsDirty(true);
+      }
+    }
+    
+    setIsLoaded(true);
+  }, [templateId, templateParam, isLoaded, setNodes]);
 
   const selectedNode = useMemo(() => {
     const found = nodes.find(n => n.id === selectedNodeId);

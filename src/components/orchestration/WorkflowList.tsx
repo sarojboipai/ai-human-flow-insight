@@ -1,21 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, FileText, Download, Search, LayoutGrid } from "lucide-react";
+import { Plus, FileText, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkflowCard } from "./WorkflowCard";
 import { Workflow, workflows as mockWorkflows, jobs } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
-import { WorkflowBuilderDialog } from "./WorkflowBuilderDialog";
 import { WorkflowTemplatesDialog, WorkflowTemplate } from "./WorkflowTemplatesDialog";
 
 export function WorkflowList() {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>(mockWorkflows);
   const [searchQuery, setSearchQuery] = useState("");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
-  const [editingWorkflow, setEditingWorkflow] = useState<Workflow | null>(null);
   const { toast } = useToast();
 
   const filteredWorkflows = workflows.filter(
@@ -33,60 +30,14 @@ export function WorkflowList() {
     return jobs.filter(job => job.workflowId === workflowId).length;
   };
 
-  const handleSaveWorkflow = (workflowData: Partial<Workflow>) => {
-    if (workflowData.id) {
-      // Update existing
-      setWorkflows((prev) =>
-        prev.map((w) =>
-          w.id === workflowData.id
-            ? { ...w, ...workflowData, updatedAt: new Date().toISOString().split("T")[0] }
-            : w
-        )
-      );
-    } else {
-      // Create new
-      const newWorkflow: Workflow = {
-        id: `wf-${String(workflows.length + 1).padStart(3, "0")}`,
-        name: workflowData.name || "Untitled Workflow",
-        description: workflowData.description || "",
-        jobType: workflowData.jobType || "frontline",
-        status: workflowData.status || "draft",
-        stages: workflowData.stages || [],
-        version: 1,
-        executionCount: 0,
-        successRate: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-        createdBy: "Current User",
-      };
-      setWorkflows((prev) => [...prev, newWorkflow]);
-    }
-    setEditingWorkflow(null);
-  };
-
   const handleSelectTemplate = (template: WorkflowTemplate) => {
-    // Pre-fill the form with template data
-    const templateWorkflow: Workflow = {
-      id: "",
-      name: `${template.name} (Copy)`,
-      description: template.description,
-      jobType: template.jobType,
-      status: "draft",
-      stages: template.stages,
-      version: 1,
-      executionCount: 0,
-      successRate: 0,
-      createdAt: "",
-      updatedAt: "",
-      createdBy: "",
-    };
-    setEditingWorkflow(templateWorkflow);
-    setCreateDialogOpen(true);
+    // Navigate to builder with template ID
+    navigate(`/ops/template-builder?template=${template.id}`);
   };
 
   const handleEdit = (workflow: Workflow) => {
-    setEditingWorkflow(workflow);
-    setCreateDialogOpen(true);
+    // Navigate to visual builder with workflow ID
+    navigate(`/ops/template-builder/${workflow.id}`);
   };
 
   const handleToggleStatus = (workflow: Workflow) => {
@@ -113,23 +64,14 @@ export function WorkflowList() {
     });
   };
 
-  const handleOpenCreate = () => {
-    setEditingWorkflow(null);
-    setCreateDialogOpen(true);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="flex gap-2">
-          <Button className="gap-2" onClick={handleOpenCreate}>
+          <Button className="gap-2" onClick={() => navigate("/ops/template-builder")}>
             <Plus className="h-4 w-4" />
             Create Pipeline
-          </Button>
-          <Button variant="outline" className="gap-2" onClick={() => navigate("/ops/template-builder")}>
-            <LayoutGrid className="h-4 w-4" />
-            Visual Builder
           </Button>
           <Button variant="outline" className="gap-2" onClick={() => setTemplatesDialogOpen(true)}>
             <FileText className="h-4 w-4" />
@@ -219,12 +161,6 @@ export function WorkflowList() {
       )}
 
       {/* Dialogs */}
-      <WorkflowBuilderDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        workflow={editingWorkflow}
-        onSave={handleSaveWorkflow}
-      />
       <WorkflowTemplatesDialog
         open={templatesDialogOpen}
         onOpenChange={setTemplatesDialogOpen}
