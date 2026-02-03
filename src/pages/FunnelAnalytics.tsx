@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Briefcase, TrendingUp, Clock, IndianRupee, Users, Target, Filter } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
@@ -7,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
 import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
-import { funnelData, jobs, aggregateFunnelData } from "@/lib/mockData";
+import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealthTable";
+import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
+import { funnelData, jobs, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -45,12 +48,26 @@ const timeToStageData = [
 ];
 
 export default function FunnelAnalytics() {
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const activeJobs = jobs.filter((j) => j.status === "active").length;
   const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel[0]?.candidates || 0), 0);
   const avgDaysOpen = Math.round(jobs.reduce((sum, j) => sum + j.daysOpen, 0) / jobs.length);
   const totalPipelineValue = jobs.reduce((sum, j) => sum + j.revenue, 0);
   const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel[6]?.candidates || 0), 0);
   const avgConversion = totalCandidates > 0 ? ((totalPlacements / totalCandidates) * 100).toFixed(1) : "0";
+
+  // Get all job pipeline health data
+  const jobPipelineHealthData = getJobPipelineHealthByCustomer("all");
+
+  const handleJobClick = (jobId: string) => {
+    const job = jobs.find(j => j.id === jobId);
+    if (job) {
+      setSelectedJob(job);
+      setDialogOpen(true);
+    }
+  };
 
   const jobMetrics = [
     { title: "Active Jobs", value: activeJobs, subtitle: `${jobs.length} total jobs`, icon: Briefcase, color: "text-primary" },
@@ -109,7 +126,13 @@ export default function FunnelAnalytics() {
 
           {/* Job Explorer Tab */}
           <TabsContent value="jobs" className="space-y-6">
-            {/* Jobs Pipeline Table */}
+            {/* Job Pipeline Health Table */}
+            <JobPipelineHealthTable 
+              data={jobPipelineHealthData}
+              onJobClick={handleJobClick}
+            />
+
+            {/* Legacy Jobs Table */}
             <CustomerJobsTable />
 
           </TabsContent>
@@ -234,6 +257,13 @@ export default function FunnelAnalytics() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Job Workflow Explorer Overlay */}
+      <PipelineBoardDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        job={selectedJob}
+      />
     </DashboardLayout>
   );
 }
