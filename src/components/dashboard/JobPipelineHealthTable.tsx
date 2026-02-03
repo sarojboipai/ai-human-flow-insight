@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,6 +9,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { ExternalLink } from "lucide-react";
 
 export interface JobPipelineHealthRow {
@@ -90,6 +99,19 @@ export function JobPipelineHealthTable({
   title = "Job Pipeline Health",
   onJobClick 
 }: JobPipelineHealthTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = data.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="chart-container">
       <h3 className="section-title mb-4">{title}</h3>
@@ -107,7 +129,7 @@ export function JobPipelineHealthTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row) => (
+          {paginatedData.map((row) => (
             <TableRow 
               key={row.jobId} 
               className="cursor-pointer hover:bg-muted/50"
@@ -142,6 +164,40 @@ export function JobPipelineHealthTable({
           ))}
         </TableBody>
       </Table>
+      
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4 px-2">
+        <p className="text-sm text-muted-foreground">
+          Showing {startIndex + 1}-{Math.min(endIndex, data.length)} of {data.length} jobs
+        </p>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => handlePageChange(page)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }
