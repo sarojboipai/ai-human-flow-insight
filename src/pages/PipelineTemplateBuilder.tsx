@@ -12,8 +12,6 @@ import {
   type Node,
   type Edge,
   type Connection,
-  type NodeChange,
-  type EdgeChange,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -33,7 +31,8 @@ import {
   EditableEntryExitNode,
   EditableAutomationNode,
 } from "@/components/orchestration/pipeline-nodes";
-import { agents, workflows, pipelineTemplates } from "@/lib/mockData";
+import { agents, pipelineTemplates, Workflow, WorkflowStage } from "@/lib/mockData";
+import { useWorkflows } from "@/contexts/WorkflowContext";
 
 const nodeTypes = {
   stageNode: EditableStageNode,
@@ -87,6 +86,22 @@ const INITIAL_NODES: Node<StageNodeData>[] = [
 
 const INITIAL_EDGES: Edge[] = [];
 
+// Helper to convert nodes to workflow stages
+const nodesToStages = (nodes: Node<StageNodeData>[]): WorkflowStage[] => {
+  return nodes
+    .filter(n => !["entry", "exit"].includes(n.data.stageType))
+    .map((n, idx) => ({
+      id: n.id,
+      name: n.data.label,
+      type: "match" as const,
+      assignedActor: n.data.stageType === "ai" ? "ai" as const : n.data.stageType === "human" ? "human" as const : "hybrid" as const,
+      agentId: n.data.agentId || null,
+      humanBackup: n.data.humanRole || "Recruiter Team",
+      slaHours: n.data.slaHours || 24,
+      retryPolicy: { maxRetries: 2, backoffMinutes: 30 },
+    }));
+};
+
 export default function PipelineTemplateBuilder() {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
@@ -94,6 +109,7 @@ export default function PipelineTemplateBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { addWorkflow, updateWorkflow, getWorkflow } = useWorkflows();
   
   const [metadata, setMetadata] = useState<TemplateMetadata>(DEFAULT_METADATA);
   const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
@@ -111,15 +127,15 @@ export default function PipelineTemplateBuilder() {
     
     if (templateId) {
       // Load existing workflow for editing
-      const workflow = workflows.find(w => w.id === templateId);
+      const workflow = getWorkflow(templateId);
       if (workflow) {
         setMetadata({
           name: workflow.name,
-          hiringType: workflow.jobType === "frontline" ? "bulk" : workflow.jobType === "professional" ? "fast_track" : "niche",
-          profession: "nurse",
-          jobZone: 1,
-          locationTier: "tier_1",
-          industry: "hospital",
+          hiringType: workflow.hiringType || (workflow.jobType === "frontline" ? "bulk" : workflow.jobType === "professional" ? "fast_track" : "niche"),
+          profession: workflow.profession || "nurse",
+          jobZone: workflow.jobZone || 1,
+          locationTier: workflow.locationTier || "tier_1",
+          industry: workflow.industry || "hospital",
           defaultSLAProfile: "standard",
           defaultAICoverage: 70,
           enterpriseOverrideAllowed: false,
@@ -130,13 +146,27 @@ export default function PipelineTemplateBuilder() {
         const stageNodes: Node<StageNodeData>[] = workflow.stages.map((stage, index) => ({
           id: stage.id,
           type: stage.assignedActor === "ai" ? "aiStage" : stage.assignedActor === "human" ? "humanStage" : "automationStage",
-          position: { x: 200 + index * 250, y: 200 },
+          position: workflow.nodePositions?.[stage.id] || { x: 200 + index * 250, y: 200 },
           data: {
             label: stage.name,
             stageType: stage.assignedActor === "ai" ? "ai" : stage.assignedActor === "human" ? "human" : "automation",
-            slaHours: 24,
+            slaHours: stage.slaHours || 24,
+            agentId: stage.agentId || undefined,
+            humanRole: stage.humanBackup || undefined,
           },
         }));
+        
+        // Load connections if they exist
+        if (workflow.connections) {
+          const loadedEdges: Edge[] = workflow.connections.map((conn, idx) => ({
+            id: `edge-${idx}`,
+            source: conn.source,
+            target: conn.target,
+            type: "smoothstep",
+            animated: true,
+          }));
+          setEdges(loadedEdges);
+        }
         
         setNodes([...INITIAL_NODES, ...stageNodes] as any);
         setIsDirty(false);
@@ -176,7 +206,7 @@ export default function PipelineTemplateBuilder() {
     }
     
     setIsLoaded(true);
-  }, [templateId, templateParam, isLoaded, setNodes]);
+  }, [templateId, templateParam, isLoaded, setNodes, setEdges, getWorkflow]);
 
   const selectedNode = useMemo(() => {
     const found = nodes.find(n => n.id === selectedNodeId);
@@ -326,6 +356,51 @@ export default function PipelineTemplateBuilder() {
     setIsDirty(true);
   }, [reactFlowInstance, setNodes]);
 
+  // Build workflow object from current state
+  const buildWorkflowData = useCallback((status: "draft" | "active"): Workflow => {
+    // Build node positions map
+    const nodePositions: Record<string, { x: number; y: number }> = {};
+    nodes.forEach(n => {
+      nodePositions[n.id] = n.position;
+    });
+
+    // Build connections array
+    const connections = edges.map(e => ({
+      source: e.source,
+      target: e.target,
+    }));
+
+    // Map hiring type to job type
+    const jobTypeMap: Record<string, "frontline" | "professional" | "enterprise"> = {
+      bulk: "frontline",
+      fast_track: "professional",
+      niche: "enterprise",
+    };
+
+    return {
+      id: templateId || `wf-${Date.now()}`,
+      name: metadata.name,
+      description: `${metadata.profession} pipeline for ${metadata.industry}`,
+      version: 1,
+      status,
+      jobType: jobTypeMap[metadata.hiringType] || "frontline",
+      stages: nodesToStages(nodes as Node<StageNodeData>[]),
+      createdBy: "Current User",
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
+      executionCount: 0,
+      successRate: 0,
+      // New metadata fields
+      profession: metadata.profession,
+      jobZone: metadata.jobZone,
+      locationTier: metadata.locationTier,
+      industry: metadata.industry,
+      hiringType: metadata.hiringType,
+      nodePositions,
+      connections,
+    };
+  }, [nodes, edges, metadata, templateId]);
+
   const handleSaveDraft = useCallback(() => {
     if (!metadata.name.trim()) {
       toast({
@@ -336,13 +411,21 @@ export default function PipelineTemplateBuilder() {
       return;
     }
     
-    // Save logic here (would connect to backend)
+    const workflowData = buildWorkflowData("draft");
+    
+    if (isEditing) {
+      updateWorkflow(templateId!, workflowData);
+    } else {
+      addWorkflow(workflowData);
+    }
+    
     toast({
       title: "Draft Saved",
       description: `Template "${metadata.name}" has been saved as draft.`,
     });
     setIsDirty(false);
-  }, [metadata, toast]);
+    navigate("/ops/orchestration");
+  }, [metadata, buildWorkflowData, isEditing, templateId, updateWorkflow, addWorkflow, toast, navigate]);
 
   const handlePublish = useCallback(() => {
     if (validationErrors.length > 0) {
@@ -354,14 +437,21 @@ export default function PipelineTemplateBuilder() {
       return;
     }
     
-    // Publish logic here (would connect to backend)
+    const workflowData = buildWorkflowData("active");
+    
+    if (isEditing) {
+      updateWorkflow(templateId!, workflowData);
+    } else {
+      addWorkflow(workflowData);
+    }
+    
     toast({
       title: "Template Published",
       description: `Template "${metadata.name}" is now available for use.`,
     });
     setIsDirty(false);
     navigate("/ops/orchestration");
-  }, [metadata, validationErrors, toast, navigate]);
+  }, [metadata, validationErrors, buildWorkflowData, isEditing, templateId, updateWorkflow, addWorkflow, toast, navigate]);
 
   return (
     <ReactFlowProvider>

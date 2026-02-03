@@ -4,13 +4,15 @@ import { Plus, FileText, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkflowCard } from "./WorkflowCard";
-import { Workflow, workflows as mockWorkflows, jobs } from "@/lib/mockData";
+import { PipelineTable } from "./PipelineTable";
+import { useWorkflows } from "@/contexts/WorkflowContext";
+import { jobs } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { WorkflowTemplatesDialog, WorkflowTemplate } from "./WorkflowTemplatesDialog";
 
 export function WorkflowList() {
   const navigate = useNavigate();
-  const [workflows, setWorkflows] = useState<Workflow[]>(mockWorkflows);
+  const { workflows, updateWorkflow, deleteWorkflow } = useWorkflows();
   const [searchQuery, setSearchQuery] = useState("");
   const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -35,28 +37,22 @@ export function WorkflowList() {
     navigate(`/ops/template-builder?template=${template.id}`);
   };
 
-  const handleEdit = (workflow: Workflow) => {
+  const handleEdit = (workflow: { id: string }) => {
     // Navigate to visual builder with workflow ID
     navigate(`/ops/template-builder/${workflow.id}`);
   };
 
-  const handleToggleStatus = (workflow: Workflow) => {
+  const handleToggleStatus = (workflow: { id: string; name: string; status: string }) => {
     const newStatus = workflow.status === "paused" ? "active" : "paused";
-    setWorkflows((prev) =>
-      prev.map((w) =>
-        w.id === workflow.id
-          ? { ...w, status: newStatus, updatedAt: new Date().toISOString().split("T")[0] }
-          : w
-      )
-    );
+    updateWorkflow(workflow.id, { status: newStatus as "active" | "paused" });
     toast({
       title: `Workflow ${newStatus === "active" ? "Activated" : "Paused"}`,
       description: `"${workflow.name}" is now ${newStatus}.`,
     });
   };
 
-  const handleDelete = (workflow: Workflow) => {
-    setWorkflows((prev) => prev.filter((w) => w.id !== workflow.id));
+  const handleDelete = (workflow: { id: string; name: string }) => {
+    deleteWorkflow(workflow.id);
     toast({
       title: "Workflow Deleted",
       description: `"${workflow.name}" has been deleted.`,
@@ -93,47 +89,33 @@ export function WorkflowList() {
         </div>
       </div>
 
-      {/* Active Workflows */}
+      {/* Active Workflows - Table View */}
       {activeWorkflows.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Active Pipelines ({activeWorkflows.length})
           </h3>
-          <div className="space-y-4">
-            {activeWorkflows.map((workflow) => (
-              <WorkflowCard
-                key={workflow.id}
-                workflow={workflow}
-                jobsCount={getJobsCount(workflow.id)}
-                onEdit={handleEdit}
-                onToggleStatus={handleToggleStatus}
-              />
-            ))}
-          </div>
+          <PipelineTable
+            workflows={activeWorkflows}
+            onToggleStatus={handleToggleStatus}
+          />
         </div>
       )}
 
-      {/* Paused Workflows */}
+      {/* Paused Workflows - Table View */}
       {pausedWorkflows.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
             Paused Pipelines ({pausedWorkflows.length})
           </h3>
-          <div className="space-y-4">
-            {pausedWorkflows.map((workflow) => (
-              <WorkflowCard
-                key={workflow.id}
-                workflow={workflow}
-                jobsCount={getJobsCount(workflow.id)}
-                onEdit={handleEdit}
-                onToggleStatus={handleToggleStatus}
-              />
-            ))}
-          </div>
+          <PipelineTable
+            workflows={pausedWorkflows}
+            onToggleStatus={handleToggleStatus}
+          />
         </div>
       )}
 
-      {/* Draft Workflows */}
+      {/* Draft Workflows - Card View (allows delete) */}
       {draftWorkflows.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-3">

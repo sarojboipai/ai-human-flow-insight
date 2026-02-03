@@ -1675,6 +1675,14 @@ export interface Workflow {
   updatedAt: string;
   executionCount: number;
   successRate: number;
+  // New metadata fields for template configuration
+  profession?: "nurse" | "doctor" | "pharmacist" | "technician";
+  jobZone?: 1 | 2 | 3 | 4;
+  locationTier?: "tier_1" | "tier_2" | "tier_3";
+  industry?: "hospital" | "diagnostic_lab" | "pharmaceuticals";
+  hiringType?: "bulk" | "fast_track" | "niche";
+  nodePositions?: Record<string, { x: number; y: number }>;
+  connections?: Array<{ source: string; target: string }>;
 }
 
 export const workflows: Workflow[] = [
@@ -1723,6 +1731,12 @@ export const workflows: Workflow[] = [
     updatedAt: "2024-01-25",
     executionCount: 1245,
     successRate: 87.4,
+    // New metadata fields
+    profession: "nurse",
+    jobZone: 1,
+    locationTier: "tier_1",
+    industry: "hospital",
+    hiringType: "bulk",
   },
   {
     id: "wf-002",
