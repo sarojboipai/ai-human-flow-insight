@@ -21,7 +21,8 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerBusiness from "./pages/CustomerBusiness";
 import NotFound from "./pages/NotFound";
 import OpsDashboard from "./pages/OpsDashboard";
-import OpsOrchestrationEngine from "./pages/OpsOrchestrationEngine";
+import OpsPipelineConfig from "./pages/OpsPipelineConfig";
+import OpsJobOrchestration from "./pages/OpsJobOrchestration";
 import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
 import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
@@ -53,7 +54,8 @@ const App = () => (
             <Route path="/customer/business" element={<CustomerBusiness />} />
             {/* Operations Manager routes */}
             <Route path="/ops" element={<OpsDashboard />} />
-            <Route path="/ops/orchestration" element={<OpsOrchestrationEngine />} />
+            <Route path="/ops/pipeline-config" element={<OpsPipelineConfig />} />
+            <Route path="/ops/job-orchestration" element={<OpsJobOrchestration />} />
             <Route path="/ops/recruiters" element={<OpsRecruiterDashboard />} />
             <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
             <Route path="/ops/template-builder" element={<PipelineTemplateBuilder />} />
