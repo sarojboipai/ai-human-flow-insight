@@ -1,102 +1,119 @@
 
 
-# Add Ops Manager Dashboard Metrics
+# Split Orchestration Engine into Pipeline Config and Job Orchestration
 
-Enhance the Operations Dashboard with 8 key hiring metrics to provide a comprehensive operational view.
-
----
-
-## Requested Metrics
-
-| Metric | Description | Data Type |
-|--------|-------------|-----------|
-| Active Jobs | Total number of open job requisitions | Count |
-| AI vs Human Split | Percentage distribution of AI vs Human tasks | Percentage |
-| HITL Queue Volume | Number of tasks awaiting human review | Count + trend |
-| Positions Required vs Filled | Comparison of demand vs fulfillment | Ratio (e.g., 156/89) |
-| Job Fulfilment Rate (%) | Percentage of positions successfully filled | Percentage |
-| Avg Time to Fill (TTF) | Average days to fill a position | Days |
-| SLA Breach Count | Number of jobs exceeding SLA thresholds | Count |
-| At-risk Jobs (Red flagged) | Jobs approaching or in breach status | Count |
+This implementation renames "Orchestration Engine" to "Pipeline Config" and creates a new "Job Orchestration" section for assigning pipelines to jobs.
 
 ---
 
-## Current vs New Layout
+## Overview
 
-**Current (4 metrics):**
-- Active Pipelines
-- AI vs Human Split
-- HITL Queue Volume
-- Pipeline SLA Status
+The current "Orchestration Engine" will be split into two distinct sections:
 
-**New (8 metrics):**
-Row 1: Active Jobs, AI vs Human Split, HITL Queue Volume, Positions Required vs Filled
-Row 2: Job Fulfilment Rate, Avg Time to Fill, SLA Breach Count, At-risk Jobs
+| Section | Purpose | Contents |
+|---------|---------|----------|
+| **Pipeline Config** | Create and configure templates | Job Pipeline templates, Agents, Rules |
+| **Job Orchestration** | Assign pipelines to jobs | Jobs list with pipeline assignment, status monitoring |
 
 ---
 
 ## Changes
 
-### 1. Extend Mock Data
+### 1. Update Sidebar Navigation
 
-**File:** `src/lib/mockData.ts`
+**File:** `src/components/layout/OpsSidebar.tsx`
 
-Add new KPI fields to `opsDashboardKPIs`:
+Rename the existing entry and add a new navigation item:
 
-```typescript
-export const opsDashboardKPIs = {
-  // Existing
-  activePipelines: 12,
-  aiTaskDistribution: 68,
-  humanTaskDistribution: 32,
-  hitlQueueVolume: 47,
-  hitlQueueTrend: 12,
-  pipelineSLAStatus: { green: 8, amber: 3, red: 1 },
-  topTemplates: [...],
-  
-  // NEW metrics
-  activeJobs: 156,
-  positionsRequired: 156,
-  positionsFilled: 89,
-  jobFulfilmentRate: 57.1,  // (89/156)*100
-  avgTimeToFill: 18,        // Days
-  slaBreachCount: 4,
-  atRiskJobs: 7,
-};
+| Before | After |
+|--------|-------|
+| Orchestration Engine (/ops/orchestration) | Pipeline Config (/ops/pipeline-config) |
+| - | Job Orchestration (/ops/job-orchestration) |
+
+Both items will remain in an "Orchestration" group to maintain logical organization.
+
+### 2. Rename Existing Page
+
+**Files to modify:**
+- Rename `src/pages/OpsOrchestrationEngine.tsx` to `src/pages/OpsPipelineConfig.tsx`
+- Update the page header from "Orchestration Engine" to "Pipeline Config"
+- Update description to "Configure pipeline templates, AI agents, and routing rules"
+
+### 3. Create Job Orchestration Page
+
+**File:** `src/pages/OpsJobOrchestration.tsx` (New)
+
+A new page for managing pipeline-to-job assignments with:
+
+**Key Metrics (4 cards):**
+- Active Jobs (count of jobs being orchestrated)
+- Pipelines in Use (count of distinct pipelines assigned)
+- Unassigned Jobs (jobs without pipelines)
+- Jobs At-Risk (SLA breach risk)
+
+**Main Content:**
+- Jobs table with columns:
+  - Job Title
+  - Employer
+  - Role Type
+  - Assigned Pipeline (dropdown to change)
+  - Status (Active/Paused/Filled)
+  - Days Open
+  - SLA Status (Green/Amber/Red)
+  - Actions (View Details, Reassign Pipeline)
+
+**Features:**
+- Filter by: Employer, Status, Pipeline
+- Bulk pipeline assignment
+- Quick access to job details
+
+### 4. Update Routes
+
+**File:** `src/App.tsx`
+
+Update and add routes:
+
+```text
+/ops/pipeline-config     → OpsPipelineConfig (renamed from OpsOrchestrationEngine)
+/ops/job-orchestration   → OpsJobOrchestration (new page)
 ```
-
-### 2. Update Dashboard Metrics
-
-**File:** `src/pages/OpsDashboard.tsx`
-
-Replace the current 4-metric grid with an 8-metric layout (2 rows of 4):
-
-| Metric | Icon | Color | Subtitle |
-|--------|------|-------|----------|
-| Active Jobs | Briefcase | Primary | Open positions across all pipelines |
-| AI vs Human Split | Bot | Emerald | Shows % breakdown |
-| HITL Queue Volume | Users | Amber | Trend indicator (+/-%) |
-| Positions Required vs Filled | Target | Blue | Shows ratio X/Y |
-| Job Fulfilment Rate | CheckCircle | Success | Percentage with trend |
-| Avg Time to Fill | Clock | Warning | Days with benchmark |
-| SLA Breach Count | AlertTriangle | Destructive | Critical count |
-| At-risk Jobs | AlertCircle | Destructive | Jobs needing attention |
 
 ---
 
-## Visual Design
+## Sidebar Structure (Updated)
 
-The metrics will use the existing Card component with consistent styling:
+```text
+Overview
+├── Dashboard
+
+Orchestration
+├── Pipeline Config     (renamed)
+└── Job Orchestration   (new)
+
+Operations
+├── Human Activity
+└── AI Activity
+```
+
+---
+
+## Job Orchestration Page Layout
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Active Jobs    │  AI vs Human   │  HITL Queue    │  Positions Filled      │
-│      156        │  Split 68%/32% │     47 (+12%)  │     89 / 156           │
-│  Open positions │  AI automation │  From last wk  │  Positions filled      │
+│  Job Orchestration                                                          │
+│  Assign and monitor pipeline execution for active jobs                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  Fulfilment %   │  Avg TTF       │  SLA Breaches  │  At-risk Jobs          │
-│     57.1%       │    18 days     │       4        │        7               │
-│  +3.2% vs last  │  Target: 21d   │  Exceeded SLA  │  Red flagged           │
+│  Active Jobs    │  Pipelines Used  │  Unassigned    │  At-Risk Jobs        │
+│      156        │       12         │       4        │        7             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Filters: [Employer ▼] [Status ▼] [Pipeline ▼] [Search...]    [Bulk Assign]│
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Job Title          │ Employer      │ Pipeline           │ Status │ SLA    │
+│  ICU Nurse          │ Apollo        │ Nurse Tier 1   ▼   │ Active │ 🟢     │
+│  Staff Nurse        │ Fortis        │ Nurse Tier 1   ▼   │ Active │ 🟡     │
+│  Cardiologist       │ Aster CMI     │ Doctor Tier 1  ▼   │ Active │ 🔴     │
+│  Lab Technician     │ KIMS          │ Tech Standard  ▼   │ Filled │ 🟢     │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -106,16 +123,19 @@ The metrics will use the existing Card component with consistent styling:
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/lib/mockData.ts` | Modify | Add new KPI fields to opsDashboardKPIs |
-| `src/pages/OpsDashboard.tsx` | Modify | Update metrics array with 8 new cards in 2-row layout |
+| `src/components/layout/OpsSidebar.tsx` | Modify | Rename nav item, add Job Orchestration link |
+| `src/pages/OpsOrchestrationEngine.tsx` | Rename | Rename to OpsPipelineConfig.tsx, update header text |
+| `src/pages/OpsJobOrchestration.tsx` | Create | New page for job-pipeline assignments |
+| `src/App.tsx` | Modify | Update route paths, add new route |
 
 ---
 
 ## Technical Details
 
-The metrics grid will use `grid-cols-4` for desktop and `grid-cols-2` for tablet with a `gap-4` spacing. Each metric card uses the existing Card component with:
-- Icon with color-coded background
-- Large value display
-- Descriptive subtitle
-- Optional trend indicator where applicable
+The Job Orchestration page will:
+- Import jobs data from mockData.ts (already has workflowId field linking to pipelines)
+- Import workflows from WorkflowContext to show available pipelines
+- Provide dropdown selectors for reassigning pipelines to jobs
+- Show SLA status based on existing job data (daysOpen, status)
+- Enable filtering and search for efficient job management
 
