@@ -26,6 +26,7 @@ import OpsJobOrchestration from "./pages/OpsJobOrchestration";
 import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
 import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
+import OpsJobDetail from "./pages/OpsJobDetail";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
             <Route path="/ops/template-builder" element={<PipelineTemplateBuilder />} />
             <Route path="/ops/template-builder/:templateId" element={<PipelineTemplateBuilder />} />
+            <Route path="/ops/jobs/:jobId" element={<OpsJobDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
