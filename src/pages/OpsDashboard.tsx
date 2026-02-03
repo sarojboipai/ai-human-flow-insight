@@ -99,12 +99,66 @@ export default function OpsDashboard() {
   return (
     <OpsLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Operations Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Overview of operational systems and pipeline health
-          </p>
+        {/* Header with Global Filters */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Operations Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Overview of operational systems and pipeline health
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={customer} onValueChange={setCustomer}>
+              <SelectTrigger className="w-[180px] h-9 bg-secondary/50 border-none">
+                <SelectValue placeholder="All Customers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Customers</SelectItem>
+                {enterpriseCustomers.map((cust) => (
+                  <SelectItem key={cust.id} value={cust.id}>
+                    {cust.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={jobRole} onValueChange={setJobRole}>
+              <SelectTrigger className="w-[140px] h-9 bg-secondary/50 border-none">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="nurse">Nurse</SelectItem>
+                <SelectItem value="doctor">Doctor</SelectItem>
+                <SelectItem value="technician">Technician</SelectItem>
+                <SelectItem value="pharmacist">Pharmacist</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={cityTier} onValueChange={setCityTier}>
+              <SelectTrigger className="w-[120px] h-9 bg-secondary/50 border-none">
+                <SelectValue placeholder="All Tiers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tiers</SelectItem>
+                <SelectItem value="1">Tier 1</SelectItem>
+                <SelectItem value="2">Tier 2</SelectItem>
+                <SelectItem value="3">Tier 3</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-[140px] h-9 bg-secondary/50 border-none">
+                <SelectValue placeholder="Date Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7days">Last 7 days</SelectItem>
+                <SelectItem value="30days">Last 30 days</SelectItem>
+                <SelectItem value="90days">Last 90 days</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Key Metrics */}
@@ -166,67 +220,6 @@ export default function OpsDashboard() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-
-        {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Filter Dashboard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <Select value={customer} onValueChange={setCustomer}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Customer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Customers</SelectItem>
-                  {enterpriseCustomers.map((cust) => (
-                    <SelectItem key={cust.id} value={cust.id}>
-                      {cust.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={jobRole} onValueChange={setJobRole}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Job Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="nurse">Nurse</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="technician">Technician</SelectItem>
-                  <SelectItem value="pharmacist">Pharmacist</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={cityTier} onValueChange={setCityTier}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="City Tier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tiers</SelectItem>
-                  <SelectItem value="1">Tier 1</SelectItem>
-                  <SelectItem value="2">Tier 2</SelectItem>
-                  <SelectItem value="3">Tier 3</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Date Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7days">Last 7 days</SelectItem>
-                  <SelectItem value="30days">Last 30 days</SelectItem>
-                  <SelectItem value="90days">Last 90 days</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </CardContent>
         </Card>
 
