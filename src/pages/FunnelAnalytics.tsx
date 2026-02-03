@@ -130,8 +130,6 @@ export default function FunnelAnalytics() {
             {/* Jobs Pipeline Table */}
             <CustomerJobsTable />
 
-            {/* Aggregate Funnel Chart */}
-            <AggregateFunnelChart data={aggregateFunnelData} />
           </TabsContent>
 
           {/* Funnel Analytics Tab */}
@@ -174,6 +172,9 @@ export default function FunnelAnalytics() {
 
             {/* Main Funnel */}
             <FunnelChart data={funnelData} title="Hiring Pipeline Funnel" />
+
+            {/* Aggregate Funnel Chart - AI vs Human Split */}
+            <AggregateFunnelChart data={aggregateFunnelData} />
 
             {/* Conversion & Time Analysis */}
             <div className="grid gap-6 lg:grid-cols-2">
