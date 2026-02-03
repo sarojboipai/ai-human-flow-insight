@@ -2695,3 +2695,51 @@ export const getFilteredTopTemplates = (filters: OpsFilterParams) => {
   // If no templates match filters, return original list
   return templates.length > 0 ? templates : opsDashboardKPIs.topTemplates;
 };
+
+// Filter job pipeline health data based on filters
+export const getFilteredJobPipelineHealth = (filters: OpsFilterParams): JobPipelineHealthRow[] => {
+  // Filter jobs first, then map to pipeline health rows
+  const filteredJobs = jobs.filter((job) => {
+    const matchesCustomer = filters.customerId === "all" || 
+      enterpriseCustomers.find(c => c.id === filters.customerId)?.name === job.employer;
+    const matchesRole = filters.roleType === "all" || job.roleType === filters.roleType;
+    const tier1Cities = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Kolkata", "Gurugram"];
+    const tier2Cities = ["Pune", "Ahmedabad", "Jaipur", "Lucknow", "Chandigarh"];
+    const getCityTier = (geography: string): number => {
+      if (tier1Cities.includes(geography)) return 1;
+      if (tier2Cities.includes(geography)) return 2;
+      return 3;
+    };
+    const matchesTier = filters.cityTier === "all" || getCityTier(job.geography) === Number(filters.cityTier);
+    
+    return matchesCustomer && matchesRole && matchesTier;
+  });
+
+  return filteredJobs.map((job) => {
+    const calculateSLARiskLocal = (daysOpen: number, status: string): "green" | "amber" | "red" => {
+      if (status === "filled") return "green";
+      if (daysOpen > 21) return "red";
+      if (daysOpen > 14) return "amber";
+      return "green";
+    };
+    
+    const getSLADetailsLocal = (daysOpen: number, slaRisk: "green" | "amber" | "red"): string => {
+      if (slaRisk === "green") return `${21 - daysOpen} days buffer`;
+      if (slaRisk === "amber") return `${21 - daysOpen} days remaining`;
+      return `${daysOpen - 21} days overdue`;
+    };
+
+    const slaRisk = calculateSLARiskLocal(job.daysOpen, job.status);
+    return {
+      jobId: job.id,
+      jobTitle: job.title,
+      customer: job.employer,
+      currentStage: getCurrentStage(job.daysOpen),
+      bottleneckStage: getBottleneckStage(job.funnel),
+      aiPercentage: job.aiContribution,
+      humanPercentage: job.humanContribution,
+      slaRisk,
+      slaDetails: getSLADetailsLocal(job.daysOpen, slaRisk),
+    };
+  });
+};

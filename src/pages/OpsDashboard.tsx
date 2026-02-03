@@ -26,8 +26,10 @@ import {
   enterpriseCustomers, 
   calculateOpsFilteredKPIs, 
   getFilteredTopTemplates,
+  getFilteredJobPipelineHealth,
   type OpsFilterParams 
 } from "@/lib/mockData";
+import { JobPipelineHealthTable } from "@/components/ops/JobPipelineHealthTable";
 
 export default function OpsDashboard() {
   const [customer, setCustomer] = useState("all");
@@ -52,6 +54,12 @@ export default function OpsDashboard() {
   // Get filtered templates
   const filteredTemplates = useMemo(() => 
     getFilteredTopTemplates(filterParams), 
+    [filterParams]
+  );
+
+  // Get filtered job pipeline health data
+  const filteredPipelineHealth = useMemo(() => 
+    getFilteredJobPipelineHealth(filterParams), 
     [filterParams]
   );
 
@@ -252,6 +260,8 @@ export default function OpsDashboard() {
           </CardContent>
         </Card>
 
+        {/* Job Pipeline Health Table */}
+        <JobPipelineHealthTable data={filteredPipelineHealth} />
 
         {/* Pipeline SLA Overview */}
         <div>
