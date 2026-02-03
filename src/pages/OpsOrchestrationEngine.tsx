@@ -43,7 +43,7 @@ export default function OpsOrchestrationEngine() {
       color: "text-emerald-500",
     },
     {
-      title: "HITL Rules",
+      title: "Active Rules",
       value: activeRules,
       subtitle: `${rules.length} total rules`,
       icon: Zap,
@@ -141,7 +141,7 @@ export default function OpsOrchestrationEngine() {
         <div>
           <h1 className="text-2xl font-bold">Orchestration Engine</h1>
           <p className="text-muted-foreground mt-1">
-            Configure job pipelines, AI agents, and HITL rules
+            Configure job pipelines, AI agents, and rules
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export default function OpsOrchestrationEngine() {
           <TabsContent value="rules" className="space-y-6">
             <div className="chart-container">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="section-title">HITL Rules</h3>
+                <h3 className="section-title">Rules</h3>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm">
                     <Upload className="h-4 w-4 mr-2" />
