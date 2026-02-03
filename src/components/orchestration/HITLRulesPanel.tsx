@@ -28,7 +28,7 @@ export function HITLRulesPanel({ rules }: HITLRulesPanelProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Zap className="h-5 w-5 text-blue-500" />
-            HITL Routing Rules
+            Routing Rules
           </CardTitle>
           <Link to="/hitl">
             <Button variant="ghost" size="sm" className="text-xs">

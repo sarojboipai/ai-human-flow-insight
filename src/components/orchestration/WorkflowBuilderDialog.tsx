@@ -170,7 +170,7 @@ export function WorkflowBuilderDialog({
     if (!name.trim()) {
       toast({
         title: "Validation Error",
-        description: "Workflow name is required.",
+        description: "Pipeline name is required.",
         variant: "destructive",
       });
       return;
@@ -228,7 +228,7 @@ export function WorkflowBuilderDialog({
     onOpenChange(false);
 
     toast({
-      title: isEditing ? "Workflow Updated" : "Workflow Created",
+      title: isEditing ? "Pipeline Updated" : "Pipeline Created",
       description: `"${name}" has been ${isEditing ? "updated" : "created"} successfully.`,
     });
   };
@@ -249,12 +249,12 @@ export function WorkflowBuilderDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Edit Workflow" : "Create New Workflow"}
+            {isEditing ? "Edit Pipeline" : "Create New Pipeline"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Modify the workflow configuration below."
-              : "Define your workflow details and select which stages to include."}
+              ? "Modify the pipeline configuration below."
+              : "Define your pipeline details and select which stages to include."}
           </DialogDescription>
         </DialogHeader>
 
@@ -262,10 +262,10 @@ export function WorkflowBuilderDialog({
           {/* Basic Info */}
           <div className="grid gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Workflow Name *</Label>
+              <Label htmlFor="name">Pipeline Name *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Frontline Hiring"
+                placeholder="e.g., Nurse Hiring - Tier 1"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -274,7 +274,7 @@ export function WorkflowBuilderDialog({
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe the purpose of this workflow..."
+                placeholder="Describe the purpose of this pipeline..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
@@ -314,7 +314,7 @@ export function WorkflowBuilderDialog({
 
           {/* Stages Configuration */}
           <div className="space-y-3">
-            <Label>Workflow Stages</Label>
+            <Label>Pipeline Stages</Label>
             <p className="text-xs text-muted-foreground">
               Select which stages to include and configure actor assignments.
             </p>
@@ -439,7 +439,7 @@ export function WorkflowBuilderDialog({
             Cancel
           </Button>
           <Button onClick={handleSave}>
-            {isEditing ? "Update Workflow" : "Create Workflow"}
+            {isEditing ? "Update Pipeline" : "Create Pipeline"}
           </Button>
         </DialogFooter>
       </DialogContent>

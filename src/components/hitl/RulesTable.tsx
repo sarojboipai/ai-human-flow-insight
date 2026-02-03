@@ -53,6 +53,10 @@ const ruleTypeColors: Record<RuleType, string> = {
   business: "bg-primary/20 text-primary border-primary/30",
   anomaly: "bg-warning/20 text-warning border-warning/30",
   sla: "bg-destructive/20 text-destructive border-destructive/30",
+  posting: "bg-violet-500/20 text-violet-500 border-violet-500/30",
+  sourcing: "bg-teal-500/20 text-teal-500 border-teal-500/30",
+  outreach: "bg-pink-500/20 text-pink-500 border-pink-500/30",
+  interview: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30",
 };
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
@@ -119,8 +123,8 @@ export function RulesTable({
             className="pl-9 bg-background"
           />
         </div>
-        <div className="flex gap-2">
-          {(["all", "confidence", "business", "anomaly", "sla"] as const).map(
+        <div className="flex gap-2 flex-wrap">
+          {(["all", "confidence", "business", "anomaly", "sla", "posting", "sourcing", "outreach", "interview"] as const).map(
             (type) => (
               <Button
                 key={type}
