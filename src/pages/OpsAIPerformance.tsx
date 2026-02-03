@@ -38,9 +38,9 @@ export default function OpsAIPerformance() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">AI Performance</h1>
+          <h1 className="text-2xl font-bold">AI Activity</h1>
           <p className="text-muted-foreground mt-1">
-            Evaluate AI agent accuracy, bias metrics, and SLA adherence
+            Monitor AI agent activity, automation outcomes, and SLA adherence
           </p>
         </div>
 

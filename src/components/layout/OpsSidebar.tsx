@@ -39,12 +39,12 @@ const orchestrationItems = [
 
 const operationsItems = [
   {
-    title: "Recruiter Dashboard",
+    title: "Human Activity",
     url: "/ops/recruiters",
     icon: Users,
   },
   {
-    title: "AI Performance",
+    title: "AI Activity",
     url: "/ops/ai-performance",
     icon: Bot,
   },
