@@ -23,6 +23,7 @@ import OpsDashboard from "./pages/OpsDashboard";
 import OpsOrchestrationEngine from "./pages/OpsOrchestrationEngine";
 import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
+import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,8 @@ const App = () => (
           <Route path="/ops/orchestration" element={<OpsOrchestrationEngine />} />
           <Route path="/ops/recruiters" element={<OpsRecruiterDashboard />} />
           <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
+          <Route path="/ops/template-builder" element={<PipelineTemplateBuilder />} />
+          <Route path="/ops/template-builder/:templateId" element={<PipelineTemplateBuilder />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

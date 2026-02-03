@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, FileText, Download, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, FileText, Download, Search, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkflowCard } from "./WorkflowCard";
@@ -9,6 +10,7 @@ import { WorkflowBuilderDialog } from "./WorkflowBuilderDialog";
 import { WorkflowTemplatesDialog, WorkflowTemplate } from "./WorkflowTemplatesDialog";
 
 export function WorkflowList() {
+  const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>(mockWorkflows);
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -124,6 +126,10 @@ export function WorkflowList() {
           <Button className="gap-2" onClick={handleOpenCreate}>
             <Plus className="h-4 w-4" />
             Create Pipeline
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => navigate("/ops/template-builder")}>
+            <LayoutGrid className="h-4 w-4" />
+            Visual Builder
           </Button>
           <Button variant="outline" className="gap-2" onClick={() => setTemplatesDialogOpen(true)}>
             <FileText className="h-4 w-4" />

@@ -1,0 +1,84 @@
+import { memo } from "react";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Users, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface EditableHumanNodeData extends Record<string, unknown> {
+  label: string;
+  stageType: string;
+  icon?: string;
+  humanRole?: string;
+  isSelected?: boolean;
+  onDelete?: () => void;
+  onSelect?: () => void;
+}
+
+export const EditableHumanNode = memo(({ data, selected }: NodeProps) => {
+  const nodeData = data as unknown as EditableHumanNodeData;
+  const hasRole = !!nodeData.humanRole;
+  
+  return (
+    <div
+      className={cn(
+        "relative px-4 py-3 rounded-lg border-2 bg-blue-50 shadow-sm min-w-[160px] transition-all group",
+        "hover:shadow-md cursor-pointer",
+        !hasRole && "border-dashed",
+        selected || nodeData.isSelected
+          ? "border-blue-500 ring-2 ring-blue-500/20"
+          : hasRole 
+            ? "border-blue-300" 
+            : "border-blue-400"
+      )}
+      onClick={nodeData.onSelect}
+    >
+      {/* Delete Button */}
+      {nodeData.onDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            nodeData.onDelete?.();
+          }}
+          className={cn(
+            "absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground",
+            "flex items-center justify-center transition-opacity",
+            selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+
+      {/* Handles */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!w-3 !h-3 !bg-blue-500 !border-2 !border-background"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!w-3 !h-3 !bg-blue-500 !border-2 !border-background"
+      />
+
+      {/* Content */}
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+          <Users className="h-4 w-4 text-blue-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-medium text-blue-900 block truncate">
+            {nodeData.label}
+          </span>
+          {!hasRole && (
+            <span className="text-xs text-blue-600">No role assigned</span>
+          )}
+          {hasRole && (
+            <span className="text-xs text-blue-600">{nodeData.humanRole}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+EditableHumanNode.displayName = "EditableHumanNode";
