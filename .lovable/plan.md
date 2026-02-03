@@ -1,103 +1,67 @@
 
 
-# Consolidate Pipeline Creation to Visual Builder
+# Add Location & Industry Fields to Template Configuration
 
-Simplify the UX by making "Create Pipeline" the single CTA that opens the React Flow canvas directly.
-
----
-
-## Change Summary
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/orchestration/WorkflowList.tsx` | Modify | Change "Create Pipeline" to navigate to visual builder, remove separate "Visual Builder" button |
-| `src/components/orchestration/WorkflowBuilderDialog.tsx` | Keep | Retain for quick-edit scenarios (inline metadata changes) |
-| `src/components/orchestration/WorkflowCard.tsx` | Modify | Update "Edit" action to navigate to visual builder with template ID |
+Add two new configuration fields (Location and Industry) and simplify the existing Job Zone field.
 
 ---
 
-## Before vs After
+## Current State vs New State
 
-### Current (Confusing)
-```text
-[Create Pipeline]  →  Opens modal form (WorkflowBuilderDialog)
-[Visual Builder]   →  Opens React Flow canvas (/ops/template-builder)
-[Templates]        →  Opens template selection dialog
-```
-
-### After (Unified)
-```text
-[Create Pipeline]  →  Opens React Flow canvas (/ops/template-builder)
-[Templates]        →  Opens template selection, then navigates to canvas with pre-filled data
-```
+| Current | New |
+|---------|-----|
+| Job Zone combines zone + tier concept (Zone 1 Metro, Zone 2 Tier 1, etc.) | Job Zone is standalone (Zone 1, 2, 3, 4) |
+| No Location field | Location Tier (Tier 1, Tier 2, Tier 3) |
+| No Industry field | Industry (Hospital, Diagnostic Lab, Pharmaceuticals) |
 
 ---
 
 ## Changes
 
-### 1. WorkflowList.tsx
+### 1. Update TemplateMetadata Interface
 
-**Remove**:
-- "Visual Builder" button (line 130-133)
-- `WorkflowBuilderDialog` component and related state (`createDialogOpen`, `handleOpenCreate`)
+Add two new fields to the interface:
 
-**Update**:
-- "Create Pipeline" button navigates directly to `/ops/template-builder`
-- "Templates" selection navigates to `/ops/template-builder?template={templateId}`
-- Edit action on pipeline cards navigates to `/ops/template-builder/{pipelineId}`
-
-```tsx
-// Before
-<Button className="gap-2" onClick={handleOpenCreate}>
-  <Plus className="h-4 w-4" />
-  Create Pipeline
-</Button>
-<Button variant="outline" className="gap-2" onClick={() => navigate("/ops/template-builder")}>
-  <LayoutGrid className="h-4 w-4" />
-  Visual Builder
-</Button>
-
-// After
-<Button className="gap-2" onClick={() => navigate("/ops/template-builder")}>
-  <Plus className="h-4 w-4" />
-  Create Pipeline
-</Button>
+```typescript
+export interface TemplateMetadata {
+  name: string;
+  hiringType: "bulk" | "fast_track" | "niche";
+  profession: "nurse" | "doctor" | "pharmacist" | "technician";
+  jobZone: 1 | 2 | 3 | 4;                                        // Simplified labels
+  locationTier: "tier_1" | "tier_2" | "tier_3";                  // NEW
+  industry: "hospital" | "diagnostic_lab" | "pharmaceuticals";   // NEW
+  defaultSLAProfile: string;
+  defaultAICoverage: number;
+  enterpriseOverrideAllowed: boolean;
+  complianceRequired: boolean;
+}
 ```
 
-### 2. WorkflowCard.tsx - Edit Action
+### 2. Update Form Layout
 
-Update edit button to navigate to visual builder instead of opening dialog:
+Reorganize the grid to accommodate the new fields (7 fields in first row):
 
-```tsx
-// Before
-onEdit={() => onEdit(workflow)}
+| Template Name | Hiring Type | Profession | Job Zone | Location | Industry | SLA Profile |
+|---------------|-------------|------------|----------|----------|----------|-------------|
+| (span 2)      | (span 1)    | (span 1)   | (span 1) | (span 1) | (span 1) | (span 1)    |
 
-// After
-onEdit={() => navigate(`/ops/template-builder/${workflow.id}`)}
-```
+### 3. Field Options
 
-### 3. Template Selection Flow
+**Job Zone** (simplified):
+- Zone 1
+- Zone 2
+- Zone 3
+- Zone 4
 
-When a template is selected from the Templates dialog:
+**Location Tier** (new):
+- Tier 1 (Metro)
+- Tier 2 (Urban)
+- Tier 3 (Rural)
 
-```tsx
-// Navigate to builder with template data in URL
-const handleSelectTemplate = (template: WorkflowTemplate) => {
-  navigate(`/ops/template-builder?template=${template.id}`);
-};
-```
-
----
-
-## Updated Button Layout
-
-```text
-+-------------------+  +-------------+  +----------+
-| + Create Pipeline |  | Templates   |  | Import   |
-+-------------------+  +-------------+  +----------+
-        ↓                    ↓
-   /ops/template-builder    Template dialog → /ops/template-builder?template=xyz
-```
+**Industry** (new):
+- Hospital
+- Diagnostic Lab
+- Pharmaceuticals
 
 ---
 
@@ -105,16 +69,15 @@ const handleSelectTemplate = (template: WorkflowTemplate) => {
 
 | File | Changes |
 |------|---------|
-| `src/components/orchestration/WorkflowList.tsx` | Remove Visual Builder button, update Create Pipeline to navigate, remove dialog state |
-| `src/components/orchestration/WorkflowCard.tsx` | Update Edit action to navigate to builder |
-| `src/pages/PipelineTemplateBuilder.tsx` | Add support for loading existing pipeline via URL param |
+| `src/components/orchestration/TemplateMetadataForm.tsx` | Add `locationTier` and `industry` fields to interface and form, update Job Zone labels |
+| `src/pages/PipelineTemplateBuilder.tsx` | Add default values for new fields in `DEFAULT_METADATA` |
 
 ---
 
-## Result
+## Updated Collapsed Header Preview
 
-- Single "Create Pipeline" CTA opens the React Flow canvas
-- Editing existing pipelines opens them in the visual builder
-- Templates pre-fill the canvas with template stages
-- Cleaner, more intuitive UX aligned with PRD
+When collapsed, show key metadata:
+```
+Template Configuration: Nurse Tier 1 Bulk Hiring • nurse • Zone 1 • Tier 1 • Hospital
+```
 
