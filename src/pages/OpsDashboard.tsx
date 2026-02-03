@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { OpsLayout } from "@/components/layout/OpsLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -22,7 +22,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { enterpriseCustomers, opsDashboardKPIs } from "@/lib/mockData";
+import { 
+  enterpriseCustomers, 
+  calculateOpsFilteredKPIs, 
+  getFilteredTopTemplates,
+  type OpsFilterParams 
+} from "@/lib/mockData";
 
 export default function OpsDashboard() {
   const [customer, setCustomer] = useState("all");
@@ -30,11 +35,31 @@ export default function OpsDashboard() {
   const [cityTier, setCityTier] = useState("all");
   const [dateRange, setDateRange] = useState("30days");
 
+  // Create filter params object
+  const filterParams: OpsFilterParams = useMemo(() => ({
+    customerId: customer,
+    roleType: jobRole,
+    cityTier: cityTier,
+    dateRange: dateRange,
+  }), [customer, jobRole, cityTier, dateRange]);
+
+  // Calculate filtered KPIs
+  const filteredKPIs = useMemo(() => 
+    calculateOpsFilteredKPIs(filterParams), 
+    [filterParams]
+  );
+
+  // Get filtered templates
+  const filteredTemplates = useMemo(() => 
+    getFilteredTopTemplates(filterParams), 
+    [filterParams]
+  );
+
   const metrics = [
     // Row 1
     {
       title: "Active Jobs",
-      value: opsDashboardKPIs.activeJobs,
+      value: filteredKPIs.activeJobs,
       subtitle: "Open positions across all pipelines",
       icon: Briefcase,
       color: "text-primary",
@@ -42,23 +67,23 @@ export default function OpsDashboard() {
     },
     {
       title: "AI vs Human Split",
-      value: `${opsDashboardKPIs.aiTaskDistribution}%`,
-      subtitle: `${opsDashboardKPIs.humanTaskDistribution}% human tasks`,
+      value: `${filteredKPIs.aiTaskDistribution}%`,
+      subtitle: `${filteredKPIs.humanTaskDistribution}% human tasks`,
       icon: Bot,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
     },
     {
       title: "HITL Queue Volume",
-      value: opsDashboardKPIs.hitlQueueVolume,
-      subtitle: `+${opsDashboardKPIs.hitlQueueTrend}% from last week`,
+      value: filteredKPIs.hitlQueueVolume,
+      subtitle: `+${filteredKPIs.hitlQueueTrend}% from last week`,
       icon: Users,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
     },
     {
       title: "Positions Filled",
-      value: `${opsDashboardKPIs.positionsFilled} / ${opsDashboardKPIs.positionsRequired}`,
+      value: `${filteredKPIs.positionsFilled} / ${filteredKPIs.positionsRequired}`,
       subtitle: "Positions filled vs required",
       icon: Target,
       color: "text-sky-500",
@@ -67,7 +92,7 @@ export default function OpsDashboard() {
     // Row 2
     {
       title: "Job Fulfilment Rate",
-      value: `${opsDashboardKPIs.jobFulfilmentRate}%`,
+      value: `${filteredKPIs.jobFulfilmentRate}%`,
       subtitle: "+3.2% vs last period",
       icon: CheckCircle,
       color: "text-success",
@@ -75,7 +100,7 @@ export default function OpsDashboard() {
     },
     {
       title: "Avg Time to Fill",
-      value: `${opsDashboardKPIs.avgTimeToFill} days`,
+      value: `${filteredKPIs.avgTimeToFill} days`,
       subtitle: "Target: 21 days",
       icon: Clock,
       color: "text-amber-500",
@@ -83,7 +108,7 @@ export default function OpsDashboard() {
     },
     {
       title: "SLA Breach Count",
-      value: opsDashboardKPIs.slaBreachCount,
+      value: filteredKPIs.slaBreachCount,
       subtitle: "Jobs exceeding SLA",
       icon: AlertTriangle,
       color: "text-destructive",
@@ -91,7 +116,7 @@ export default function OpsDashboard() {
     },
     {
       title: "At-risk Jobs",
-      value: opsDashboardKPIs.atRiskJobs,
+      value: filteredKPIs.atRiskJobs,
       subtitle: "Red flagged",
       icon: AlertCircle,
       color: "text-destructive",
@@ -203,7 +228,7 @@ export default function OpsDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {opsDashboardKPIs.topTemplates.map((template, idx) => (
+                {filteredTemplates.map((template, idx) => (
                   <TableRow key={idx}>
                     <TableCell className="font-medium">{template.name}</TableCell>
                     <TableCell>
@@ -238,7 +263,7 @@ export default function OpsDashboard() {
                   <CheckCircle className="h-5 w-5 text-success" />
                   <span className="font-medium">On Track</span>
                 </div>
-                <p className="text-3xl font-bold mt-3 text-success">{opsDashboardKPIs.pipelineSLAStatus.green}</p>
+                <p className="text-3xl font-bold mt-3 text-success">{filteredKPIs.pipelineSLAStatus.green}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Pipelines meeting SLA targets
                 </p>
@@ -250,7 +275,7 @@ export default function OpsDashboard() {
                   <Clock className="h-5 w-5 text-amber-500" />
                   <span className="font-medium">At Risk</span>
                 </div>
-                <p className="text-3xl font-bold mt-3 text-amber-500">{opsDashboardKPIs.pipelineSLAStatus.amber}</p>
+                <p className="text-3xl font-bold mt-3 text-amber-500">{filteredKPIs.pipelineSLAStatus.amber}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Pipelines approaching SLA limits
                 </p>
@@ -262,7 +287,7 @@ export default function OpsDashboard() {
                   <AlertCircle className="h-5 w-5 text-destructive" />
                   <span className="font-medium">Breached</span>
                 </div>
-                <p className="text-3xl font-bold mt-3 text-destructive">{opsDashboardKPIs.pipelineSLAStatus.red}</p>
+                <p className="text-3xl font-bold mt-3 text-destructive">{filteredKPIs.pipelineSLAStatus.red}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Pipelines exceeding SLA thresholds
                 </p>
