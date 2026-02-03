@@ -109,6 +109,13 @@ export default function FunnelAnalytics() {
 
           {/* Job Explorer Tab */}
           <TabsContent value="jobs" className="space-y-6">
+            {/* Jobs Pipeline Table */}
+            <CustomerJobsTable />
+
+          </TabsContent>
+
+          {/* Funnel Analytics Tab */}
+          <TabsContent value="funnel" className="space-y-6">
             {/* Job Metrics Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {jobMetrics.map((metric) => (
@@ -125,49 +132,6 @@ export default function FunnelAnalytics() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-
-            {/* Jobs Pipeline Table */}
-            <CustomerJobsTable />
-
-          </TabsContent>
-
-          {/* Funnel Analytics Tab */}
-          <TabsContent value="funnel" className="space-y-6">
-            {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <MetricCard
-                title="Overall Conversion"
-                value="7.4%"
-                change={0.8}
-                changeLabel="vs last month"
-                icon={<TrendingUp className="h-5 w-5" />}
-                variant="success"
-              />
-              <MetricCard
-                title="Avg Time to Hire"
-                value="21 days"
-                change={-2}
-                changeLabel="vs last month"
-                icon={<Clock className="h-5 w-5" />}
-                variant="info"
-              />
-              <MetricCard
-                title="Pipeline Volume"
-                value="12,500"
-                change={15}
-                changeLabel="vs last month"
-                icon={<Users className="h-5 w-5" />}
-                variant="primary"
-              />
-              <MetricCard
-                title="Drop-off Rate"
-                value="26%"
-                change={-4}
-                changeLabel="vs last month"
-                icon={<Target className="h-5 w-5" />}
-                variant="warning"
-              />
             </div>
 
             {/* Main Funnel */}
