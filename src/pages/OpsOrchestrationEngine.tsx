@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Activity, GitBranch, Network, Plug, Zap, Plus, Download, Upload, PlayCircle } from "lucide-react";
+import { Bot, GitBranch, Zap, Plus, Download, Upload, PlayCircle } from "lucide-react";
 import { OpsLayout } from "@/components/layout/OpsLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button";
 import { AgentRegistry } from "@/components/orchestration/AgentRegistry";
 import { AgentHealthMonitor } from "@/components/orchestration/AgentHealthMonitor";
 import { WorkflowList } from "@/components/orchestration/WorkflowList";
-import { ConnectorRegistry } from "@/components/orchestration/ConnectorRegistry";
-import { ExecutionTelemetry } from "@/components/orchestration/ExecutionTelemetry";
 import { RulesTable } from "@/components/hitl/RulesTable";
 import { RuleBuilderDialog } from "@/components/hitl/RuleBuilderDialog";
 import { RuleSimulator } from "@/components/hitl/RuleSimulator";
-import { agents, workflows, connectors, telemetryMetrics, hitlRulesV2, HITLRuleV2 } from "@/lib/mockData";
+import { agents, workflows, hitlRulesV2, HITLRuleV2 } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 
 export default function OpsOrchestrationEngine() {
@@ -27,12 +25,11 @@ export default function OpsOrchestrationEngine() {
 
   const activeAgents = agents.filter((a) => a.status === "active").length;
   const activeWorkflows = workflows.filter((w) => w.status === "active").length;
-  const connectedConnectors = connectors.filter((c) => c.status === "connected").length;
   const activeRules = rules.filter((r) => r.status === "active").length;
 
   const metrics = [
     {
-      title: "Active Workflows",
+      title: "Active Pipelines",
       value: activeWorkflows,
       subtitle: `${workflows.length} total defined`,
       icon: GitBranch,
@@ -44,13 +41,6 @@ export default function OpsOrchestrationEngine() {
       subtitle: `${agents.length} registered`,
       icon: Bot,
       color: "text-emerald-500",
-    },
-    {
-      title: "Connected Systems",
-      value: connectedConnectors,
-      subtitle: `${connectors.length} total integrations`,
-      icon: Plug,
-      color: "text-teal-500",
     },
     {
       title: "HITL Rules",
@@ -151,12 +141,12 @@ export default function OpsOrchestrationEngine() {
         <div>
           <h1 className="text-2xl font-bold">Orchestration Engine</h1>
           <p className="text-muted-foreground mt-1">
-            Control plane for AI agents, workflows, and automation systems
+            Configure job pipelines, AI agents, and HITL rules
           </p>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           {metrics.map((metric) => (
             <Card key={metric.title}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -174,32 +164,24 @@ export default function OpsOrchestrationEngine() {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="workflows" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="workflows" className="gap-2">
+        <Tabs defaultValue="job-pipeline" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="job-pipeline" className="gap-2">
               <GitBranch className="h-4 w-4" />
-              <span className="hidden sm:inline">Workflows</span>
+              <span className="hidden sm:inline">Job Pipeline</span>
             </TabsTrigger>
             <TabsTrigger value="agents" className="gap-2">
               <Bot className="h-4 w-4" />
               <span className="hidden sm:inline">Agents</span>
             </TabsTrigger>
-            <TabsTrigger value="connectors" className="gap-2">
-              <Plug className="h-4 w-4" />
-              <span className="hidden sm:inline">Connectors</span>
-            </TabsTrigger>
-            <TabsTrigger value="telemetry" className="gap-2">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Telemetry</span>
-            </TabsTrigger>
-            <TabsTrigger value="hitl-rules" className="gap-2">
+            <TabsTrigger value="rules" className="gap-2">
               <Zap className="h-4 w-4" />
-              <span className="hidden sm:inline">HITL Rules</span>
+              <span className="hidden sm:inline">Rules</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Workflows Tab */}
-          <TabsContent value="workflows">
+          {/* Job Pipeline Tab */}
+          <TabsContent value="job-pipeline">
             <WorkflowList />
           </TabsContent>
 
@@ -209,18 +191,8 @@ export default function OpsOrchestrationEngine() {
             <AgentHealthMonitor agents={agents} />
           </TabsContent>
 
-          {/* Connectors Tab */}
-          <TabsContent value="connectors">
-            <ConnectorRegistry />
-          </TabsContent>
-
-          {/* Telemetry Tab */}
-          <TabsContent value="telemetry">
-            <ExecutionTelemetry />
-          </TabsContent>
-
-          {/* HITL Rules Tab */}
-          <TabsContent value="hitl-rules" className="space-y-6">
+          {/* Rules Tab */}
+          <TabsContent value="rules" className="space-y-6">
             <div className="chart-container">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="section-title">HITL Rules</h3>

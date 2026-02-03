@@ -43,9 +43,9 @@ export default function OpsRecruiterDashboard() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Recruiter Dashboard</h1>
+            <h1 className="text-2xl font-bold">Human Activity</h1>
             <p className="text-muted-foreground mt-1">
-              Track recruiter productivity and performance metrics
+              Track team productivity and performance metrics
             </p>
           </div>
           <div className="flex items-center gap-3">

@@ -2231,3 +2231,147 @@ export const getJobPipelineHealthByCustomer = (customerName: string | "all"): Jo
   if (customerName === "all") return jobPipelineHealth;
   return jobPipelineHealth.filter(row => row.customer === customerName);
 };
+
+// ============================================
+// Pipeline Templates for Operations Manager
+// ============================================
+
+export interface PipelineTemplate {
+  id: string;
+  name: string;
+  description: string;
+  hiringType: "bulk" | "fast_track";
+  profession: "nurse" | "doctor" | "pharmacist" | "technician";
+  jobZone: 1 | 2 | 3 | 4;
+  defaultAICoverage: number;
+  defaultHITLRuleset: string;
+  characteristics: string[];
+  stages: WorkflowStage[];
+  icon: string;
+}
+
+export const pipelineTemplates: PipelineTemplate[] = [
+  {
+    id: "template-nurse-t1",
+    name: "Nurse Hiring - Tier 1 City",
+    description: "High-volume nurse hiring for metro hospitals",
+    hiringType: "bulk",
+    profession: "nurse",
+    jobZone: 1,
+    defaultAICoverage: 85,
+    defaultHITLRuleset: "standard-nursing",
+    characteristics: ["6 stages", "High automation", "AI-first"],
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "ai", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 4, retryPolicy: { maxRetries: 3, backoffMinutes: 15 } },
+      { id: "s2", name: "Skills Matching", type: "match", assignedActor: "ai", agentId: "agent-002", humanBackup: "Technical Recruiters", slaHours: 2, retryPolicy: { maxRetries: 2, backoffMinutes: 10 } },
+      { id: "s3", name: "Initial Outreach", type: "outreach", assignedActor: "hybrid", agentId: "agent-003", humanBackup: "Recruiter Team", slaHours: 24, retryPolicy: { maxRetries: 5, backoffMinutes: 60 } },
+      { id: "s4", name: "Interview Scheduling", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s5", name: "Offer Process", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 72, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s6", name: "Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 168, retryPolicy: { maxRetries: 1, backoffMinutes: 480 } },
+    ],
+    icon: "Zap",
+  },
+  {
+    id: "template-doctor-t1",
+    name: "Doctor Hiring - Tier 1 City",
+    description: "Premium physician recruitment with human checkpoints",
+    hiringType: "fast_track",
+    profession: "doctor",
+    jobZone: 1,
+    defaultAICoverage: 55,
+    defaultHITLRuleset: "enterprise-physician",
+    characteristics: ["6 stages", "Human-heavy", "Mandatory approvals"],
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "hybrid", agentId: "agent-001", humanBackup: "Senior Screening", slaHours: 8, retryPolicy: { maxRetries: 2, backoffMinutes: 30 } },
+      { id: "s2", name: "Credential Verification", type: "match", assignedActor: "human", agentId: "agent-005", humanBackup: "Compliance Team", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 60 } },
+      { id: "s3", name: "Personal Outreach", type: "outreach", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s4", name: "Multi-Panel Interview", type: "interview", assignedActor: "human", agentId: null, humanBackup: "Interview Panel", slaHours: 96, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s5", name: "Offer Negotiation", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Executive Team", slaHours: 120, retryPolicy: { maxRetries: 3, backoffMinutes: 480 } },
+      { id: "s6", name: "Executive Onboarding", type: "join", assignedActor: "human", agentId: null, humanBackup: "HR Director", slaHours: 336, retryPolicy: { maxRetries: 1, backoffMinutes: 720 } },
+    ],
+    icon: "Users",
+  },
+  {
+    id: "template-nurse-t2",
+    name: "Nurse Hiring - Tier 2 City",
+    description: "Standard nurse hiring for regional hospitals",
+    hiringType: "bulk",
+    profession: "nurse",
+    jobZone: 2,
+    defaultAICoverage: 80,
+    defaultHITLRuleset: "standard-nursing",
+    characteristics: ["6 stages", "Balanced automation", "Regional focus"],
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "ai", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 6, retryPolicy: { maxRetries: 3, backoffMinutes: 20 } },
+      { id: "s2", name: "Skills Matching", type: "match", assignedActor: "ai", agentId: "agent-002", humanBackup: "Technical Recruiters", slaHours: 4, retryPolicy: { maxRetries: 2, backoffMinutes: 15 } },
+      { id: "s3", name: "Initial Outreach", type: "outreach", assignedActor: "hybrid", agentId: "agent-003", humanBackup: "Recruiter Team", slaHours: 36, retryPolicy: { maxRetries: 4, backoffMinutes: 90 } },
+      { id: "s4", name: "Interview Scheduling", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 72, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s5", name: "Offer Process", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 96, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s6", name: "Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 168, retryPolicy: { maxRetries: 1, backoffMinutes: 480 } },
+    ],
+    icon: "Zap",
+  },
+  {
+    id: "template-technician",
+    name: "Technician Hiring - Standard",
+    description: "High-automation workflow for lab and radiology technicians",
+    hiringType: "bulk",
+    profession: "technician",
+    jobZone: 1,
+    defaultAICoverage: 90,
+    defaultHITLRuleset: "fast-track",
+    characteristics: ["6 stages", "Maximum automation", "Fast processing"],
+    stages: [
+      { id: "s1", name: "Bulk Screening", type: "intake", assignedActor: "ai", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 2, retryPolicy: { maxRetries: 5, backoffMinutes: 10 } },
+      { id: "s2", name: "Auto Matching", type: "match", assignedActor: "ai", agentId: "agent-002", humanBackup: "Technical Team", slaHours: 1, retryPolicy: { maxRetries: 3, backoffMinutes: 5 } },
+      { id: "s3", name: "Batch Outreach", type: "outreach", assignedActor: "ai", agentId: "agent-003", humanBackup: "Recruiter Team", slaHours: 12, retryPolicy: { maxRetries: 7, backoffMinutes: 30 } },
+      { id: "s4", name: "Group Interview", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 60 } },
+      { id: "s5", name: "Standard Offer", type: "offer", assignedActor: "ai", agentId: null, humanBackup: "Recruiters", slaHours: 24, retryPolicy: { maxRetries: 2, backoffMinutes: 120 } },
+      { id: "s6", name: "Fast Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "Onboarding Team", slaHours: 72, retryPolicy: { maxRetries: 1, backoffMinutes: 240 } },
+    ],
+    icon: "Bot",
+  },
+  {
+    id: "template-pharmacist",
+    name: "Pharmacist Hiring - Standard",
+    description: "Balanced workflow for pharmacy professionals",
+    hiringType: "fast_track",
+    profession: "pharmacist",
+    jobZone: 1,
+    defaultAICoverage: 70,
+    defaultHITLRuleset: "compliance-heavy",
+    characteristics: ["6 stages", "Compliance focus", "Credential checks"],
+    stages: [
+      { id: "s1", name: "Profile Screening", type: "intake", assignedActor: "hybrid", agentId: "agent-001", humanBackup: "Screening Team", slaHours: 6, retryPolicy: { maxRetries: 2, backoffMinutes: 20 } },
+      { id: "s2", name: "License Verification", type: "match", assignedActor: "human", agentId: "agent-005", humanBackup: "Compliance Team", slaHours: 12, retryPolicy: { maxRetries: 2, backoffMinutes: 30 } },
+      { id: "s3", name: "Recruiter Outreach", type: "outreach", assignedActor: "hybrid", agentId: "agent-003", humanBackup: "Recruiters", slaHours: 36, retryPolicy: { maxRetries: 4, backoffMinutes: 90 } },
+      { id: "s4", name: "Interview Scheduling", type: "interview", assignedActor: "hybrid", agentId: "agent-004", humanBackup: "Coordination Team", slaHours: 48, retryPolicy: { maxRetries: 3, backoffMinutes: 120 } },
+      { id: "s5", name: "Offer Negotiation", type: "offer", assignedActor: "human", agentId: null, humanBackup: "Senior Recruiters", slaHours: 72, retryPolicy: { maxRetries: 2, backoffMinutes: 240 } },
+      { id: "s6", name: "Onboarding", type: "join", assignedActor: "hybrid", agentId: "agent-007", humanBackup: "HR Team", slaHours: 168, retryPolicy: { maxRetries: 1, backoffMinutes: 480 } },
+    ],
+    icon: "Briefcase",
+  },
+];
+
+// ============================================
+// Operations Dashboard KPIs
+// ============================================
+
+export const opsDashboardKPIs = {
+  activePipelines: 12,
+  aiTaskDistribution: 68,
+  humanTaskDistribution: 32,
+  hitlQueueVolume: 47,
+  hitlQueueTrend: 12,
+  pipelineSLAStatus: {
+    green: 8,
+    amber: 3,
+    red: 1,
+  },
+  topTemplates: [
+    { name: "Nurse Hiring - Tier 1", profession: "Nurse", jobZone: 1, activeJobs: 24, aiCoverage: 85, hitlRuleset: "standard-nursing" },
+    { name: "Doctor Hiring - Tier 1", profession: "Doctor", jobZone: 1, activeJobs: 8, aiCoverage: 55, hitlRuleset: "enterprise-physician" },
+    { name: "Technician Standard", profession: "Technician", jobZone: 1, activeJobs: 15, aiCoverage: 90, hitlRuleset: "fast-track" },
+    { name: "Nurse Hiring - Tier 2", profession: "Nurse", jobZone: 2, activeJobs: 18, aiCoverage: 80, hitlRuleset: "standard-nursing" },
+  ],
+};
