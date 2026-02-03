@@ -3,8 +3,8 @@ import { OpsLayout } from "@/components/layout/OpsLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  GitBranch, Bot, Users, Zap, ArrowRight, Network, 
-  AlertCircle, CheckCircle, Clock, TrendingUp 
+  Briefcase, Bot, Users, Target, ArrowRight, Network, 
+  AlertCircle, AlertTriangle, CheckCircle, Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -38,11 +38,12 @@ export default function OpsDashboard() {
   const activeRules = hitlRulesV2.filter((r) => r.status === "active").length;
 
   const metrics = [
+    // Row 1
     {
-      title: "Active Pipelines",
-      value: opsDashboardKPIs.activePipelines,
-      subtitle: `${workflows.length} total defined`,
-      icon: GitBranch,
+      title: "Active Jobs",
+      value: opsDashboardKPIs.activeJobs,
+      subtitle: "Open positions across all pipelines",
+      icon: Briefcase,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
@@ -63,12 +64,45 @@ export default function OpsDashboard() {
       bgColor: "bg-amber-500/10",
     },
     {
-      title: "Pipeline SLA Status",
-      value: `${opsDashboardKPIs.pipelineSLAStatus.green}/${opsDashboardKPIs.activePipelines}`,
-      subtitle: `${opsDashboardKPIs.pipelineSLAStatus.amber} amber, ${opsDashboardKPIs.pipelineSLAStatus.red} breached`,
+      title: "Positions Filled",
+      value: `${opsDashboardKPIs.positionsFilled} / ${opsDashboardKPIs.positionsRequired}`,
+      subtitle: "Positions filled vs required",
+      icon: Target,
+      color: "text-sky-500",
+      bgColor: "bg-sky-500/10",
+    },
+    // Row 2
+    {
+      title: "Job Fulfilment Rate",
+      value: `${opsDashboardKPIs.jobFulfilmentRate}%`,
+      subtitle: "+3.2% vs last period",
       icon: CheckCircle,
       color: "text-success",
       bgColor: "bg-success/10",
+    },
+    {
+      title: "Avg Time to Fill",
+      value: `${opsDashboardKPIs.avgTimeToFill} days`,
+      subtitle: "Target: 21 days",
+      icon: Clock,
+      color: "text-amber-500",
+      bgColor: "bg-amber-500/10",
+    },
+    {
+      title: "SLA Breach Count",
+      value: opsDashboardKPIs.slaBreachCount,
+      subtitle: "Jobs exceeding SLA",
+      icon: AlertTriangle,
+      color: "text-destructive",
+      bgColor: "bg-destructive/10",
+    },
+    {
+      title: "At-risk Jobs",
+      value: opsDashboardKPIs.atRiskJobs,
+      subtitle: "Red flagged",
+      icon: AlertCircle,
+      color: "text-destructive",
+      bgColor: "bg-destructive/10",
     },
   ];
 
