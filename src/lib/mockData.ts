@@ -2573,3 +2573,125 @@ export const opsDashboardKPIs = {
   slaBreachCount: 4,
   atRiskJobs: 7,
 };
+
+// ============================================
+// Ops Dashboard Filtered KPI Calculator
+// ============================================
+
+export interface OpsFilterParams {
+  customerId: string;
+  roleType: string;
+  cityTier: string;
+  dateRange: string;
+}
+
+// City tier mapping based on geography
+const getCityTier = (geography: string): number => {
+  const tier1Cities = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Kolkata", "Gurugram"];
+  const tier2Cities = ["Pune", "Ahmedabad", "Jaipur", "Lucknow", "Chandigarh"];
+  if (tier1Cities.includes(geography)) return 1;
+  if (tier2Cities.includes(geography)) return 2;
+  return 3;
+};
+
+// Date filter helper
+const isWithinDateRange = (createdAt: string, dateRange: string): boolean => {
+  const created = new Date(createdAt);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+  
+  switch (dateRange) {
+    case "7days": return diffDays <= 7;
+    case "30days": return diffDays <= 30;
+    case "90days": return diffDays <= 90;
+    default: return true;
+  }
+};
+
+export const calculateOpsFilteredKPIs = (filters: OpsFilterParams) => {
+  // Filter jobs based on all filter parameters
+  const filteredJobs = jobs.filter((job) => {
+    const matchesCustomer = filters.customerId === "all" || 
+      enterpriseCustomers.find(c => c.id === filters.customerId)?.name === job.employer;
+    const matchesRole = filters.roleType === "all" || job.roleType === filters.roleType;
+    const matchesTier = filters.cityTier === "all" || getCityTier(job.geography) === Number(filters.cityTier);
+    const matchesDate = isWithinDateRange(job.createdAt, filters.dateRange);
+    
+    return matchesCustomer && matchesRole && matchesTier && matchesDate;
+  });
+
+  const activeJobs = filteredJobs.filter(j => j.status === "active");
+  const totalJobs = filteredJobs.length || 1;
+  
+  // Calculate AI/Human split based on filtered jobs
+  const avgAiContribution = Math.round(
+    filteredJobs.reduce((acc, job) => acc + job.aiContribution, 0) / totalJobs
+  );
+  const avgHumanContribution = 100 - avgAiContribution;
+  
+  // Calculate positions filled
+  const filledJobs = filteredJobs.filter(j => j.status === "filled").length;
+  const totalPositions = filteredJobs.length;
+  
+  // Calculate SLA metrics
+  const slaBreached = filteredJobs.filter(j => j.status === "active" && j.daysOpen > 21).length;
+  const atRisk = filteredJobs.filter(j => j.status === "active" && j.daysOpen > 14 && j.daysOpen <= 21).length;
+  
+  // Calculate avg time to fill from filled jobs
+  const filledJobsList = filteredJobs.filter(j => j.status === "filled");
+  const avgTimeToFill = filledJobsList.length > 0
+    ? Math.round(filledJobsList.reduce((acc, j) => acc + j.daysOpen, 0) / filledJobsList.length)
+    : 0;
+  
+  // HITL queue volume (simplified - based on HITL events)
+  const hitlQueueVolume = filteredJobs.reduce((acc, job) => acc + job.hitlEvents.length, 0);
+  
+  // Job fulfilment rate
+  const jobFulfilmentRate = totalPositions > 0 
+    ? Math.round((filledJobs / totalPositions) * 100 * 10) / 10
+    : 0;
+  
+  // Pipeline SLA status
+  const greenPipelines = filteredJobs.filter(j => j.status === "filled" || j.daysOpen <= 14).length;
+  const amberPipelines = atRisk;
+  const redPipelines = slaBreached;
+
+  return {
+    activeJobs: activeJobs.length,
+    aiTaskDistribution: avgAiContribution,
+    humanTaskDistribution: avgHumanContribution,
+    hitlQueueVolume: Math.max(hitlQueueVolume, 3), // Minimum 3 for demo
+    hitlQueueTrend: 12,
+    positionsRequired: totalPositions,
+    positionsFilled: filledJobs,
+    jobFulfilmentRate,
+    avgTimeToFill: avgTimeToFill || 18,
+    slaBreachCount: slaBreached,
+    atRiskJobs: atRisk,
+    pipelineSLAStatus: {
+      green: greenPipelines,
+      amber: amberPipelines,
+      red: redPipelines,
+    },
+  };
+};
+
+// Filter top templates based on filters
+export const getFilteredTopTemplates = (filters: OpsFilterParams) => {
+  let templates = [...opsDashboardKPIs.topTemplates];
+  
+  // Filter by role type
+  if (filters.roleType !== "all") {
+    templates = templates.filter(t => 
+      t.profession.toLowerCase() === filters.roleType.toLowerCase()
+    );
+  }
+  
+  // Filter by tier
+  if (filters.cityTier !== "all") {
+    templates = templates.filter(t => t.jobZone === Number(filters.cityTier));
+  }
+  
+  // If no templates match filters, return original list
+  return templates.length > 0 ? templates : opsDashboardKPIs.topTemplates;
+};
