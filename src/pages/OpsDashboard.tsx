@@ -12,20 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { 
   enterpriseCustomers, 
   calculateOpsFilteredKPIs, 
-  getFilteredTopTemplates,
   getFilteredJobPipelineHealth,
   type OpsFilterParams 
 } from "@/lib/mockData";
@@ -48,12 +37,6 @@ export default function OpsDashboard() {
   // Calculate filtered KPIs
   const filteredKPIs = useMemo(() => 
     calculateOpsFilteredKPIs(filterParams), 
-    [filterParams]
-  );
-
-  // Get filtered templates
-  const filteredTemplates = useMemo(() => 
-    getFilteredTopTemplates(filterParams), 
     [filterParams]
   );
 
@@ -218,47 +201,6 @@ export default function OpsDashboard() {
           ))}
         </div>
 
-        {/* Top Templates Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Top Hiring Templates in Use</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Template Name</TableHead>
-                  <TableHead>Profession</TableHead>
-                  <TableHead>Zone</TableHead>
-                  <TableHead>Active Jobs</TableHead>
-                  <TableHead>AI Coverage</TableHead>
-                  <TableHead>HITL Ruleset</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTemplates.map((template, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{template.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{template.profession}</Badge>
-                    </TableCell>
-                    <TableCell>Tier {template.jobZone}</TableCell>
-                    <TableCell>{template.activeJobs}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={template.aiCoverage} className="w-16 h-2" />
-                        <span className="text-sm">{template.aiCoverage}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{template.hitlRuleset}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
 
         {/* Job Pipeline Health Table */}
         <JobPipelineHealthTable data={filteredPipelineHealth} />
