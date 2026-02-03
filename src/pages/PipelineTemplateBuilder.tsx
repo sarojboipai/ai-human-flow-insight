@@ -424,7 +424,7 @@ export default function PipelineTemplateBuilder() {
       description: `Template "${metadata.name}" has been saved as draft.`,
     });
     setIsDirty(false);
-    navigate("/ops/orchestration");
+    navigate("/ops/pipeline-config");
   }, [metadata, buildWorkflowData, isEditing, templateId, updateWorkflow, addWorkflow, toast, navigate]);
 
   const handlePublish = useCallback(() => {
@@ -450,7 +450,7 @@ export default function PipelineTemplateBuilder() {
       description: `Template "${metadata.name}" is now available for use.`,
     });
     setIsDirty(false);
-    navigate("/ops/orchestration");
+    navigate("/ops/pipeline-config");
   }, [metadata, validationErrors, buildWorkflowData, isEditing, templateId, updateWorkflow, addWorkflow, toast, navigate]);
 
   return (
@@ -459,7 +459,7 @@ export default function PipelineTemplateBuilder() {
         {/* Header */}
         <div className="border-b px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/ops/orchestration")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/ops/pipeline-config")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
