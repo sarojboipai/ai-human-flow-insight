@@ -139,9 +139,9 @@ export default function OpsOrchestrationEngine() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">Orchestration Engine</h1>
+          <h1 className="text-2xl font-bold">Pipeline Config</h1>
           <p className="text-muted-foreground mt-1">
-            Configure job pipelines, AI agents, and rules
+            Configure pipeline templates, AI agents, and routing rules
           </p>
         </div>
 
