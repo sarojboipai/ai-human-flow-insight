@@ -1,35 +1,68 @@
 
-# Fix Back Button Navigation in Pipeline Template Builder
+# Remove Job Orchestration Tab and Page
 
-## Problem
-The back button on the Pipeline Template Builder page navigates to `/ops/orchestration`, but this route does not exist. The correct destination is `/ops/pipeline-config`.
-
-## Root Cause
-The navigation paths in `PipelineTemplateBuilder.tsx` reference an old/incorrect route (`/ops/orchestration`) that was likely renamed to `/ops/pipeline-config` but the references were not updated.
+## Overview
+Remove the "Job Orchestration" navigation item from the Ops sidebar and delete the associated page and route.
 
 ---
 
 ## Technical Changes
 
-**File:** `src/pages/PipelineTemplateBuilder.tsx`
+### 1. Remove from Sidebar Navigation
+**File:** `src/components/layout/OpsSidebar.tsx`
 
-Update all three occurrences of `/ops/orchestration` to `/ops/pipeline-config`:
+- Remove the `GitBranch` icon import (line 6)
+- Remove the "Job Orchestration" item from `orchestrationItems` array (lines 39-43)
 
-| Line | Current | Fixed |
-|------|---------|-------|
-| 427 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
-| 453 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
-| 462 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
+**Current orchestrationItems:**
+```typescript
+const orchestrationItems = [
+  {
+    title: "Pipeline Config",
+    url: "/ops/pipeline-config",
+    icon: Network,
+  },
+  {
+    title: "Job Orchestration",
+    url: "/ops/job-orchestration",
+    icon: GitBranch,
+  },
+];
+```
+
+**Updated:**
+```typescript
+const orchestrationItems = [
+  {
+    title: "Pipeline Config",
+    url: "/ops/pipeline-config",
+    icon: Network,
+  },
+];
+```
+
+### 2. Remove Route from App.tsx
+**File:** `src/App.tsx`
+
+- Remove the import for `OpsJobOrchestration` (line 28)
+- Remove the route `<Route path="/ops/job-orchestration" element={<OpsJobOrchestration />} />` (line 55)
+
+### 3. Delete the Page File
+**File:** `src/pages/OpsJobOrchestration.tsx`
+
+- Delete this file entirely
 
 ---
 
-## Affected Navigation Points
+## Summary of Changes
 
-1. **Back button** (line 462) - Header back arrow
-2. **Save Draft success** (line 427) - After saving draft
-3. **Publish success** (line 453) - After publishing template
+| File | Action |
+|------|--------|
+| `src/components/layout/OpsSidebar.tsx` | Remove "Job Orchestration" nav item and GitBranch import |
+| `src/App.tsx` | Remove route and import for OpsJobOrchestration |
+| `src/pages/OpsJobOrchestration.tsx` | Delete file |
 
 ---
 
 ## Result
-Clicking the back button (and completing save/publish actions) will correctly navigate to the Pipeline Config page where templates are listed.
+The "Job Orchestration" tab will no longer appear in the Ops sidebar. The Orchestration section will only contain "Pipeline Config". Any users navigating to `/ops/job-orchestration` will be shown the 404 page.
