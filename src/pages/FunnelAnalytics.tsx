@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
-import { CustomerJobsTable } from "@/components/customer/CustomerJobsTable";
 import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealthTable";
 import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
 import { funnelData, jobs, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
@@ -131,10 +130,6 @@ export default function FunnelAnalytics() {
               data={jobPipelineHealthData}
               onJobClick={handleJobClick}
             />
-
-            {/* Legacy Jobs Table */}
-            <CustomerJobsTable />
-
           </TabsContent>
 
           {/* Funnel Analytics Tab */}
