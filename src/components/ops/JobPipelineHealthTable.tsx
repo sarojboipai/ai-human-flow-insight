@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -6,13 +7,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
 import type { JobPipelineHealthRow } from "@/lib/mockData";
 
 interface JobPipelineHealthTableProps {
   data: JobPipelineHealthRow[];
+  onJobClick?: (jobId: string) => void;
 }
 
 // Map funnel stages to display badges
@@ -46,7 +48,18 @@ const getBottleneckDisplay = (bottleneck: string) => {
   return mapping[bottleneck] || bottleneck;
 };
 
-export function JobPipelineHealthTable({ data }: JobPipelineHealthTableProps) {
+export function JobPipelineHealthTable({ data, onJobClick }: JobPipelineHealthTableProps) {
+  const navigate = useNavigate();
+
+  const handleRowClick = (jobId: string) => {
+    if (onJobClick) {
+      onJobClick(jobId);
+    } else {
+      // Default navigation to job detail page
+      navigate(`/job/${jobId}`);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -63,11 +76,16 @@ export function JobPipelineHealthTable({ data }: JobPipelineHealthTableProps) {
               <TableHead>Bottleneck</TableHead>
               <TableHead className="w-[200px]">AI vs Human</TableHead>
               <TableHead className="text-right">SLA Risk</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row) => (
-              <TableRow key={row.jobId}>
+              <TableRow 
+                key={row.jobId}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleRowClick(row.jobId)}
+              >
                 <TableCell className="font-medium text-primary">{row.jobId}</TableCell>
                 <TableCell className="font-medium">{row.jobTitle}</TableCell>
                 <TableCell>{row.customer}</TableCell>
@@ -116,6 +134,19 @@ export function JobPipelineHealthTable({ data }: JobPipelineHealthTableProps) {
                       <div className="text-xs text-muted-foreground">{row.slaDetails}</div>
                     </div>
                   </div>
+                </TableCell>
+                <TableCell>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRowClick(row.jobId);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
