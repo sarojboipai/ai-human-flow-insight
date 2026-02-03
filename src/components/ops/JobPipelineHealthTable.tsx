@@ -56,7 +56,7 @@ export function JobPipelineHealthTable({ data, onJobClick }: JobPipelineHealthTa
       onJobClick(jobId);
     } else {
       // Default navigation to job detail page
-      navigate(`/job/${jobId}`);
+      navigate(`/jobs/${jobId}`);
     }
   };
 
