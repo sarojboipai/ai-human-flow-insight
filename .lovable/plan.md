@@ -1,37 +1,91 @@
 
-# Move Aggregate Funnel Chart to Funnel Analytics Tab
+# Add 10 Rows and Pagination to Job Pipeline Health Table
 
 ## Overview
-Move the "Aggregate Funnel - AI vs Human Split" stacked bar chart from the Job Explorer tab to the Funnel Analytics tab on the Jobs & Funnel page.
+Expand the Job Pipeline Health table on the Job Explorer tab to display 10 rows of data with pagination controls for navigating through results.
 
-## Current Location
-The `AggregateFunnelChart` component is currently rendered at the bottom of the **Job Explorer** tab (line 134).
-
-## Target Location
-Move it to the **Funnel Analytics** tab, placing it after the main "Hiring Pipeline Funnel" chart and before the "Conversion & Time Analysis" section.
+## Current State
+- The `jobs` array in `mockData.ts` contains 6 jobs (JOB-001 to JOB-006)
+- The `JobPipelineHealthTable` component displays all rows without pagination
+- No page state or pagination controls exist
 
 ---
 
 ## Technical Changes
 
-**File:** `src/pages/FunnelAnalytics.tsx`
+### 1. Expand Mock Data (src/lib/mockData.ts)
 
-| Change | Description |
-|--------|-------------|
-| Remove from Job Explorer tab | Delete line 134: `<AggregateFunnelChart data={aggregateFunnelData} />` |
-| Add to Funnel Analytics tab | Insert after the `<FunnelChart>` component (after line 176) |
+Add 4 additional jobs (JOB-007 through JOB-010) to reach 10 total rows:
+
+| Job ID | Title | Customer | Stage | AI % | SLA Risk |
+|--------|-------|----------|-------|------|----------|
+| JOB-007 | Radiologist | Apollo Hospitals | Human Review | 55% | At Risk |
+| JOB-008 | Staff Nurse | Fortis Healthcare | AI Match Generated | 80% | On Track |
+| JOB-009 | Anesthesiologist | Max Healthcare | Interview Scheduled | 62% | On Track |
+| JOB-010 | Medical Officer | Narayana Health | Offer Extended | 70% | SLA Breach |
+
+Each new job will include:
+- Full funnel stages with AI/Human split
+- HITL events where applicable
+- Varied SLA risk states for realistic data
+
+### 2. Add Pagination to Table Component (src/components/dashboard/JobPipelineHealthTable.tsx)
+
+**New imports:**
+```typescript
+import { useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+```
+
+**Add state and pagination logic:**
+```typescript
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 5;
+const totalPages = Math.ceil(data.length / itemsPerPage);
+const paginatedData = data.slice(
+  (currentPage - 1) * itemsPerPage, 
+  currentPage * itemsPerPage
+);
+```
+
+**Add pagination controls below table:**
+- Previous/Next buttons
+- Page number indicators
+- "Showing X-Y of Z jobs" text
 
 ---
 
-## New Layout for Funnel Analytics Tab
+## Updated Component Structure
 
-1. Key Metrics (4 cards)
-2. Hiring Pipeline Funnel
-3. **Aggregate Funnel - AI vs Human Split** (moved here)
-4. Conversion & Time Analysis (2-column grid)
-5. Top Drop-off Reasons
+```text
++------------------------------------------+
+| Job Pipeline Health                       |
++------------------------------------------+
+| Table with 5 rows per page                |
+| - Job ID, Title, Customer, Stage, etc.   |
++------------------------------------------+
+| Showing 1-5 of 10 jobs                   |
+| [Previous] [1] [2] [Next]                |
++------------------------------------------+
+```
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/lib/mockData.ts` | Add 4 new jobs (JOB-007 to JOB-010) |
+| `src/components/dashboard/JobPipelineHealthTable.tsx` | Add pagination state, logic, and UI controls |
 
 ---
 
 ## Result
-The AI vs Human Split chart will appear in the Funnel Analytics tab where it logically belongs with other funnel analysis visualizations, while the Job Explorer tab will focus purely on the jobs table and metrics.
+The Job Pipeline Health table will display 10 jobs with 5 rows per page, and users can navigate between pages using Previous/Next buttons and page number links. Row click functionality to open the job workflow dialog will continue to work correctly.
