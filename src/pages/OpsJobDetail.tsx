@@ -56,9 +56,11 @@ const OpsJobDetail = () => {
     <OpsLayout>
       {/* Header */}
       <div className="mb-6">
-        <Link to="/ops" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Dashboard
+        <Link to="/ops" className="block mb-4">
+          <Button variant="ghost" size="sm" className="gap-1 -ml-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
         </Link>
 
         <div className="flex items-start justify-between">
