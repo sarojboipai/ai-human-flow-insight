@@ -1,47 +1,35 @@
 
-# Fix Back to Dashboard Button on Ops Job Detail Page
+# Fix Back Button Navigation in Pipeline Template Builder
 
 ## Problem
-The "Back to Dashboard" link on the Ops Job Detail page is not working. The link is rendered as an inline-flex element that may not be properly registering clicks.
+The back button on the Pipeline Template Builder page navigates to `/ops/orchestration`, but this route does not exist. The correct destination is `/ops/pipeline-config`.
 
-## Solution
-Convert the text-based `Link` to a proper `Button` component for better clickability and visual consistency. This matches the pattern used in the "job not found" fallback state on the same page.
+## Root Cause
+The navigation paths in `PipelineTemplateBuilder.tsx` reference an old/incorrect route (`/ops/orchestration`) that was likely renamed to `/ops/pipeline-config` but the references were not updated.
 
 ---
 
 ## Technical Changes
 
-**File:** `src/pages/OpsJobDetail.tsx`
+**File:** `src/pages/PipelineTemplateBuilder.tsx`
 
-**Current (lines 59-62):**
-```tsx
-<Link to="/ops" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-  <ArrowLeft className="h-4 w-4 mr-1" />
-  Back to Dashboard
-</Link>
-```
+Update all three occurrences of `/ops/orchestration` to `/ops/pipeline-config`:
 
-**Updated:**
-```tsx
-<Link to="/ops" className="block mb-4">
-  <Button variant="ghost" size="sm" className="gap-1 -ml-2">
-    <ArrowLeft className="h-4 w-4" />
-    Back to Dashboard
-  </Button>
-</Link>
-```
+| Line | Current | Fixed |
+|------|---------|-------|
+| 427 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
+| 453 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
+| 462 | `navigate("/ops/orchestration")` | `navigate("/ops/pipeline-config")` |
 
 ---
 
-## Why This Works
+## Affected Navigation Points
 
-| Issue | Solution |
-|-------|----------|
-| Inline-flex may have click targeting issues | Wrap in block-level container |
-| Small text is hard to click | Use Button component with proper padding and hit area |
-| Inconsistent with fallback state | Matches the Button pattern already used when job is not found |
+1. **Back button** (line 462) - Header back arrow
+2. **Save Draft success** (line 427) - After saving draft
+3. **Publish success** (line 453) - After publishing template
 
 ---
 
 ## Result
-The back button will be a proper clickable Button component that navigates to `/ops` (the Ops Dashboard) when clicked.
+Clicking the back button (and completing save/publish actions) will correctly navigate to the Pipeline Config page where templates are listed.
