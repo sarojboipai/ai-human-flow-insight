@@ -2564,4 +2564,12 @@ export const opsDashboardKPIs = {
     { name: "Technician Standard", profession: "Technician", jobZone: 1, activeJobs: 15, aiCoverage: 90, hitlRuleset: "fast-track" },
     { name: "Nurse Hiring - Tier 2", profession: "Nurse", jobZone: 2, activeJobs: 18, aiCoverage: 80, hitlRuleset: "standard-nursing" },
   ],
+  // NEW metrics for Ops Manager Dashboard
+  activeJobs: 156,
+  positionsRequired: 156,
+  positionsFilled: 89,
+  jobFulfilmentRate: 57.1,
+  avgTimeToFill: 18,
+  slaBreachCount: 4,
+  atRiskJobs: 7,
 };
