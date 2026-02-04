@@ -64,7 +64,7 @@ export function CustomerSidebar() {
       <SidebarContent className="px-2">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-            Navigation
+            Overview
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
