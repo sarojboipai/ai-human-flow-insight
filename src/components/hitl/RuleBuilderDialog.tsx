@@ -22,6 +22,7 @@ import {
 import {
   HITLRuleV2,
   RuleType,
+  HiringStage,
   OperatorType,
   ActionType,
   TargetQueue,
@@ -67,6 +68,16 @@ const statuses: { value: RuleStatus; label: string }[] = [
   { value: "draft", label: "Draft" },
 ];
 
+const hiringStages: { value: HiringStage; label: string }[] = [
+  { value: "cross_stage", label: "Cross-Stage" },
+  { value: "job_posting", label: "Job Posting" },
+  { value: "sourcing", label: "Sourcing" },
+  { value: "outreach", label: "Outreach" },
+  { value: "application", label: "Application" },
+  { value: "screening", label: "Screening" },
+  { value: "interview", label: "Interview" },
+];
+
 export function RuleBuilderDialog({
   open,
   onOpenChange,
@@ -78,6 +89,7 @@ export function RuleBuilderDialog({
     name: "",
     description: "",
     ruleType: "confidence" as RuleType,
+    stage: "cross_stage" as HiringStage,
     conditionMetric: "",
     operator: "<" as OperatorType,
     thresholdValue: "",
@@ -93,6 +105,7 @@ export function RuleBuilderDialog({
         name: rule.name,
         description: rule.description,
         ruleType: rule.ruleType,
+        stage: rule.stage,
         conditionMetric: rule.conditionMetric,
         operator: rule.operator,
         thresholdValue: String(rule.thresholdValue),
@@ -106,6 +119,7 @@ export function RuleBuilderDialog({
         name: "",
         description: "",
         ruleType: "confidence",
+        stage: "cross_stage",
         conditionMetric: conditionMetrics["confidence"][0]?.value || "",
         operator: "<",
         thresholdValue: "",
@@ -209,6 +223,28 @@ export function RuleBuilderDialog({
               className="bg-background resize-none"
               rows={2}
             />
+          </div>
+
+          {/* Stage */}
+          <div className="grid gap-2">
+            <Label>Stage</Label>
+            <Select
+              value={formData.stage}
+              onValueChange={(value: HiringStage) =>
+                setFormData({ ...formData, stage: value })
+              }
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                {hiringStages.map((stage) => (
+                  <SelectItem key={stage.value} value={stage.value}>
+                    {stage.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Rule Type */}

@@ -38,7 +38,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { HITLRuleV2, RuleType } from "@/lib/mockData";
+import { HITLRuleV2, RuleType, HiringStage } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 
 interface RulesTableProps {
@@ -70,17 +70,14 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
   5: { label: "P5", color: "bg-muted text-muted-foreground" },
 };
 
-const ruleTypeToStage: Record<RuleType, string> = {
-  posting: "Job Posting",
+const stageLabels: Record<HiringStage, string> = {
+  cross_stage: "Cross-Stage",
+  job_posting: "Job Posting",
   sourcing: "Sourcing",
   outreach: "Outreach",
   application: "Application",
   screening: "Screening",
   interview: "Interview",
-  confidence: "Cross-Stage",
-  business: "Cross-Stage",
-  anomaly: "Cross-Stage",
-  sla: "Cross-Stage",
 };
 
 export function RulesTable({
@@ -207,8 +204,8 @@ export function RulesTable({
             {filteredRules.map((rule) => (
               <TableRow key={rule.id} className="border-border">
                 <TableCell>
-                  <span className={ruleTypeToStage[rule.ruleType] === "Cross-Stage" ? "text-muted-foreground" : ""}>
-                    {ruleTypeToStage[rule.ruleType]}
+                  <span className={rule.stage === "cross_stage" ? "text-muted-foreground" : ""}>
+                    {stageLabels[rule.stage]}
                   </span>
                 </TableCell>
                 <TableCell>
