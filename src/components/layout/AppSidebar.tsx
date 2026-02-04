@@ -32,7 +32,7 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Jobs & Funnel",
+    title: "Job Pipeline",
     url: "/funnel",
     icon: TrendingUp,
   },
