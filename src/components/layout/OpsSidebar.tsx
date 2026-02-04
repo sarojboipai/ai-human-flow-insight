@@ -65,16 +65,16 @@ export function OpsSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="h-20 px-4 flex items-center justify-start">
+      <SidebarHeader className="h-16 border-b border-sidebar-border px-2 flex items-center justify-start">
         <div className="flex items-center gap-3">
           <img 
             src={swaasaLogo} 
             alt="Swaasa Logo" 
-            className="h-12 w-12 rounded-xl object-cover"
+            className="h-9 w-9 rounded-lg object-cover"
           />
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-xl font-semibold tracking-tight text-sidebar-foreground">
+              <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">
                 Operations
               </span>
               <span className="text-xs text-muted-foreground">
@@ -85,9 +85,9 @@ export function OpsSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
+          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
             Overview
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -111,7 +111,7 @@ export function OpsSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
+          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
             Orchestration
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -135,7 +135,7 @@ export function OpsSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
+          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground">
             Operations
           </SidebarGroupLabel>
           <SidebarGroupContent>
