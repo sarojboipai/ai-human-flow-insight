@@ -1,4 +1,4 @@
-import { Bell, Search, User, UserCog } from "lucide-react";
+import { Bell, ChevronDown, Search, User, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,9 +12,10 @@ import { useNavigate } from "react-router-dom";
 
 interface AppHeaderProps {
   searchPlaceholder?: string;
+  currentPersona?: "Admin" | "Operation Manager" | "HITL" | "Customer";
 }
 
-export function AppHeader({ searchPlaceholder = "Search..." }: AppHeaderProps) {
+export function AppHeader({ searchPlaceholder = "Search...", currentPersona = "Admin" }: AppHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -39,8 +40,10 @@ export function AppHeader({ searchPlaceholder = "Search..." }: AppHeaderProps) {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <UserCog className="h-5 w-5" />
+            <Button variant="ghost" className="gap-2">
+              <UserCog className="h-4 w-4" />
+              <span>{currentPersona}</span>
+              <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
