@@ -1,13 +1,14 @@
 
-# Align Logo Box to the Left in Sidebar Headers
+# Align Sidebar Header with Navigation Items
 
 ## Overview
-Add explicit left alignment to the sidebar header content across all persona sidebars to ensure the logo box stays aligned to the left edge.
+Adjust the sidebar header padding to align the logo/brand section with the navigation items below (Dashboard, Pipeline Config, etc.).
 
-## Current State
-- The `SidebarHeader` uses `flex items-center` which vertically centers content
-- No explicit horizontal alignment is set, relying on flexbox default
-- When the sidebar transitions or in certain states, the content may not appear flush left
+## Problem
+The header uses `px-4` (16px padding) while the content area uses `px-2` (8px padding), causing the logo to appear more indented than the navigation menu items.
+
+## Solution
+Change the `SidebarHeader` padding from `px-4` to `px-2` across all sidebar components to match the `SidebarContent` padding.
 
 ---
 
@@ -15,27 +16,23 @@ Add explicit left alignment to the sidebar header content across all persona sid
 
 ### Update All Sidebar Components
 
-Add `justify-start` to the `SidebarHeader` className in each sidebar file to explicitly enforce left alignment:
-
-| File | Current Classes | Updated Classes |
-|------|-----------------|-----------------|
-| `HITLSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
-| `AppSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
-| `OpsSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
-| `CustomerSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
-
----
-
-## Files to Modify
-
 | File | Change |
 |------|--------|
-| `src/components/layout/HITLSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 49) |
-| `src/components/layout/AppSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 81) |
-| `src/components/layout/OpsSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 68) |
-| `src/components/layout/CustomerSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 44) |
+| `OpsSidebar.tsx` | Line 68: Change `px-4` to `px-2` |
+| `AppSidebar.tsx` | Line 81: Change `px-4` to `px-2` |
+| `HITLSidebar.tsx` | Line 49: Change `px-4` to `px-2` |
+| `CustomerSidebar.tsx` | Line 44: Change `px-4` to `px-2` |
+
+### Code Change
+```tsx
+// Before:
+<SidebarHeader className="h-16 border-b border-sidebar-border px-4 flex items-center justify-start">
+
+// After:
+<SidebarHeader className="h-16 border-b border-sidebar-border px-2 flex items-center justify-start">
+```
 
 ---
 
 ## Result
-The logo box in the sidebar header will be explicitly left-aligned across all personas (Admin, Ops, HITL, Customer), ensuring consistent positioning regardless of sidebar state.
+The logo and brand text in the sidebar header will align horizontally with the navigation items below, creating a cleaner, more consistent left edge throughout the sidebar.
