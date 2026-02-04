@@ -1,102 +1,92 @@
 
 
-# Replace Filter Buttons with Filter Dropdown
+# Remove Active Column & Add Stage Column to Rules Table
 
 ## Summary
-Replace the current row of individual filter buttons (All, Confidence, Business, Anomaly, etc.) with a single "Filter" button that opens a dropdown menu to select the rule type filter.
+Modify the Rules Table to remove the "Active" toggle column and add a new "Stage" column that displays which hiring stage each rule applies to.
 
 ---
 
-## Current State
-The Rules table currently displays 11 individual buttons horizontally for filtering by rule type:
-- All, Confidence, Business, Anomaly, SLA, Posting, Sourcing, Outreach, Interview, Application, Screening
+## Changes Overview
 
-This takes up significant horizontal space and wraps on smaller screens.
+### Column Changes
+| Remove | Add |
+|--------|-----|
+| Active (Switch toggle) | Stage (hiring stage label) |
 
----
+### Hiring Stage Mapping
+Rules will be mapped to stages based on their `ruleType`:
 
-## Proposed Change
-Replace with a single filter button that:
-- Shows a filter icon with the current filter label (e.g., "All Types" or the selected type)
-- Opens a dropdown menu when clicked
-- Lists all filter options with the selected one highlighted
-- Shows a badge indicator when a filter other than "All" is active
-
----
-
-## Visual Layout
-
-```text
-Before:
-┌─────────────────────┐ ┌─────┐┌────────────┐┌──────────┐┌─────────┐...
-│ 🔍 Search rules...  │ │ All ││ Confidence ││ Business ││ Anomaly │...
-└─────────────────────┘ └─────┘└────────────┘└──────────┘└─────────┘...
-
-After:
-┌─────────────────────┐ ┌────────────────────┐
-│ 🔍 Search rules...  │ │ 🔽 Filter: All     │
-└─────────────────────┘ └────────────────────┘
-                              ↓ (on click)
-                        ┌──────────────────┐
-                        │ ✓ All Types      │
-                        │   Confidence     │
-                        │   Business       │
-                        │   Anomaly        │
-                        │   SLA            │
-                        │   Posting        │
-                        │   Sourcing       │
-                        │   Outreach       │
-                        │   Interview      │
-                        │   Application    │
-                        │   Screening      │
-                        └──────────────────┘
-```
+| ruleType | Stage Display |
+|----------|--------------|
+| posting | Job Posting |
+| sourcing | Sourcing |
+| outreach | Outreach |
+| application | Application |
+| screening | Screening |
+| interview | Interview |
+| confidence | Cross-Stage |
+| business | Cross-Stage |
+| anomaly | Cross-Stage |
+| sla | Cross-Stage |
 
 ---
 
 ## File to Modify
 
 ### `src/components/hitl/RulesTable.tsx`
-- Import `Filter` icon from lucide-react
-- Import `DropdownMenu` components (already imported)
-- Replace the filter buttons section (lines 128-142) with a DropdownMenu
-- Add a badge/indicator when a specific filter is active
+
+1. **Remove the Switch import** (no longer needed)
+
+2. **Add stage mapping constant**:
+   ```tsx
+   const ruleTypeToStage: Record<RuleType, string> = {
+     posting: "Job Posting",
+     sourcing: "Sourcing",
+     outreach: "Outreach",
+     application: "Application",
+     screening: "Screening",
+     interview: "Interview",
+     confidence: "Cross-Stage",
+     business: "Cross-Stage",
+     anomaly: "Cross-Stage",
+     sla: "Cross-Stage",
+   };
+   ```
+
+3. **Update table header**: Replace "Active" with "Stage"
+
+4. **Update table body**:
+   - Remove the Switch cell
+   - Add Stage cell with the mapped stage name
+
+5. **Update colSpan**: Change from 9 to 9 (stays same since we remove one and add one)
+
+---
+
+## Visual Layout
+
+### Before
+| Active | Name | Type | Condition | Action | Priority | Triggers | Last Triggered | ... |
+|--------|------|------|-----------|--------|----------|----------|----------------|-----|
+| [Switch] | ... | ... | ... | ... | ... | ... | ... | ... |
+
+### After
+| Stage | Name | Type | Condition | Action | Priority | Triggers | Last Triggered | ... |
+|-------|------|------|-----------|--------|----------|----------|----------------|-----|
+| Job Posting | ... | posting | ... | ... | ... | ... | ... | ... |
+| Sourcing | ... | sourcing | ... | ... | ... | ... | ... | ... |
+| Cross-Stage | ... | confidence | ... | ... | ... | ... | ... | ... |
 
 ---
 
 ## Technical Details
 
-### Filter Button Implementation
-```tsx
-<DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="outline" size="sm" className="gap-2">
-      <Filter className="h-4 w-4" />
-      {filterType === "all" ? "All Types" : filterType}
-      {filterType !== "all" && (
-        <Badge variant="secondary" className="ml-1 h-5 w-5 p-0">1</Badge>
-      )}
-    </Button>
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="start">
-    {filterOptions.map((type) => (
-      <DropdownMenuItem
-        key={type}
-        onClick={() => setFilterType(type)}
-        className={filterType === type ? "bg-accent" : ""}
-      >
-        {type === "all" ? "All Types" : type}
-      </DropdownMenuItem>
-    ))}
-  </DropdownMenuContent>
-</DropdownMenu>
-```
+### Stage Cell Styling
+The Stage column will use a simple text display with subtle styling to differentiate pipeline stages from cross-stage rules:
+- Pipeline stages: Normal text
+- Cross-Stage: Muted text color
 
----
-
-## Expected Outcome
-- Cleaner, more compact filter UI
-- Single dropdown button replaces 11 individual buttons
-- Visual indicator shows when a filter is active
-- Better responsive behavior on smaller screens
+### No Data Model Changes
+The stage is derived from the existing `ruleType` field - no changes needed to `mockData.ts`.
 
