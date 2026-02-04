@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, DragEvent, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import {
   ReactFlow,
   Controls,
@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Upload, AlertCircle, CheckCircle } from "lucide-react";
 import { StagePalette } from "@/components/orchestration/StagePalette";
 import { NodeConfigPanel } from "@/components/orchestration/NodeConfigPanel";
-import { TemplateMetadataForm, type TemplateMetadata } from "@/components/orchestration/TemplateMetadataForm";
+import { type TemplateMetadata } from "@/components/orchestration/TemplateMetadataForm";
 import {
   EditableStageNode,
   EditableAINode,
@@ -105,13 +105,20 @@ const nodesToStages = (nodes: Node<StageNodeData>[]): WorkflowStage[] => {
 export default function PipelineTemplateBuilder() {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const templateParam = searchParams.get("template");
   const navigate = useNavigate();
   const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { addWorkflow, updateWorkflow, getWorkflow } = useWorkflows();
   
-  const [metadata, setMetadata] = useState<TemplateMetadata>(DEFAULT_METADATA);
+  // Get metadata from navigation state (for new pipelines created via dialog)
+  const initialMetadata = (location.state as { metadata?: Partial<TemplateMetadata> } | null)?.metadata;
+  
+  const [metadata, setMetadata] = useState<TemplateMetadata>(() => ({
+    ...DEFAULT_METADATA,
+    ...(initialMetadata || {}),
+  }));
   const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -502,14 +509,7 @@ export default function PipelineTemplateBuilder() {
           </div>
         </div>
 
-        {/* Metadata Form */}
-        <TemplateMetadataForm 
-          metadata={metadata} 
-          onChange={(updates) => {
-            setMetadata(prev => ({ ...prev, ...updates }));
-            setIsDirty(true);
-          }}
-        />
+        {/* Main Canvas Area */}
 
         {/* Main Canvas Area */}
         <div className="flex-1 flex min-h-0">

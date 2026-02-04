@@ -8,12 +8,14 @@ import { useWorkflows } from "@/contexts/WorkflowContext";
 import { jobs } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { WorkflowTemplatesDialog, WorkflowTemplate } from "./WorkflowTemplatesDialog";
+import { CreatePipelineDialog } from "./CreatePipelineDialog";
 
 export function WorkflowList() {
   const navigate = useNavigate();
   const { workflows, updateWorkflow, deleteWorkflow } = useWorkflows();
   const [searchQuery, setSearchQuery] = useState("");
   const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredWorkflows = workflows.filter(
@@ -64,7 +66,7 @@ export function WorkflowList() {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="flex gap-2">
-          <Button className="gap-2" onClick={() => navigate("/ops/template-builder")}>
+          <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             Create Pipeline
           </Button>
@@ -140,6 +142,11 @@ export function WorkflowList() {
         open={templatesDialogOpen}
         onOpenChange={setTemplatesDialogOpen}
         onSelectTemplate={handleSelectTemplate}
+      />
+      
+      <CreatePipelineDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
       />
     </div>
   );
