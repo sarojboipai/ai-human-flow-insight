@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
+import { NotificationsPopover } from "@/components/hitl/NotificationsPopover";
 
 interface AppHeaderProps {
   searchPlaceholder?: string;
@@ -33,10 +34,14 @@ export function AppHeader({ searchPlaceholder = "Search...", currentPersona = "A
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
-        </Button>
+        {currentPersona === "HITL" ? (
+          <NotificationsPopover />
+        ) : (
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+          </Button>
+        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

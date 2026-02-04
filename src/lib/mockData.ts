@@ -2851,7 +2851,109 @@ export const getFilteredJobPipelineHealth = (filters: OpsFilterParams): JobPipel
       aiPercentage: job.aiContribution,
       humanPercentage: job.humanContribution,
       slaRisk,
-      slaDetails: getSLADetailsLocal(job.daysOpen, slaRisk),
+    slaDetails: getSLADetailsLocal(job.daysOpen, slaRisk),
     };
   });
 };
+
+// HITL Notifications interface and mock data
+export interface HITLNotification {
+  id: string;
+  taskId: string;
+  type: "new_task" | "priority_escalation" | "sla_warning" | "assignment";
+  title: string;
+  message: string;
+  priority: TaskPriority;
+  isRead: boolean;
+  createdAt: string;
+  relatedCandidate?: string;
+  relatedJob?: string;
+}
+
+// Generate notifications from hitlTasks
+export const hitlNotifications: HITLNotification[] = [
+  {
+    id: "notif-001",
+    taskId: "HITL-001",
+    type: "new_task",
+    title: "New High Priority Task",
+    message: "Low AI Confidence",
+    priority: "high",
+    isRead: false,
+    createdAt: "2 hours ago",
+    relatedCandidate: "Amit Verma",
+    relatedJob: "Senior ICU Nurse",
+  },
+  {
+    id: "notif-002",
+    taskId: "HITL-002",
+    type: "priority_escalation",
+    title: "Enterprise Employer Task",
+    message: "Enterprise Employer",
+    priority: "high",
+    isRead: false,
+    createdAt: "4 hours ago",
+    relatedCandidate: "Neha Gupta",
+    relatedJob: "General Physician",
+  },
+  {
+    id: "notif-003",
+    taskId: "HITL-003",
+    type: "new_task",
+    title: "Senior Role Review",
+    message: "Senior Doctor Roles",
+    priority: "medium",
+    isRead: false,
+    createdAt: "6 hours ago",
+    relatedCandidate: "Dr. Rajesh Kumar",
+    relatedJob: "Cardiologist",
+  },
+  {
+    id: "notif-004",
+    taskId: "HITL-004",
+    type: "sla_warning",
+    title: "SLA Warning",
+    message: "Interview Scheduling SLA - Due in 1 hour",
+    priority: "medium",
+    isRead: true,
+    createdAt: "8 hours ago",
+    relatedCandidate: "Sunita Reddy",
+    relatedJob: "Emergency Paramedic",
+  },
+  {
+    id: "notif-005",
+    taskId: "HITL-005",
+    type: "new_task",
+    title: "Low Confidence Match",
+    message: "Low AI Confidence",
+    priority: "low",
+    isRead: true,
+    createdAt: "1 day ago",
+    relatedCandidate: "Kiran Joshi",
+    relatedJob: "Lab Technician",
+  },
+  {
+    id: "notif-006",
+    taskId: "HITL-006",
+    type: "sla_warning",
+    title: "SLA Breach Imminent",
+    message: "High Drop-off Alert - 2 hours overdue",
+    priority: "high",
+    isRead: false,
+    createdAt: "30 mins ago",
+    relatedCandidate: "Priya Nair",
+    relatedJob: "Staff Nurse",
+  },
+  {
+    id: "notif-007",
+    taskId: "HITL-007",
+    type: "assignment",
+    title: "Task Assigned to You",
+    message: "High Salary Negotiation",
+    priority: "medium",
+    isRead: false,
+    createdAt: "1 hour ago",
+    relatedCandidate: "Dr. Anil Kapoor",
+    relatedJob: "Head of Surgery",
+  },
+];
