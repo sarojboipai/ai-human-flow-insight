@@ -13,7 +13,7 @@ export function OpsLayout({ children }: OpsLayoutProps) {
       <div className="min-h-screen flex w-full">
         <OpsSidebar />
         <SidebarInset className="flex-1 flex flex-col h-screen overflow-hidden">
-          <AppHeader searchPlaceholder="Search workflows, agents, connectors..." />
+          <AppHeader searchPlaceholder="Search workflows, agents, connectors..." currentPersona="Operation Manager" />
           
           <main className="flex-1 p-6 overflow-auto">
             {children}

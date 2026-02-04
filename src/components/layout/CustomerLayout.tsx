@@ -13,7 +13,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
       <div className="min-h-screen flex w-full">
         <CustomerSidebar />
         <SidebarInset className="flex-1 flex flex-col h-screen overflow-hidden">
-          <AppHeader searchPlaceholder="Search jobs, candidates..." />
+          <AppHeader searchPlaceholder="Search jobs, candidates..." currentPersona="Customer" />
           
           <main className="flex-1 p-6 overflow-auto">
             {children}

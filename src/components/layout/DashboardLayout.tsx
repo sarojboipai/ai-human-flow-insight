@@ -15,7 +15,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col h-screen overflow-hidden">
-          <AppHeader searchPlaceholder="Search candidates, employers, recruiters..." />
+          <AppHeader searchPlaceholder="Search candidates, employers, recruiters..." currentPersona="Admin" />
           
           <main className="flex-1 p-6 overflow-auto">
             {title && (
