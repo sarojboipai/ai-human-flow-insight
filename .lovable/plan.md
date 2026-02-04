@@ -1,62 +1,137 @@
 
+# Consolidate Pipelines into Single Table
 
-# Fix Sidebar Header Left Padding
-
-## Problem Identified
-The `SidebarHeader` component in `src/components/ui/sidebar.tsx` has a **default `p-2` padding** built into its base styles:
-
-```tsx
-className={cn("flex flex-col gap-2 p-2", className)}
-```
-
-When we add `pl-[8px]` in the OpsSidebar, it should override the left padding. However, `p-2` applies padding on all sides (8px), and the `tailwind-merge` library should handle this. The issue is that `pl-[8px]` equals 8px which is the same as `p-2`, so there's no visible difference.
-
-Looking at the screenshot, the extra spacing is likely coming from the **inner `div`** element that contains the logo:
-
-```tsx
-<SidebarHeader className="... pl-[8px] ...">
-  <div className="flex items-center gap-3">  <!-- This div has no padding but... -->
-```
-
-The actual distance also includes any margin from the logo image itself.
+## Summary
+Combine all pipeline views (Active, Paused, Draft) into one unified table and remove the Templates and Import buttons from the header.
 
 ---
 
-## Solution
-Override the default `p-2` on SidebarHeader with explicit `p-0` and then apply only the left padding we need:
+## Changes Overview
 
-### File: `src/components/layout/OpsSidebar.tsx`
-
-Change line 68 from:
-```tsx
-<SidebarHeader className="h-16 border-b border-sidebar-border pl-[8px] flex items-center justify-start">
+### Before
+```text
+┌──────────────────────────────────────────────────────────────┐
+│  [Create Pipeline]  [Templates]  [Import]     [Search...]   │
+├──────────────────────────────────────────────────────────────┤
+│  Active Pipelines (3)                                        │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Table with 3 rows                                      │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  Paused Pipelines (1)                                        │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Table with 1 row                                       │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  Draft Pipelines (2)                                         │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Table with 2 rows                                      │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-To:
-```tsx
-<SidebarHeader className="h-16 border-b border-sidebar-border p-0 pl-[8px] flex items-center justify-start">
+### After
+```text
+┌──────────────────────────────────────────────────────────────┐
+│  [Create Pipeline]                            [Search...]    │
+├──────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Pipeline  │ Status │ Type │ ... │ Actions             │  │
+│  ├───────────┼────────┼──────┼─────┼─────────────────────┤  │
+│  │ Pipeline1 │ Active │ Bulk │ ... │ [Edit] [Pause]      │  │
+│  │ Pipeline2 │ Active │ Fast │ ... │ [Edit] [Pause]      │  │
+│  │ Pipeline3 │ Paused │ Niche│ ... │ [Edit] [Play]       │  │
+│  │ Pipeline4 │ Draft  │ Bulk │ ... │ [Edit] [Delete]     │  │
+│  │ ...       │ ...    │ ...  │ ... │ ...                 │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-This will:
-1. Reset all padding to 0 with `p-0`
-2. Apply only 8px left padding with `pl-[8px]`
-3. Remove default top, right, and bottom padding that might affect alignment
+---
 
-### File: `src/components/layout/AppSidebar.tsx`
+## Changes Required
 
-Apply the same fix for consistency across all sidebars.
+### 1. Update WorkflowList Component
+**File: `src/components/orchestration/WorkflowList.tsx`**
+
+- Remove Templates button and its dialog state/import
+- Remove Import button
+- Remove separate sections for Active/Paused/Draft
+- Pass all `filteredWorkflows` to a single `PipelineTable`
+- Pass both `onToggleStatus` and `onDelete` to the table
+
+### 2. Update PipelineTable Component
+**File: `src/components/orchestration/PipelineTable.tsx`**
+
+- Add a "Status" column to display Active/Paused/Draft
+- Update actions column to show:
+  - Delete button for Draft workflows
+  - Play/Pause button for Active/Paused workflows
+- Accept both `onToggleStatus` and `onDelete` props always
+- Determine which action to show based on workflow status
+
+---
+
+## Updated Table Structure
+
+| Column | Description |
+|--------|-------------|
+| Pipeline | Name + version badge |
+| **Status** | NEW - Shows Active/Paused/Draft with colored badge |
+| Type | Bulk/Fast Track/Niche |
+| Profession | Nurse/Technician/etc. |
+| Zone | Zone 1/2/3/4 |
+| Tier | Tier 1/2/3 |
+| Industry | Hospital/Lab/Pharma |
+| Jobs | Count of assigned jobs |
+| AI/Human | Split visualization |
+| Success | Success rate % |
+| SLA | Green/Amber/Red indicator |
+| Updated | Last update date |
+| Actions | Edit + (Delete or Play/Pause) |
 
 ---
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/layout/OpsSidebar.tsx` | Add `p-0` before `pl-[8px]` on SidebarHeader |
-| `src/components/layout/AppSidebar.tsx` | Add `p-0` before `pl-[8px]` on SidebarHeader |
+| File | Changes |
+|------|---------|
+| `src/components/orchestration/WorkflowList.tsx` | Remove Templates/Import buttons, remove separate table sections, use single table |
+| `src/components/orchestration/PipelineTable.tsx` | Add Status column, update action logic based on workflow status |
 
 ---
 
-## Technical Note
-The `cn()` function uses `tailwind-merge` which properly handles conflicting Tailwind classes. By adding `p-0` first, we explicitly reset the base padding, then `pl-[8px]` sets only the left padding to exactly 8 pixels.
+## Technical Details
 
+### Status Badge Colors
+```typescript
+const statusColors = {
+  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+  paused: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  draft: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+};
+```
+
+### Action Logic
+```typescript
+// In Actions column
+{workflow.status === "draft" ? (
+  <Button onClick={() => onDelete?.(workflow)}>
+    <Trash2 />
+  </Button>
+) : (
+  <Button onClick={() => onToggleStatus?.(workflow)}>
+    {workflow.status === "paused" ? <Play /> : <Pause />}
+  </Button>
+)}
+```
+
+### Props Update
+```typescript
+interface PipelineTableProps {
+  workflows: Workflow[];
+  onToggleStatus?: (workflow: Workflow) => void;
+  onDelete?: (workflow: Workflow) => void;
+  // Remove showDeleteAction - determine from workflow.status instead
+}
+```
