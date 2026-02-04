@@ -13,7 +13,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -69,6 +68,19 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
   3: { label: "P3", color: "bg-info/20 text-info" },
   4: { label: "P4", color: "bg-muted text-muted-foreground" },
   5: { label: "P5", color: "bg-muted text-muted-foreground" },
+};
+
+const ruleTypeToStage: Record<RuleType, string> = {
+  posting: "Job Posting",
+  sourcing: "Sourcing",
+  outreach: "Outreach",
+  application: "Application",
+  screening: "Screening",
+  interview: "Interview",
+  confidence: "Cross-Stage",
+  business: "Cross-Stage",
+  anomaly: "Cross-Stage",
+  sla: "Cross-Stage",
 };
 
 export function RulesTable({
@@ -164,8 +176,8 @@ export function RulesTable({
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="text-muted-foreground font-medium w-[50px]">
-                Active
+              <TableHead className="text-muted-foreground font-medium">
+                Stage
               </TableHead>
               <TableHead className="text-muted-foreground font-medium">
                 Name
@@ -195,13 +207,9 @@ export function RulesTable({
             {filteredRules.map((rule) => (
               <TableRow key={rule.id} className="border-border">
                 <TableCell>
-                  <Switch
-                    checked={rule.status === "active"}
-                    onCheckedChange={(checked) =>
-                      onToggleStatus(rule.id, checked ? "active" : "paused")
-                    }
-                    disabled={rule.status === "draft"}
-                  />
+                  <span className={ruleTypeToStage[rule.ruleType] === "Cross-Stage" ? "text-muted-foreground" : ""}>
+                    {ruleTypeToStage[rule.ruleType]}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <div>
