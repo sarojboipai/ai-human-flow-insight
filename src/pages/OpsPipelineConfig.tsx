@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Bot, GitBranch, Zap, Plus, Download, Upload, PlayCircle } from "lucide-react";
 import { OpsLayout } from "@/components/layout/OpsLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { AgentRegistry } from "@/components/orchestration/AgentRegistry";
@@ -23,33 +22,7 @@ export default function OpsOrchestrationEngine() {
   const [simulatingRule, setSimulatingRule] = useState<HITLRuleV2 | null>(null);
   const [showSimulator, setShowSimulator] = useState(false);
 
-  const activeAgents = agents.filter((a) => a.status === "active").length;
-  const activeWorkflows = workflows.filter((w) => w.status === "active").length;
   const activeRules = rules.filter((r) => r.status === "active").length;
-
-  const metrics = [
-    {
-      title: "Active Pipelines",
-      value: activeWorkflows,
-      subtitle: `${workflows.length} total defined`,
-      icon: GitBranch,
-      color: "text-primary",
-    },
-    {
-      title: "Active Agents",
-      value: activeAgents,
-      subtitle: `${agents.length} registered`,
-      icon: Bot,
-      color: "text-emerald-500",
-    },
-    {
-      title: "Active Rules",
-      value: activeRules,
-      subtitle: `${rules.length} total rules`,
-      icon: Zap,
-      color: "text-amber-500",
-    },
-  ];
 
   // Rule handlers
   const handleCreateRule = () => {
@@ -146,23 +119,6 @@ export default function OpsOrchestrationEngine() {
           </p>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {metrics.map((metric) => (
-            <Card key={metric.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {metric.title}
-                </CardTitle>
-                <metric.icon className={`h-4 w-4 ${metric.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metric.value}</div>
-                <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Main Tabs */}
         <Tabs defaultValue="job-pipeline" className="space-y-6">
