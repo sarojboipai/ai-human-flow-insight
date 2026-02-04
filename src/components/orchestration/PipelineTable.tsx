@@ -16,8 +16,20 @@ interface PipelineTableProps {
   workflows: Workflow[];
   onToggleStatus?: (workflow: Workflow) => void;
   onDelete?: (workflow: Workflow) => void;
-  showDeleteAction?: boolean;
 }
+
+// Status badge colors
+const getStatusBadgeClass = (status: string) => {
+  switch (status) {
+    case "active":
+      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300";
+    case "paused":
+      return "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300";
+    case "draft":
+    default:
+      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+  }
+};
 
 // Helper to get hiring type label
 const getHiringTypeLabel = (workflow: Workflow) => {
@@ -99,7 +111,7 @@ const getSLAStatus = (workflow: Workflow): "green" | "amber" | "red" => {
   return "red";
 };
 
-export function PipelineTable({ workflows, onToggleStatus, onDelete, showDeleteAction }: PipelineTableProps) {
+export function PipelineTable({ workflows, onToggleStatus, onDelete }: PipelineTableProps) {
   const navigate = useNavigate();
 
   // Get job count for a workflow
@@ -126,6 +138,7 @@ export function PipelineTable({ workflows, onToggleStatus, onDelete, showDeleteA
         <TableHeader>
           <TableRow>
             <TableHead className="w-[200px]">Pipeline</TableHead>
+            <TableHead className="w-[80px]">Status</TableHead>
             <TableHead className="w-[100px]">Type</TableHead>
             <TableHead className="w-[100px]">Profession</TableHead>
             <TableHead className="w-[60px]">Zone</TableHead>
@@ -162,6 +175,13 @@ export function PipelineTable({ workflows, onToggleStatus, onDelete, showDeleteA
                       </Badge>
                     </div>
                   </div>
+                </TableCell>
+
+                {/* Status */}
+                <TableCell>
+                  <Badge className={getStatusBadgeClass(workflow.status)}>
+                    {workflow.status.charAt(0).toUpperCase() + workflow.status.slice(1)}
+                  </Badge>
                 </TableCell>
 
                 {/* Type */}
@@ -272,7 +292,7 @@ export function PipelineTable({ workflows, onToggleStatus, onDelete, showDeleteA
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {showDeleteAction && onDelete ? (
+                    {workflow.status === "draft" && onDelete ? (
                       <Button
                         variant="ghost"
                         size="icon"
