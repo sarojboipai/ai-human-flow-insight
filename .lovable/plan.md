@@ -1,64 +1,28 @@
 
-# Change Persona Selector to Labeled Dropdown
+# Align Logo Box to the Left in Sidebar Headers
 
 ## Overview
-Replace the icon-only persona selector (UserCog icon) with a labeled dropdown button that shows the current persona name (e.g., "Admin", "Operation Manager", "HITL", "Customer").
+Add explicit left alignment to the sidebar header content across all persona sidebars to ensure the logo box stays aligned to the left edge.
 
 ## Current State
-- Persona selector uses only a `UserCog` icon as the trigger
-- No visual indication of which persona is currently active
-- `AppHeader` receives only `searchPlaceholder` as a prop
+- The `SidebarHeader` uses `flex items-center` which vertically centers content
+- No explicit horizontal alignment is set, relying on flexbox default
+- When the sidebar transitions or in certain states, the content may not appear flush left
 
 ---
 
 ## Technical Changes
 
-### 1. Update AppHeader Component (src/components/layout/AppHeader.tsx)
+### Update All Sidebar Components
 
-**Add new prop for current persona:**
-```typescript
-interface AppHeaderProps {
-  searchPlaceholder?: string;
-  currentPersona?: "Admin" | "Operation Manager" | "HITL" | "Customer";
-}
-```
+Add `justify-start` to the `SidebarHeader` className in each sidebar file to explicitly enforce left alignment:
 
-**Replace icon-only button with labeled dropdown trigger:**
-```typescript
-<DropdownMenuTrigger asChild>
-  <Button variant="ghost" className="gap-2">
-    <UserCog className="h-4 w-4" />
-    <span>{currentPersona || "Admin"}</span>
-    <ChevronDown className="h-4 w-4" />
-  </Button>
-</DropdownMenuTrigger>
-```
-
-### 2. Update All Layout Components
-
-Pass the `currentPersona` prop to `AppHeader` in each layout:
-
-| Layout | Persona Value |
-|--------|---------------|
-| `DashboardLayout.tsx` | `"Admin"` |
-| `OpsLayout.tsx` | `"Operation Manager"` |
-| `HITLLayout.tsx` | `"HITL"` |
-| `CustomerLayout.tsx` | `"Customer"` |
-
----
-
-## New Dropdown Appearance
-
-```text
-+----------------------------------+
-| [UserCog] Admin [ChevronDown] ▼  |
-+----------------------------------+
-| Admin                            |
-| Operation Manager                |
-| HITL                             |
-| Customer                         |
-+----------------------------------+
-```
+| File | Current Classes | Updated Classes |
+|------|-----------------|-----------------|
+| `HITLSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
+| `AppSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
+| `OpsSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
+| `CustomerSidebar.tsx` | `h-16 border-b border-sidebar-border px-4 flex items-center` | `h-16 border-b border-sidebar-border px-4 flex items-center justify-start` |
 
 ---
 
@@ -66,13 +30,12 @@ Pass the `currentPersona` prop to `AppHeader` in each layout:
 
 | File | Change |
 |------|--------|
-| `src/components/layout/AppHeader.tsx` | Add `currentPersona` prop, add `ChevronDown` icon, update trigger to show label |
-| `src/components/layout/DashboardLayout.tsx` | Pass `currentPersona="Admin"` |
-| `src/components/layout/OpsLayout.tsx` | Pass `currentPersona="Operation Manager"` |
-| `src/components/layout/HITLLayout.tsx` | Pass `currentPersona="HITL"` |
-| `src/components/layout/CustomerLayout.tsx` | Pass `currentPersona="Customer"` |
+| `src/components/layout/HITLSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 49) |
+| `src/components/layout/AppSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 81) |
+| `src/components/layout/OpsSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 68) |
+| `src/components/layout/CustomerSidebar.tsx` | Add `justify-start` to SidebarHeader className (line 44) |
 
 ---
 
 ## Result
-Users will see which persona is currently active in the header and can click the labeled dropdown to switch between personas. This provides better UX than the current icon-only approach.
+The logo box in the sidebar header will be explicitly left-aligned across all personas (Admin, Ops, HITL, Customer), ensuring consistent positioning regardless of sidebar state.
