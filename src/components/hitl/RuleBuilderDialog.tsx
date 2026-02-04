@@ -45,6 +45,12 @@ const ruleTypes: { value: RuleType; label: string }[] = [
   { value: "business", label: "Business Critical" },
   { value: "anomaly", label: "Anomaly Based" },
   { value: "sla", label: "SLA Based" },
+  { value: "posting", label: "Job Posting" },
+  { value: "sourcing", label: "Sourcing" },
+  { value: "outreach", label: "Outreach" },
+  { value: "interview", label: "Interview" },
+  { value: "application", label: "Application" },
+  { value: "screening", label: "Screening" },
 ];
 
 const priorities: { value: 1 | 2 | 3 | 4 | 5; label: string }[] = [
@@ -301,7 +307,7 @@ export function RuleBuilderDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {formData.actionType === "route_to_queue" && (
+              {(formData.actionType === "route_to_queue" || formData.actionType === "escalate" || formData.actionType === "retry_with_fallback") && (
                 <>
                   <span className="text-sm text-muted-foreground">to</span>
                   <Select
@@ -322,6 +328,16 @@ export function RuleBuilderDialog({
                     </SelectContent>
                   </Select>
                 </>
+              )}
+              {formData.actionType === "route_to_ai_agent" && (
+                <span className="text-sm text-muted-foreground italic">
+                  (AI Agent will be auto-selected based on rule type)
+                </span>
+              )}
+              {formData.actionType === "trigger_automation" && (
+                <span className="text-sm text-muted-foreground italic">
+                  (Automation will be triggered via connector)
+                </span>
               )}
             </div>
           </div>
