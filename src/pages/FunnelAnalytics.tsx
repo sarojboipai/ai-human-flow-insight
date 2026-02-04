@@ -81,9 +81,9 @@ export default function FunnelAnalytics() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="dashboard-title">Jobs & Funnel</h1>
+            <h1 className="dashboard-title">Job Pipeline</h1>
             <p className="text-muted-foreground mt-1">
-              Job-level intelligence and funnel analytics
+              Job-level intelligence and pipeline analytics
             </p>
           </div>
           <div className="flex items-center gap-3">
