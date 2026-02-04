@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, TrendingUp, Clock, IndianRupee, Users, Target, Filter } from "lucide-react";
+import { Briefcase, TrendingUp, Clock, IndianRupee } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { FunnelChart } from "@/components/dashboard/FunnelChart";
@@ -11,13 +11,6 @@ import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealth
 import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
 import { funnelData, jobs, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   BarChart,
   Bar,
@@ -79,41 +72,11 @@ export default function FunnelAnalytics() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="dashboard-title">Job Pipeline</h1>
-            <p className="text-muted-foreground mt-1">
-              Job-level intelligence and pipeline analytics
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select defaultValue="all">
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Role Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="nurse">Nurses</SelectItem>
-                <SelectItem value="doctor">Doctors</SelectItem>
-                <SelectItem value="paramedic">Paramedics</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select defaultValue="all">
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Geography" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
-                <SelectItem value="north">North</SelectItem>
-                <SelectItem value="south">South</SelectItem>
-                <SelectItem value="east">East</SelectItem>
-                <SelectItem value="west">West</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
+        <div>
+          <h1 className="dashboard-title">Job Pipeline</h1>
+          <p className="text-muted-foreground mt-1">
+            Job-level intelligence and pipeline analytics
+          </p>
         </div>
 
         {/* Tabs */}
