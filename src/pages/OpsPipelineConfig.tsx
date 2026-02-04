@@ -86,6 +86,7 @@ export default function OpsOrchestrationEngine() {
         name: ruleData.name || "",
         description: ruleData.description || "",
         ruleType: ruleData.ruleType || "confidence",
+        stage: ruleData.stage || "cross_stage",
         conditionMetric: ruleData.conditionMetric || "",
         operator: ruleData.operator || "<",
         thresholdValue: ruleData.thresholdValue || 0,
