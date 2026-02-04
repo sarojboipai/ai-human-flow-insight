@@ -119,7 +119,7 @@ export default function FunnelAnalytics() {
         {/* Tabs */}
         <Tabs defaultValue="jobs" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="jobs">Job Explorer</TabsTrigger>
+            <TabsTrigger value="jobs">Pipeline Health</TabsTrigger>
             <TabsTrigger value="funnel">Funnel Analytics</TabsTrigger>
           </TabsList>
 
