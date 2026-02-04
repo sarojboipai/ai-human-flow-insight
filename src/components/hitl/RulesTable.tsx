@@ -7,6 +7,8 @@ import {
   MoreHorizontal,
   AlertCircle,
   Search,
+  Filter,
+  Check,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,21 +127,36 @@ export function RulesTable({
             className="pl-9 bg-background"
           />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {(["all", "confidence", "business", "anomaly", "sla", "posting", "sourcing", "outreach", "interview", "application", "screening"] as const).map(
-            (type) => (
-              <Button
-                key={type}
-                variant={filterType === type ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterType(type)}
-                className="capitalize"
-              >
-                {type === "all" ? "All" : type}
-              </Button>
-            )
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Filter className="h-4 w-4" />
+              <span className="capitalize">
+                {filterType === "all" ? "All Types" : filterType}
+              </span>
+              {filterType !== "all" && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  1
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover border-border">
+            {(["all", "confidence", "business", "anomaly", "sla", "posting", "sourcing", "outreach", "interview", "application", "screening"] as const).map(
+              (type) => (
+                <DropdownMenuItem
+                  key={type}
+                  onClick={() => setFilterType(type)}
+                  className="capitalize gap-2"
+                >
+                  {filterType === type && <Check className="h-4 w-4" />}
+                  {filterType !== type && <span className="w-4" />}
+                  {type === "all" ? "All Types" : type}
+                </DropdownMenuItem>
+              )
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Table */}
