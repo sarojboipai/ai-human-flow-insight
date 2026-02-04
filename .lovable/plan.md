@@ -1,44 +1,62 @@
 
 
-# Adjust Sidebar Header Left Padding
+# Fix Sidebar Header Left Padding
 
-## Summary
-Set the left padding between the logo and the sidebar edge to exactly 8 pixels.
+## Problem Identified
+The `SidebarHeader` component in `src/components/ui/sidebar.tsx` has a **default `p-2` padding** built into its base styles:
 
----
-
-## Current State
-The `SidebarHeader` uses `px-2` which applies 8px (0.5rem) padding on both left and right sides. This should already be correct, but to ensure precise 8px spacing, we'll use explicit pixel values.
-
----
-
-## Change Required
-
-### File: `src/components/orchestration/OpsSidebar.tsx`
-
-Update the `SidebarHeader` className from `px-2` to `pl-2 pr-2` or use inline style for exact pixel control:
-
-**Option A - Using Tailwind (8px = 0.5rem = px-2)**
 ```tsx
-// Line 68 - Current
-<SidebarHeader className="h-16 border-b border-sidebar-border px-2 flex items-center justify-start">
-
-// Already correct at 8px, but if need explicit control, use:
-<SidebarHeader className="h-16 border-b border-sidebar-border pl-2 flex items-center justify-start">
+className={cn("flex flex-col gap-2 p-2", className)}
 ```
 
-**Option B - Using custom pixel value via Tailwind's arbitrary value**
+When we add `pl-[8px]` in the OpsSidebar, it should override the left padding. However, `p-2` applies padding on all sides (8px), and the `tailwind-merge` library should handle this. The issue is that `pl-[8px]` equals 8px which is the same as `p-2`, so there's no visible difference.
+
+Looking at the screenshot, the extra spacing is likely coming from the **inner `div`** element that contains the logo:
+
+```tsx
+<SidebarHeader className="... pl-[8px] ...">
+  <div className="flex items-center gap-3">  <!-- This div has no padding but... -->
+```
+
+The actual distance also includes any margin from the logo image itself.
+
+---
+
+## Solution
+Override the default `p-2` on SidebarHeader with explicit `p-0` and then apply only the left padding we need:
+
+### File: `src/components/layout/OpsSidebar.tsx`
+
+Change line 68 from:
 ```tsx
 <SidebarHeader className="h-16 border-b border-sidebar-border pl-[8px] flex items-center justify-start">
 ```
 
-Since `px-2` in Tailwind equals exactly 8px (0.5rem), the current code should work. If spacing appears different, it may be due to the inner `div` or browser rendering. We'll use `pl-[8px]` for absolute precision.
+To:
+```tsx
+<SidebarHeader className="h-16 border-b border-sidebar-border p-0 pl-[8px] flex items-center justify-start">
+```
+
+This will:
+1. Reset all padding to 0 with `p-0`
+2. Apply only 8px left padding with `pl-[8px]`
+3. Remove default top, right, and bottom padding that might affect alignment
+
+### File: `src/components/layout/AppSidebar.tsx`
+
+Apply the same fix for consistency across all sidebars.
 
 ---
 
-## File to Modify
+## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/layout/OpsSidebar.tsx` | Change `px-2` to `pl-[8px]` on SidebarHeader to ensure exactly 8px left margin for the logo |
+| `src/components/layout/OpsSidebar.tsx` | Add `p-0` before `pl-[8px]` on SidebarHeader |
+| `src/components/layout/AppSidebar.tsx` | Add `p-0` before `pl-[8px]` on SidebarHeader |
+
+---
+
+## Technical Note
+The `cn()` function uses `tailwind-merge` which properly handles conflicting Tailwind classes. By adding `p-0` first, we explicitly reset the base padding, then `pl-[8px]` sets only the left padding to exactly 8 pixels.
 
