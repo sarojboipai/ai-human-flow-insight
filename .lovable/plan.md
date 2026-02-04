@@ -1,92 +1,125 @@
 
 
-# Remove Active Column & Add Stage Column to Rules Table
+# Add Stage Selection to Rule Builder Dialog
 
 ## Summary
-Modify the Rules Table to remove the "Active" toggle column and add a new "Stage" column that displays which hiring stage each rule applies to.
+Add a Stage selection dropdown to the Rule Builder dialog, allowing users to specify which hiring stage a rule applies to. This provides clearer categorization independent of the rule type.
 
 ---
 
-## Changes Overview
+## Hiring Stages to Add
 
-### Column Changes
-| Remove | Add |
-|--------|-----|
-| Active (Switch toggle) | Stage (hiring stage label) |
-
-### Hiring Stage Mapping
-Rules will be mapped to stages based on their `ruleType`:
-
-| ruleType | Stage Display |
-|----------|--------------|
-| posting | Job Posting |
+| Value | Display Label |
+|-------|---------------|
+| cross_stage | Cross-Stage |
+| job_posting | Job Posting |
 | sourcing | Sourcing |
 | outreach | Outreach |
 | application | Application |
 | screening | Screening |
 | interview | Interview |
-| confidence | Cross-Stage |
-| business | Cross-Stage |
-| anomaly | Cross-Stage |
-| sla | Cross-Stage |
 
 ---
 
-## File to Modify
+## Changes Required
 
-### `src/components/hitl/RulesTable.tsx`
+### 1. Data Model Update (`src/lib/mockData.ts`)
 
-1. **Remove the Switch import** (no longer needed)
+Add a new `HiringStage` type and update `HITLRuleV2` interface:
 
-2. **Add stage mapping constant**:
-   ```tsx
-   const ruleTypeToStage: Record<RuleType, string> = {
-     posting: "Job Posting",
-     sourcing: "Sourcing",
-     outreach: "Outreach",
-     application: "Application",
-     screening: "Screening",
-     interview: "Interview",
-     confidence: "Cross-Stage",
-     business: "Cross-Stage",
-     anomaly: "Cross-Stage",
-     sla: "Cross-Stage",
-   };
-   ```
+```typescript
+export type HiringStage = 
+  | "cross_stage" 
+  | "job_posting" 
+  | "sourcing" 
+  | "outreach" 
+  | "application" 
+  | "screening" 
+  | "interview";
 
-3. **Update table header**: Replace "Active" with "Stage"
+export interface HITLRuleV2 {
+  // ... existing fields
+  stage: HiringStage; // New field
+}
+```
 
-4. **Update table body**:
-   - Remove the Switch cell
-   - Add Stage cell with the mapped stage name
+Add stage values to existing mock rules in `hitlRulesV2` array.
 
-5. **Update colSpan**: Change from 9 to 9 (stays same since we remove one and add one)
+### 2. Rule Builder Dialog (`src/components/hitl/RuleBuilderDialog.tsx`)
+
+Add a Stage dropdown between Description and Rule Type:
+
+```text
+┌──────────────────────────────────────────┐
+│ Rule Name                                │
+│ [Low AI Confidence                     ] │
+├──────────────────────────────────────────┤
+│ Description                              │
+│ [Route candidates with low AI...       ] │
+├──────────────────────────────────────────┤
+│ Stage                          ← NEW     │
+│ [Screening                           ▼ ] │
+├──────────────────────────────────────────┤
+│ Rule Type                                │
+│ [Confidence Based                    ▼ ] │
+├──────────────────────────────────────────┤
+│ Condition Builder                        │
+│ IF [AI Confidence Score ▼] [< ▼] [0.7 ] │
+└──────────────────────────────────────────┘
+```
+
+- Add `stage` to form state with default "cross_stage"
+- Create stages options array
+- Add Select dropdown for stage selection
+- Include stage in saved rule data
+
+### 3. Rules Table (`src/components/hitl/RulesTable.tsx`)
+
+Update to use the new `stage` field from the rule instead of deriving it from `ruleType`:
+
+```typescript
+// Before: Derived from ruleType
+{ruleTypeToStage[rule.ruleType]}
+
+// After: Use rule.stage directly
+{stageLabels[rule.stage]}
+```
+
+### 4. Parent Components Update
+
+Update save handlers in `OpsPipelineConfig.tsx` and `OrchestrationEngine.tsx` to include the `stage` field when creating new rules.
 
 ---
 
-## Visual Layout
+## Visual Layout of New Field
 
-### Before
-| Active | Name | Type | Condition | Action | Priority | Triggers | Last Triggered | ... |
-|--------|------|------|-----------|--------|----------|----------|----------------|-----|
-| [Switch] | ... | ... | ... | ... | ... | ... | ... | ... |
+The Stage dropdown will appear after Description and before Rule Type:
 
-### After
-| Stage | Name | Type | Condition | Action | Priority | Triggers | Last Triggered | ... |
-|-------|------|------|-----------|--------|----------|----------|----------------|-----|
-| Job Posting | ... | posting | ... | ... | ... | ... | ... | ... |
-| Sourcing | ... | sourcing | ... | ... | ... | ... | ... | ... |
-| Cross-Stage | ... | confidence | ... | ... | ... | ... | ... | ... |
+```text
+Stage
+┌────────────────────────────────────┐
+│ Screening                        ▼ │
+└────────────────────────────────────┘
+```
+
+Options when expanded:
+- Cross-Stage
+- Job Posting
+- Sourcing  
+- Outreach
+- Application
+- Screening
+- Interview
 
 ---
 
-## Technical Details
+## Files to Modify
 
-### Stage Cell Styling
-The Stage column will use a simple text display with subtle styling to differentiate pipeline stages from cross-stage rules:
-- Pipeline stages: Normal text
-- Cross-Stage: Muted text color
-
-### No Data Model Changes
-The stage is derived from the existing `ruleType` field - no changes needed to `mockData.ts`.
+| File | Changes |
+|------|---------|
+| `src/lib/mockData.ts` | Add `HiringStage` type, add `stage` field to `HITLRuleV2`, update mock data |
+| `src/components/hitl/RuleBuilderDialog.tsx` | Add stage field to form, add Stage dropdown UI |
+| `src/components/hitl/RulesTable.tsx` | Update to use `rule.stage` instead of derived value |
+| `src/pages/OpsPipelineConfig.tsx` | Add default stage when creating new rules |
+| `src/pages/OrchestrationEngine.tsx` | Add default stage when creating new rules |
 
