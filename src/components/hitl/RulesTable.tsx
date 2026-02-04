@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Edit2,
   Trash2,
@@ -10,6 +10,14 @@ import {
   Filter,
   Check,
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +88,8 @@ const stageLabels: Record<HiringStage, string> = {
   interview: "Interview",
 };
 
+const RULES_PER_PAGE = 10;
+
 export function RulesTable({
   rules,
   onEdit,
@@ -92,6 +102,7 @@ export function RulesTable({
   const [filterType, setFilterType] = useState<RuleType | "all">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<HITLRuleV2 | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredRules = rules.filter((rule) => {
     const matchesSearch =
@@ -100,6 +111,17 @@ export function RulesTable({
     const matchesType = filterType === "all" || rule.ruleType === filterType;
     return matchesSearch && matchesType;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredRules.length / RULES_PER_PAGE);
+  const startIndex = (currentPage - 1) * RULES_PER_PAGE;
+  const endIndex = startIndex + RULES_PER_PAGE;
+  const paginatedRules = filteredRules.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterType]);
 
   const handleDeleteClick = (rule: HITLRuleV2) => {
     setRuleToDelete(rule);
@@ -201,7 +223,7 @@ export function RulesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRules.map((rule) => (
+            {paginatedRules.map((rule) => (
               <TableRow key={rule.id} className="border-border">
                 <TableCell>
                   <span className={rule.stage === "cross_stage" ? "text-muted-foreground" : ""}>
@@ -316,6 +338,42 @@ export function RulesTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {filteredRules.length > RULES_PER_PAGE && (
+        <div className="flex items-center justify-between pt-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredRules.length)} of {filteredRules.length} rules
+          </p>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
