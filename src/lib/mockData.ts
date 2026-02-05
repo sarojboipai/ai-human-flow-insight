@@ -404,6 +404,77 @@ export interface StageMetrics {
   handler: string;
 }
 
+// In-stage progress step
+export interface ProgressStep {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+// Stage-specific metrics types
+export interface JobsSwaasaMetrics {
+  jobImpressions: number;
+  uniqueCandidateViews: number;
+  jobCTR: number;
+  saveRate: number;
+  shareRate: number;
+  matchScoreAvg: number;
+  contentQualityScore: number;
+  aiRankedImpressions: number;
+  manualBoosted: number;
+  hitlOverrideRate: number;
+}
+
+export interface JobDiscoveryMetrics {
+  searchSessions: number;
+  searchResultCTR: number;
+  filterUsageRate: number;
+  recommendationClickRate: number;
+  aiMatchConfidence: number;
+  top10RelevanceScore: number;
+  coldStartRate: number;
+  searchLatency: string;
+  rankingConfidenceDrift: number;
+}
+
+export interface EOIMetrics {
+  eoiClickRate: number;
+  leadCaptureRate: number;
+  consentCompletionRate: number;
+  intentScore: number;
+  fraudDetectionRate: number;
+  duplicateLeadRate: number;
+  aiAutoQualified: number;
+  hitlReviewedLeads: number;
+}
+
+export interface PreScreenMetrics {
+  questionStartRate: number;
+  completionRate: number;
+  knockoutRate: number;
+  passRate: number;
+  falseRejectionRate: number;
+  resumeParseConfidence: number;
+  aiAutoReject: number;
+  hitlOverride: number;
+  manualApproval: number;
+}
+
+export interface VoiceScreeningMetrics {
+  callAttemptRate: number;
+  callConnectRate: number;
+  avgCallDuration: string;
+  aiPassRate: number;
+  humanPassRate: number;
+  dropOffDuringCall: number;
+  speechRecognitionConfidence: number;
+  responseConfidenceScore: number;
+  hiringManagerFitScore: number;
+  aiFullyScreened: number;
+  hitlReview: number;
+  humanInterview: number;
+}
+
 export interface EnhancedStageMetrics extends StageMetrics {
   // AI/Human/HITL attribution
   aiPercentage: number;
@@ -428,6 +499,16 @@ export interface EnhancedStageMetrics extends StageMetrics {
     jobBoards?: number;
     recruiterOutreach?: number;
   };
+  
+  // Stage-specific metrics (only one populated based on stage type)
+  jobsSwaasaMetrics?: JobsSwaasaMetrics;
+  jobDiscoveryMetrics?: JobDiscoveryMetrics;
+  eoiMetrics?: EOIMetrics;
+  preScreenMetrics?: PreScreenMetrics;
+  voiceScreeningMetrics?: VoiceScreeningMetrics;
+  
+  // In-stage progress funnel
+  progressFunnel?: ProgressStep[];
 }
 
 export interface Job {
@@ -496,6 +577,19 @@ export const jobs: Job[] = [
         aiPercentage: 85, humanPercentage: 12, hitlPercentage: 3,
         avgTimeInStage: "1 day", slaThreshold: "3 days", slaStatus: "green",
         conversionRate: 77.1, dropOffRate: 22.9,
+        jobsSwaasaMetrics: {
+          jobImpressions: 12450, uniqueCandidateViews: 8234, jobCTR: 3.2,
+          saveRate: 12.5, shareRate: 2.1, matchScoreAvg: 78,
+          contentQualityScore: 85, aiRankedImpressions: 85,
+          manualBoosted: 12, hitlOverrideRate: 3,
+        },
+        progressFunnel: [
+          { label: "Job Published", count: 523, percentage: 100 },
+          { label: "Job Indexed", count: 497, percentage: 95 },
+          { label: "Job Ranked by AI", count: 445, percentage: 85 },
+          { label: "Job Viewed", count: 324, percentage: 62 },
+          { label: "Apply Clicked", count: 199, percentage: 38 },
+        ],
       },
       "job-discovery": {
         sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8,
@@ -504,6 +598,20 @@ export const jobs: Job[] = [
         avgTimeInStage: "6 hours", slaThreshold: "24 hours", slaStatus: "green",
         conversionRate: 77.1, dropOffRate: 22.9,
         channels: { app: 45, web: 30, whatsapp: 15, jobBoards: 10 },
+        jobDiscoveryMetrics: {
+          searchSessions: 4520, searchResultCTR: 8.7, filterUsageRate: 42,
+          recommendationClickRate: 23.5, aiMatchConfidence: 82,
+          top10RelevanceScore: 76, coldStartRate: 8.2,
+          searchLatency: "120ms", rankingConfidenceDrift: 2.1,
+        },
+        progressFunnel: [
+          { label: "Search Triggered", count: 4520, percentage: 100 },
+          { label: "Results Generated", count: 4293, percentage: 95 },
+          { label: "Filters Applied", count: 1900, percentage: 42 },
+          { label: "Job Card Viewed", count: 1580, percentage: 35 },
+          { label: "Job Opened", count: 890, percentage: 20 },
+          { label: "Interest Clicked", count: 324, percentage: 7 },
+        ],
       },
       "expression": {
         sent: 189, appeared: 156, qualified: 98, disqualified: 42, pending: 16,
@@ -512,6 +620,18 @@ export const jobs: Job[] = [
         avgTimeInStage: "12 hours", slaThreshold: "24 hours", slaStatus: "green",
         conversionRate: 62.8, dropOffRate: 37.2,
         channels: { app: 52, whatsapp: 28, recruiterOutreach: 20 },
+        eoiMetrics: {
+          eoiClickRate: 38, leadCaptureRate: 82, consentCompletionRate: 94,
+          intentScore: 72, fraudDetectionRate: 1.2, duplicateLeadRate: 4.5,
+          aiAutoQualified: 65, hitlReviewedLeads: 8,
+        },
+        progressFunnel: [
+          { label: "Interest Clicked", count: 324, percentage: 100 },
+          { label: "Details Submitted", count: 285, percentage: 88 },
+          { label: "Consent Given", count: 268, percentage: 83 },
+          { label: "Lead Scored", count: 245, percentage: 76 },
+          { label: "Routed to Pipeline", count: 189, percentage: 58 },
+        ],
       },
       "prescreen": {
         sent: 98, appeared: 72, qualified: 45, disqualified: 18, pending: 9,
@@ -519,6 +639,18 @@ export const jobs: Job[] = [
         aiPercentage: 92, humanPercentage: 5, hitlPercentage: 3,
         avgTimeInStage: "4 hours", slaThreshold: "12 hours", slaStatus: "green",
         conversionRate: 62.5, dropOffRate: 37.5,
+        preScreenMetrics: {
+          questionStartRate: 92, completionRate: 78, knockoutRate: 18,
+          passRate: 62, falseRejectionRate: 2.4, resumeParseConfidence: 89,
+          aiAutoReject: 15, hitlOverride: 4, manualApproval: 8,
+        },
+        progressFunnel: [
+          { label: "Questions Loaded", count: 98, percentage: 100 },
+          { label: "Candidate Started", count: 90, percentage: 92 },
+          { label: "Questions Completed", count: 72, percentage: 73 },
+          { label: "Auto-Scored", count: 68, percentage: 69 },
+          { label: "Passed / Failed / Escalated", count: 45, percentage: 46 },
+        ],
       },
       "voice-agent": {
         sent: 45, appeared: 38, qualified: 28, disqualified: 8, pending: 2,
@@ -526,6 +658,21 @@ export const jobs: Job[] = [
         aiPercentage: 88, humanPercentage: 5, hitlPercentage: 7,
         avgTimeInStage: "2 hours", slaThreshold: "6 hours", slaStatus: "green",
         conversionRate: 73.7, dropOffRate: 26.3,
+        voiceScreeningMetrics: {
+          callAttemptRate: 95, callConnectRate: 84, avgCallDuration: "4m 32s",
+          aiPassRate: 74, humanPassRate: 82, dropOffDuringCall: 8,
+          speechRecognitionConfidence: 91, responseConfidenceScore: 85,
+          hiringManagerFitScore: 78, aiFullyScreened: 72,
+          hitlReview: 12, humanInterview: 16,
+        },
+        progressFunnel: [
+          { label: "Call Scheduled", count: 45, percentage: 100 },
+          { label: "Call Dialed", count: 43, percentage: 96 },
+          { label: "Call Connected", count: 38, percentage: 84 },
+          { label: "Questions Asked", count: 35, percentage: 78 },
+          { label: "AI Evaluation Completed", count: 32, percentage: 71 },
+          { label: "Final Outcome", count: 28, percentage: 62 },
+        ],
       },
       "scheduling": {
         sent: 28, appeared: 24, qualified: 18, disqualified: 4, pending: 2,

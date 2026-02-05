@@ -24,10 +24,17 @@ import {
   CheckCircle,
   XCircle,
   Timer,
-  Bot,
   AlertTriangle,
 } from "lucide-react";
 import type { EnhancedStageMetrics } from "@/lib/mockData";
+import {
+  InStageProgressFunnel,
+  JobsSwaasaMetricsCard,
+  JobDiscoveryMetricsCard,
+  EOIMetricsCard,
+  PreScreenMetricsCard,
+  VoiceScreeningMetricsCard,
+} from "./stage-metrics";
 
 const iconMap: Record<string, React.ElementType> = {
   briefcase: Briefcase,
@@ -64,6 +71,7 @@ interface StageDetailsSheetProps {
   onOpenChange: (open: boolean) => void;
   stageName: string;
   stageIcon?: string;
+  stageId?: string;
   metrics: EnhancedStageMetrics | null;
 }
 
@@ -129,11 +137,48 @@ function AttributionBar({
   );
 }
 
+// Render stage-specific metrics card based on stageId
+function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics: EnhancedStageMetrics }) {
+  if (!stageId) return null;
+
+  switch (stageId) {
+    case "jobs-ankura":
+      if (metrics.jobsSwaasaMetrics) {
+        return <JobsSwaasaMetricsCard metrics={metrics.jobsSwaasaMetrics} />;
+      }
+      break;
+    case "job-discovery":
+      if (metrics.jobDiscoveryMetrics) {
+        return <JobDiscoveryMetricsCard metrics={metrics.jobDiscoveryMetrics} />;
+      }
+      break;
+    case "expression":
+      if (metrics.eoiMetrics) {
+        return <EOIMetricsCard metrics={metrics.eoiMetrics} />;
+      }
+      break;
+    case "prescreen":
+      if (metrics.preScreenMetrics) {
+        return <PreScreenMetricsCard metrics={metrics.preScreenMetrics} />;
+      }
+      break;
+    case "voice-agent":
+      if (metrics.voiceScreeningMetrics) {
+        return <VoiceScreeningMetricsCard metrics={metrics.voiceScreeningMetrics} />;
+      }
+      break;
+    default:
+      return null;
+  }
+  return null;
+}
+
 export function StageDetailsSheet({ 
   open, 
   onOpenChange, 
   stageName, 
   stageIcon,
+  stageId,
   metrics 
 }: StageDetailsSheetProps) {
   const Icon = stageIcon ? iconMap[stageIcon] : Briefcase;
@@ -162,6 +207,15 @@ export function StageDetailsSheet({
   const qualifiedPercent = Math.round((metrics.qualified / metrics.appeared) * 100);
   const disqualifiedPercent = Math.round((metrics.disqualified / metrics.appeared) * 100);
   const pendingPercent = Math.round((metrics.pending / metrics.sent) * 100);
+
+  // Check if we have stage-specific metrics
+  const hasStageSpecificMetrics = stageId && (
+    (stageId === "jobs-ankura" && metrics.jobsSwaasaMetrics) ||
+    (stageId === "job-discovery" && metrics.jobDiscoveryMetrics) ||
+    (stageId === "expression" && metrics.eoiMetrics) ||
+    (stageId === "prescreen" && metrics.preScreenMetrics) ||
+    (stageId === "voice-agent" && metrics.voiceScreeningMetrics)
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -198,48 +252,15 @@ export function StageDetailsSheet({
             </CardContent>
           </Card>
 
-          {/* Screenings Overview Card */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Volume Metrics</h4>
-              
-              {/* Sent */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                    Sent
-                  </span>
-                  <span className="font-semibold">{metrics.sent} <span className="text-muted-foreground font-normal">({sentPercent}%)</span></span>
-                </div>
-                <Progress value={sentPercent} className="h-2" />
-              </div>
+          {/* Stage-Specific Metrics (if available) */}
+          {hasStageSpecificMetrics && (
+            <StageSpecificMetrics stageId={stageId} metrics={metrics} />
+          )}
 
-              {/* Appeared */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-purple-500" />
-                    Appeared
-                  </span>
-                  <span className="font-semibold">{metrics.appeared} <span className="text-muted-foreground font-normal">({appearedPercent}%)</span></span>
-                </div>
-                <Progress value={appearedPercent} className="h-2" />
-              </div>
-
-              {/* Qualified */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    Qualified
-                  </span>
-                  <span className="font-semibold">{metrics.qualified} <span className="text-muted-foreground font-normal">({qualifiedPercent}%)</span></span>
-                </div>
-                <Progress value={qualifiedPercent} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+          {/* In-Stage Progress Funnel (if available) */}
+          {metrics.progressFunnel && metrics.progressFunnel.length > 0 && (
+            <InStageProgressFunnel steps={metrics.progressFunnel} />
+          )}
 
           {/* Conversion & Drop-off */}
           <Card>
@@ -257,6 +278,51 @@ export function StageDetailsSheet({
               </div>
             </CardContent>
           </Card>
+
+          {/* Volume Metrics - only show if no stage-specific metrics */}
+          {!hasStageSpecificMetrics && (
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <h4 className="text-sm font-medium text-muted-foreground">Volume Metrics</h4>
+                
+                {/* Sent */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-500" />
+                      Sent
+                    </span>
+                    <span className="font-semibold">{metrics.sent} <span className="text-muted-foreground font-normal">({sentPercent}%)</span></span>
+                  </div>
+                  <Progress value={sentPercent} className="h-2" />
+                </div>
+
+                {/* Appeared */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-purple-500" />
+                      Appeared
+                    </span>
+                    <span className="font-semibold">{metrics.appeared} <span className="text-muted-foreground font-normal">({appearedPercent}%)</span></span>
+                  </div>
+                  <Progress value={appearedPercent} className="h-2" />
+                </div>
+
+                {/* Qualified */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                      Qualified
+                    </span>
+                    <span className="font-semibold">{metrics.qualified} <span className="text-muted-foreground font-normal">({qualifiedPercent}%)</span></span>
+                  </div>
+                  <Progress value={qualifiedPercent} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Additional Metrics */}
           <Card>

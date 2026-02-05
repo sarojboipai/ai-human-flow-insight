@@ -361,6 +361,7 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
           onOpenChange={(open) => !open && setSelectedNodeId(null)}
           stageName={selectedNodeInfo?.label || "Stage Details"}
           stageIcon={selectedNodeInfo?.icon}
+          stageId={selectedNodeId || undefined}
           metrics={selectedMetrics}
         />
       </DialogContent>
