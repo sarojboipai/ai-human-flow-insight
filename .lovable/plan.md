@@ -1,137 +1,282 @@
 
-# Consolidate Pipelines into Single Table
+# Stage Metrics & In-Stage Progress Tracking Enhancement
 
 ## Summary
-Combine all pipeline views (Active, Paused, Draft) into one unified table and remove the Templates and Import buttons from the header.
+Extend the existing `StageDetailsSheet` component and `EnhancedStageMetrics` data model to include comprehensive stage-specific metrics and in-stage progress funnels for each of the 5 pipeline stages defined in the PRD.
 
 ---
 
-## Changes Overview
+## Current State
 
-### Before
-```text
-┌──────────────────────────────────────────────────────────────┐
-│  [Create Pipeline]  [Templates]  [Import]     [Search...]   │
-├──────────────────────────────────────────────────────────────┤
-│  Active Pipelines (3)                                        │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Table with 3 rows                                      │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│  Paused Pipelines (1)                                        │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Table with 1 row                                       │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                              │
-│  Draft Pipelines (2)                                         │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Table with 2 rows                                      │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-```
+The existing `StageDetailsSheet` displays:
+- AI/Human/HITL attribution bar
+- Volume metrics (Sent, Appeared, Qualified)
+- Conversion/Drop-off rates
+- Additional metrics (Disqualified, Pending, Delay Cause)
+- Channel breakdown (optional)
+- Handler & Response time
 
-### After
+This generic structure needs to be enhanced with **stage-specific metrics** and **in-stage progress funnels**.
+
+---
+
+## Proposed Architecture
+
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│  [Create Pipeline]                            [Search...]    │
-├──────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Pipeline  │ Status │ Type │ ... │ Actions             │  │
-│  ├───────────┼────────┼──────┼─────┼─────────────────────┤  │
-│  │ Pipeline1 │ Active │ Bulk │ ... │ [Edit] [Pause]      │  │
-│  │ Pipeline2 │ Active │ Fast │ ... │ [Edit] [Pause]      │  │
-│  │ Pipeline3 │ Paused │ Niche│ ... │ [Edit] [Play]       │  │
-│  │ Pipeline4 │ Draft  │ Bulk │ ... │ [Edit] [Delete]     │  │
-│  │ ...       │ ...    │ ...  │ ... │ ...                 │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  StageDetailsSheet (Enhanced)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  Header: Stage Name + SLA Badge                                        │  │
+│  │  Subtitle: Avg Time in Stage | SLA Threshold                           │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  AI vs Human vs HITL Attribution Bar                                   │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  📊 Core Metrics (Stage-Specific)                                      │  │
+│  │  ├── Reach & Awareness / Search & Discovery / Intent / etc.           │  │
+│  │  ├── Quality Metrics                                                   │  │
+│  │  └── AI vs Human Breakdown                                             │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  ⏳ In-Stage Progress Funnel                                           │  │
+│  │  ├── Step 1: Label ─────────────────────────────────── 100% (1,234)   │  │
+│  │  ├── Step 2: Label ───────────────────────────── 85% (1,049)          │  │
+│  │  ├── Step 3: Label ──────────────────────── 72% (887)                 │  │
+│  │  ├── Step 4: Label ─────────────────── 58% (714)                      │  │
+│  │  └── Step 5: Label ────────────── 45% (554)                           │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  Conversion Analysis (Existing)                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Changes Required
 
-### 1. Update WorkflowList Component
-**File: `src/components/orchestration/WorkflowList.tsx`**
+### 1. Extend Data Model
+**File: `src/lib/mockData.ts`**
 
-- Remove Templates button and its dialog state/import
-- Remove Import button
-- Remove separate sections for Active/Paused/Draft
-- Pass all `filteredWorkflows` to a single `PipelineTable`
-- Pass both `onToggleStatus` and `onDelete` to the table
+Add new interface for stage-specific metrics and in-stage progress:
 
-### 2. Update PipelineTable Component
-**File: `src/components/orchestration/PipelineTable.tsx`**
-
-- Add a "Status" column to display Active/Paused/Draft
-- Update actions column to show:
-  - Delete button for Draft workflows
-  - Play/Pause button for Active/Paused workflows
-- Accept both `onToggleStatus` and `onDelete` props always
-- Determine which action to show based on workflow status
-
----
-
-## Updated Table Structure
-
-| Column | Description |
-|--------|-------------|
-| Pipeline | Name + version badge |
-| **Status** | NEW - Shows Active/Paused/Draft with colored badge |
-| Type | Bulk/Fast Track/Niche |
-| Profession | Nurse/Technician/etc. |
-| Zone | Zone 1/2/3/4 |
-| Tier | Tier 1/2/3 |
-| Industry | Hospital/Lab/Pharma |
-| Jobs | Count of assigned jobs |
-| AI/Human | Split visualization |
-| Success | Success rate % |
-| SLA | Green/Amber/Red indicator |
-| Updated | Last update date |
-| Actions | Edit + (Delete or Play/Pause) |
-
----
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/orchestration/WorkflowList.tsx` | Remove Templates/Import buttons, remove separate table sections, use single table |
-| `src/components/orchestration/PipelineTable.tsx` | Add Status column, update action logic based on workflow status |
-
----
-
-## Technical Details
-
-### Status Badge Colors
 ```typescript
-const statusColors = {
-  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
-  paused: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-  draft: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-};
-```
+// In-stage progress step
+interface ProgressStep {
+  label: string;
+  count: number;
+  percentage: number;
+}
 
-### Action Logic
-```typescript
-// In Actions column
-{workflow.status === "draft" ? (
-  <Button onClick={() => onDelete?.(workflow)}>
-    <Trash2 />
-  </Button>
-) : (
-  <Button onClick={() => onToggleStatus?.(workflow)}>
-    {workflow.status === "paused" ? <Play /> : <Pause />}
-  </Button>
-)}
-```
+// Stage-specific metrics by stage type
+interface JobsSwaasaMetrics {
+  // Reach & Awareness
+  jobImpressions: number;
+  uniqueCandidateViews: number;
+  jobCTR: number; // Impressions → Clicks
+  saveRate: number;
+  shareRate: number;
+  // Quality
+  matchScoreAvg: number;
+  contentQualityScore: number;
+  // AI vs Human
+  aiRankedImpressions: number;
+  manualBoosted: number;
+  hitlOverrideRate: number;
+}
 
-### Props Update
-```typescript
-interface PipelineTableProps {
-  workflows: Workflow[];
-  onToggleStatus?: (workflow: Workflow) => void;
-  onDelete?: (workflow: Workflow) => void;
-  // Remove showDeleteAction - determine from workflow.status instead
+interface JobDiscoveryMetrics {
+  // Search & Discovery
+  searchSessions: number;
+  searchResultCTR: number;
+  filterUsageRate: number;
+  recommendationClickRate: number;
+  // Matching
+  aiMatchConfidence: number;
+  top10RelevanceScore: number;
+  coldStartRate: number;
+  // Operational
+  searchLatency: string;
+  rankingConfidenceDrift: number;
+}
+
+interface EOIMetrics {
+  // Intent
+  eoiClickRate: number;
+  leadCaptureRate: number;
+  consentCompletionRate: number;
+  // Lead Quality
+  intentScore: number;
+  fraudDetectionRate: number;
+  duplicateLeadRate: number;
+  // AI vs Human
+  aiAutoQualified: number;
+  hitlReviewedLeads: number;
+}
+
+interface PreScreenMetrics {
+  // Screening
+  questionStartRate: number;
+  completionRate: number;
+  knockoutRate: number;
+  passRate: number;
+  // Quality
+  falseRejectionRate: number;
+  resumeParseConfidence: number;
+  eligibilityScoreDistribution: Record<string, number>;
+  // AI vs Human
+  aiAutoReject: number;
+  hitlOverride: number;
+  manualApproval: number;
+}
+
+interface VoiceScreeningMetrics {
+  // Engagement
+  callAttemptRate: number;
+  callConnectRate: number;
+  avgCallDuration: string;
+  // Screening Outcome
+  aiPassRate: number;
+  humanPassRate: number;
+  dropOffDuringCall: number;
+  // Quality
+  speechRecognitionConfidence: number;
+  responseConfidenceScore: number;
+  hiringManagerFitScore: number;
+  // AI vs Human
+  aiFullyScreened: number;
+  hitlReview: number;
+  humanInterview: number;
+}
+
+// Updated EnhancedStageMetrics interface
+interface EnhancedStageMetrics {
+  // ... existing fields ...
+  
+  // Stage-specific metrics (only one populated based on stage type)
+  jobsSwaasaMetrics?: JobsSwaasaMetrics;
+  jobDiscoveryMetrics?: JobDiscoveryMetrics;
+  eoiMetrics?: EOIMetrics;
+  preScreenMetrics?: PreScreenMetrics;
+  voiceScreeningMetrics?: VoiceScreeningMetrics;
+  
+  // In-stage progress funnel
+  progressFunnel?: ProgressStep[];
 }
 ```
+
+### 2. Create Reusable Components
+**New File: `src/components/customer/stage-metrics/InStageProgressFunnel.tsx`**
+
+A visual funnel component showing micro-progression within a stage:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  ⏳ In-Stage Progress                                       │
+├─────────────────────────────────────────────────────────────┤
+│  Job Published        ████████████████████████  100%  (523) │
+│  Job Indexed          ██████████████████████    95%   (497) │
+│  Job Ranked by AI     █████████████████         85%   (445) │
+│  Job Viewed           ████████████              62%   (324) │
+│  Apply Clicked        ██████                    38%   (199) │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3. Create Stage-Specific Metric Cards
+**New Files:**
+- `src/components/customer/stage-metrics/JobsSwaasaMetricsCard.tsx`
+- `src/components/customer/stage-metrics/JobDiscoveryMetricsCard.tsx`
+- `src/components/customer/stage-metrics/EOIMetricsCard.tsx`
+- `src/components/customer/stage-metrics/PreScreenMetricsCard.tsx`
+- `src/components/customer/stage-metrics/VoiceScreeningMetricsCard.tsx`
+
+Each card displays the relevant metrics for that stage type in organized sections.
+
+### 4. Update StageDetailsSheet
+**File: `src/components/customer/StageDetailsSheet.tsx`**
+
+- Add a `stageId` prop to identify which stage-specific metrics to render
+- Conditionally render the appropriate metric card based on stage type
+- Add the `InStageProgressFunnel` component
+
+### 5. Add Mock Data
+**File: `src/lib/mockData.ts`**
+
+Populate the enhanced metrics for existing job records with stage-specific data.
+
+---
+
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/lib/mockData.ts` | Modify | Extend `EnhancedStageMetrics` interface and add mock data |
+| `src/components/customer/stage-metrics/InStageProgressFunnel.tsx` | Create | Visual funnel showing micro-progression |
+| `src/components/customer/stage-metrics/JobsSwaasaMetricsCard.tsx` | Create | Jobs in Swaasa specific metrics |
+| `src/components/customer/stage-metrics/JobDiscoveryMetricsCard.tsx` | Create | Job Discovery specific metrics |
+| `src/components/customer/stage-metrics/EOIMetricsCard.tsx` | Create | Expression of Interest specific metrics |
+| `src/components/customer/stage-metrics/PreScreenMetricsCard.tsx` | Create | Pre-Screen Questions specific metrics |
+| `src/components/customer/stage-metrics/VoiceScreeningMetricsCard.tsx` | Create | Voice Agent Screening specific metrics |
+| `src/components/customer/stage-metrics/index.ts` | Create | Barrel export file |
+| `src/components/customer/StageDetailsSheet.tsx` | Modify | Integrate new components, add stage type detection |
+| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Pass `stageId` to StageDetailsSheet |
+
+---
+
+## Visual Layout for Each Stage Card
+
+### Jobs in Swaasa Metrics Card
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  📊 Reach & Awareness                                       │
+├─────────────────────────────────────────────────────────────┤
+│  Job Impressions         12,450    Unique Views       8,234 │
+│  Job CTR                  3.2%     Save Rate          12.5% │
+│  Share Rate               2.1%                              │
+├─────────────────────────────────────────────────────────────┤
+│  📈 Quality Metrics                                         │
+├─────────────────────────────────────────────────────────────┤
+│  Match Score Avg           78%     Content Quality      85% │
+├─────────────────────────────────────────────────────────────┤
+│  🤖 AI vs Human                                             │
+├─────────────────────────────────────────────────────────────┤
+│  AI-ranked                 85%     Manual Boosted      12%  │
+│  HITL Override Rate         3%                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Stage ID to Metrics Type Mapping
+
+| Stage ID | Metrics Type | Progress Funnel Steps |
+|----------|--------------|----------------------|
+| `jobs-ankura` | `jobsSwaasaMetrics` | Published → Indexed → Ranked → Viewed → Apply Clicked |
+| `job-discovery` | `jobDiscoveryMetrics` | Search Triggered → Results Generated → Filters Applied → Card Viewed → Job Opened → Interest Clicked |
+| `expression` | `eoiMetrics` | Interest Clicked → Details Submitted → Consent Given → Lead Scored → Routed to Pipeline |
+| `prescreen` | `preScreenMetrics` | Questions Loaded → Started → Completed → Auto-Scored → Passed/Failed/Escalated |
+| `voice-agent` | `voiceScreeningMetrics` | Call Scheduled → Dialed → Connected → Questions Asked → AI Evaluated → Final Outcome |
+
+---
+
+## Technical Notes
+
+1. **Stage Detection**: The `StageDetailsSheet` will receive `stageId` and use a mapping to determine which metric card to render
+
+2. **Graceful Fallback**: If stage-specific metrics are not available, the sheet falls back to the existing generic display
+
+3. **Progress Funnel Calculation**: Percentages are calculated relative to the first step (100%) for visual consistency
+
+4. **Responsive Design**: All metric cards use the existing `Card` and grid patterns for consistent styling
+
+5. **Color Coding**: Use existing semantic colors:
+   - Green/Emerald for positive metrics (pass rates, high scores)
+   - Amber for warning metrics (drop-off, at-risk)
+   - Blue for informational metrics
+   - Orange for AI-related metrics
