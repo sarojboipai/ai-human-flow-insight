@@ -355,15 +355,6 @@ export function WorkflowTab({
     <div className={`flex-1 flex flex-col min-h-0 ${isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}`}>
       {/* Canvas */}
       <div className="flex-1 relative" ref={reactFlowWrapper}>
-        {/* Floating Description Box */}
-        <div className="absolute top-4 left-4 z-10 w-72">
-          <Textarea
-            placeholder="Type workflow description..."
-            value={description}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            className="min-h-[80px] bg-background/95 backdrop-blur-sm shadow-sm resize-none"
-          />
-        </div>
 
         {/* Floating Add Button */}
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
