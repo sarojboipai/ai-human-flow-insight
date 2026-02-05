@@ -34,6 +34,9 @@ import {
   EOIMetricsCard,
   PreScreenMetricsCard,
   VoiceScreeningMetricsCard,
+  InterviewSchedulingMetricsCard,
+  SilverMedalistMetricsCard,
+  TalentCommunityMetricsCard,
 } from "./stage-metrics";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -167,6 +170,21 @@ function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics:
         return <VoiceScreeningMetricsCard metrics={metrics.voiceScreeningMetrics} />;
       }
       break;
+    case "scheduling":
+      if (metrics.interviewSchedulingMetrics) {
+        return <InterviewSchedulingMetricsCard metrics={metrics.interviewSchedulingMetrics} />;
+      }
+      break;
+    case "silver-med":
+      if (metrics.silverMedalistMetrics) {
+        return <SilverMedalistMetricsCard metrics={metrics.silverMedalistMetrics} />;
+      }
+      break;
+    case "talent-community":
+      if (metrics.talentCommunityMetrics) {
+        return <TalentCommunityMetricsCard metrics={metrics.talentCommunityMetrics} />;
+      }
+      break;
     default:
       return null;
   }
@@ -214,7 +232,10 @@ export function StageDetailsSheet({
     (stageId === "job-discovery" && metrics.jobDiscoveryMetrics) ||
     (stageId === "expression" && metrics.eoiMetrics) ||
     (stageId === "prescreen" && metrics.preScreenMetrics) ||
-    (stageId === "voice-agent" && metrics.voiceScreeningMetrics)
+    (stageId === "voice-agent" && metrics.voiceScreeningMetrics) ||
+    (stageId === "scheduling" && metrics.interviewSchedulingMetrics) ||
+    (stageId === "silver-med" && metrics.silverMedalistMetrics) ||
+    (stageId === "talent-community" && metrics.talentCommunityMetrics)
   );
 
   return (

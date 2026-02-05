@@ -4,4 +4,7 @@ export { JobDiscoveryMetricsCard } from "./JobDiscoveryMetricsCard";
 export { EOIMetricsCard } from "./EOIMetricsCard";
 export { PreScreenMetricsCard } from "./PreScreenMetricsCard";
 export { VoiceScreeningMetricsCard } from "./VoiceScreeningMetricsCard";
+export { InterviewSchedulingMetricsCard } from "./InterviewSchedulingMetricsCard";
+export { SilverMedalistMetricsCard } from "./SilverMedalistMetricsCard";
+export { TalentCommunityMetricsCard } from "./TalentCommunityMetricsCard";
 export * from "./types";
