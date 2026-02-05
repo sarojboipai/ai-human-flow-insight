@@ -1,270 +1,231 @@
 
-# Pipeline Template Editor - Multi-Mode Configuration (Workflow / Automation / Rules)
+# Redesign AutomationTab to Match Reference Design
 
 ## Summary
-Transform the Pipeline Template Builder into a multi-tab editor with three dedicated configuration modes: **Workflow**, **Automation**, and **Rules**. A tab selector bar below the header enables seamless navigation between modes while preserving shared template state.
+Redesign the AutomationTab component to match the reference "Automation Center" UI - a clean, full-width table layout with a filter bar, sub-tabs, and pagination instead of the current 3-panel layout.
 
 ---
 
-## Current State
+## Current State vs Target State
 
-The `PipelineTemplateBuilder` is a single-page canvas for designing workflows with:
-- Left sidebar: Stage palette for drag-and-drop
-- Center: React Flow canvas for pipeline visualization
-- Right sidebar: Node configuration panel
-- Header: Back button, template name, validation status, Save/Publish buttons
-
-The codebase already has components for agents (`AgentRegistry.tsx`), connectors (`ConnectorRegistry.tsx`), and rules (`RulesTable.tsx`, `HITLRulesPanel.tsx`) but they're not integrated into the template builder.
-
----
-
-## Proposed Architecture
-
+### Current Layout
 ```text
-+--------------------------------------------------------------------------------+
-|  Header: Back | Edit Template | Template Name + Unsaved Badge                  |
-|                                            Validation Status | Save | Publish  |
-+--------------------------------------------------------------------------------+
-|  [ Workflow ]  [ Automation ]  [ Rules ]    <-- Tab Selector Bar               |
-+--------------------------------------------------------------------------------+
-|                                                                                  |
-|  +------------------+   +----------------------------------------+   +--------+ |
-|  | Left Panel       |   | Main Content Area (varies by tab)       |   | Right  | |
-|  | (varies by tab)  |   |                                        |   | Panel  | |
-|  +------------------+   +----------------------------------------+   +--------+ |
-|                                                                                  |
-+--------------------------------------------------------------------------------+
++------------+-------------------------+------------+
+| Agent List | Stage Automation Table  | Connectors |
+| (240px)    |                         | (280px)    |
++------------+-------------------------+------------+
 ```
 
-### Tab Content Breakdown
-
-| Tab | Left Panel | Main Content | Right Panel |
-|-----|------------|--------------|-------------|
-| **Workflow** | Stage Palette | React Flow Canvas | Node Config |
-| **Automation** | Agent List | Automation Mapping Table | Connector Config |
-| **Rules** | Rule Categories | Rules Table | Rule Builder |
+### Target Layout (from reference)
+```text
++----------------------------------------------------------+
+|  Automation center               [Create New Automation] |
++----------------------------------------------------------+
+|  [Automations] [Audit History] [Analytics]               |
++----------------------------------------------------------+
+|  Search | Last run | Triggers | Actions | Created | Type |
++----------------------------------------------------------+
+|  Automation name | Type | Last Run | Triggered | Created |
+|  --------------------------------------------------------|
+|  Psychologist...  Custom  Feb 5...    152      Prateek   |
+|  Psychiatrist...  Custom  Feb 3...    14       Prateek   |
++----------------------------------------------------------+
+|                    < 1 2 3 4 >                            |
++----------------------------------------------------------+
+```
 
 ---
 
-## Files to Create/Modify
+## New Data Model
+
+### AutomationEntry Interface
+```typescript
+interface AutomationEntry {
+  id: string;
+  name: string;
+  type: "custom" | "system" | "template";
+  triggerType: string;         // e.g., "stage_entered", "candidate_matched"
+  actionType: string;          // e.g., "send_notification", "update_ats"
+  lastRun: string | null;      // Date string or null for N/A
+  triggeredCount: number;
+  createdBy: string;
+  createdAt: string;
+  active: boolean;
+}
+```
+
+---
+
+## Component Structure
+
+### Main Layout
+1. **Header Section**
+   - Title: "Automation center" (or contextual title in template builder)
+   - "Create New Automation" button (primary, top-right)
+
+2. **Sub-tabs** (optional for template builder context)
+   - Automations (active)
+   - Audit History
+   - Analytics
+
+3. **Filter Bar**
+   - Search input with search icon
+   - Last run date picker
+   - All Triggers dropdown
+   - All Actions dropdown
+   - Created by All dropdown
+   - Active & Inactive dropdown
+   - All Types dropdown
+   - "Clear" link to reset filters
+
+4. **Table**
+   | Column | Width | Description |
+   |--------|-------|-------------|
+   | Automation name | flex | Name of the automation |
+   | Type | 100px | Custom / System / Template badge |
+   | Last Run | 200px | Formatted date or "N/A" |
+   | Triggered | 100px | Trigger count number |
+   | Created by | 150px | User name |
+   | Active | 80px | Toggle switch |
+
+5. **Pagination**
+   - Page numbers with prev/next arrows
+   - 10 items per page
+
+---
+
+## Files to Modify
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/PipelineTemplateBuilder.tsx` | Modify | Add tab state, restructure to render content based on active tab |
-| `src/components/orchestration/TemplateEditorTabs.tsx` | Create | Reusable tab selector component |
-| `src/components/orchestration/WorkflowTab.tsx` | Create | Extract current canvas logic into dedicated component |
-| `src/components/orchestration/AutomationTab.tsx` | Create | Automation configuration page with agent-to-stage mapping |
-| `src/components/orchestration/RulesTab.tsx` | Create | Rules configuration page with template-specific rules |
-| `src/lib/mockData.ts` | Modify | Add template-specific rules interface if needed |
+| `src/components/orchestration/AutomationTab.tsx` | **Rewrite** | Replace 3-panel layout with full-width table |
+| `src/lib/mockData.ts` | **Modify** | Add `automationEntries` mock data array |
 
 ---
 
-## Component Details
+## Implementation Details
 
-### 1. TemplateEditorTabs Component
-A sticky segmented control below the header with three tabs:
-- Uses visual highlighting for active tab
-- Shows unsaved indicator per tab if that section has changes
-- Click navigates between modes without page reload
+### 1. Remove 3-Panel Layout
+- Remove left sidebar (Agent Registry)
+- Remove right sidebar (Connectors)
+- Use full-width layout
 
+### 2. Add Filter Bar
 ```text
-+-----------------------------------------------------------+
-|  [  Workflow  ]  [  Automation  ]  [  Rules  ]            |
-+-----------------------------------------------------------+
++--------------------------------------------------------------+
+| [Search for automation] | [Last run] | [Triggers ▼] | ...    |
++--------------------------------------------------------------+
+```
+- Search: Text input with magnifying glass icon
+- Last run date: Date picker or dropdown
+- Filters: Select dropdowns for Triggers, Actions, Created by, Status, Types
+- Clear: Text link to reset all filters
+
+### 3. Table Redesign
+- Clean table with minimal styling (no card wrapper)
+- Hover states on rows
+- Type column shows badge: "Custom" in muted style
+- Last Run shows formatted date with timezone or "N/A"
+- Triggered shows numeric count
+- Created by shows user name
+- Active shows toggle Switch
+
+### 4. Add Pagination
+- Use existing Pagination components
+- Show page numbers 1, 2, 3, 4 with chevron arrows
+- 10 items per page
+
+### 5. Filter State Management
+```typescript
+const [searchQuery, setSearchQuery] = useState("");
+const [triggerFilter, setTriggerFilter] = useState<string>("all");
+const [actionFilter, setActionFilter] = useState<string>("all");
+const [createdByFilter, setCreatedByFilter] = useState<string>("all");
+const [statusFilter, setStatusFilter] = useState<string>("all"); // active, inactive, all
+const [typeFilter, setTypeFilter] = useState<string>("all");
+const [currentPage, setCurrentPage] = useState(1);
+const ITEMS_PER_PAGE = 10;
 ```
 
-### 2. WorkflowTab Component
-Extract current canvas functionality into a dedicated component:
-- Stage Palette (left)
-- React Flow Canvas (center)
-- Node Config Panel (right)
-- All drag-and-drop, node editing, and connection logic
+---
 
-### 3. AutomationTab Component
+## Mock Data Structure
 
-**Left Panel - Agent Registry (compact)**
-- List of available AI agents
-- Status indicators (active/paused/error)
-- Quick filter by capability
+Add to `mockData.ts`:
+```typescript
+export interface AutomationEntry {
+  id: string;
+  name: string;
+  type: "custom" | "system" | "template";
+  triggerType: string;
+  actionType: string;
+  lastRun: string | null;
+  triggeredCount: number;
+  createdBy: string;
+  createdAt: string;
+  active: boolean;
+}
 
-**Main Content - Automation Mapping Table**
-| Stage | Assigned Agent | Action Type | Confidence Threshold | Escalation Target | Enabled |
-|-------|----------------|-------------|---------------------|-------------------|---------|
-| Profile Screening | Phenom CV Parser | Screen | 85% | Human Recruiter | Toggle |
-| Skills Matching | Skills Matcher AI | Match | 90% | Technical Team | Toggle |
-
-**Right Panel - Connector Configuration**
-- Integration connectors list (ATS, CRM, WhatsApp)
-- Credential status
-- Last sync time
-- Quick configure button
-
-### 4. RulesTab Component
-
-**Left Panel - Rule Categories**
-- Filter by rule type: Confidence, Business, SLA, Volume, Cost, Compliance
-- Filter by stage: All stages from workflow
-
-**Main Content - Rules Table**
-- Reuse existing `RulesTable` component with modifications
-- Show rules specific to this template
-- Allow add/edit/delete/simulate
-
-**Right Panel - Rule Builder**
-- Inline rule creation/editing form
-- Condition builder with metric, operator, threshold
-- Action selector: Queue, Alert, Escalate, AI Agent, Automation
+export const automationEntries: AutomationEntry[] = [
+  {
+    id: "auto-001",
+    name: "Psychologist_automation",
+    type: "custom",
+    triggerType: "stage_entered",
+    actionType: "send_notification",
+    lastRun: "Feb 5, 2026, 1:56 PM GMT+5:30",
+    triggeredCount: 152,
+    createdBy: "Prateek Saini",
+    createdAt: "2026-01-15",
+    active: true,
+  },
+  // ... more entries
+];
+```
 
 ---
 
-## State Management Strategy
+## Visual Styling
 
-### Shared Template State (in PipelineTemplateBuilder)
+### Colors & Typography
+- Header: Bold text, 18-20px
+- Table headers: Muted foreground, 14px, medium weight
+- Table cells: Normal text, 14px
+- Type badges: Subtle outline style
+- Toggle: Standard Switch component
+
+### Spacing
+- Filter bar: Gap-2 between filters
+- Table: Standard table padding
+- Pagination: Centered at bottom with margin-top
+
+---
+
+## Props Interface Update
+
+The `AutomationTab` component will continue to receive the same props but will display data differently:
+
 ```typescript
-interface TemplateState {
-  metadata: TemplateMetadata;
-  
-  // Workflow state
+interface AutomationTabProps {
   nodes: Node<StageNodeData>[];
-  edges: Edge[];
-  
-  // Automation state
   stageAutomations: StageAutomation[];
-  
-  // Rules state
-  templateRules: HITLRuleV2[];
-  
-  // Dirty tracking per section
-  isDirtyWorkflow: boolean;
-  isDirtyAutomation: boolean;
-  isDirtyRules: boolean;
+  onAutomationsChange: (automations: StageAutomation[]) => void;
+  onDirtyChange: () => void;
 }
 ```
 
-### Unsaved Changes Warning
-When switching tabs with unsaved changes:
-- Show confirmation dialog
-- Options: "Save Changes", "Discard", "Cancel"
-
-### Unified Save/Publish
-- Save Draft: Saves all three sections together
-- Publish: Validates all sections before activating
-
----
-
-## Validation Per Tab
-
-### Workflow Tab Validation
-- Has start and end nodes
-- All nodes connected
-- AI/Automation nodes have agents assigned
-- Human nodes have roles assigned
-
-### Automation Tab Validation
-- All stages have at least one assigned actor
-- AI stages have valid confidence thresholds
-- Escalation targets are configured
-
-### Rules Tab Validation
-- No duplicate rule conditions
-- Valid thresholds for all rules
-- At least one rule per critical stage (optional warning)
-
----
-
-## StageAutomation Interface (New)
-
-```typescript
-interface StageAutomation {
-  stageId: string;
-  stageName: string;
-  assignedAgentId: string | null;
-  actionType: 'screen' | 'match' | 'outreach' | 'schedule' | 'notify';
-  confidenceThreshold: number;
-  escalationTarget: string;
-  enabled: boolean;
-  integrations: {
-    connectorId: string;
-    trigger: AutomationTrigger;
-    action: AutomationAction;
-  }[];
-}
-```
-
----
-
-## Visual Design
-
-### Tab Selector Bar
-- Background: `bg-muted/30`
-- Active tab: `bg-background` with bottom border accent
-- Inactive tabs: Subtle text, no background
-- Hover: Slight background highlight
-
-### Automation Tab Layout
-```text
-+------------+--------------------------------------------------+------------+
-| Agent List |  Stage Automation Mapping Table                  | Connectors |
-| (240px)    |  +------------------------------------------+    | (280px)    |
-|            |  | Stage | Agent | Action | Threshold | ... |    |            |
-| [Agents]   |  |-------|-------|--------|-----------|-----|    | [ATS]      |
-| - Parser   |  | Screen| Parser| Screen | 85%       | ... |    | [CRM]      |
-| - Matcher  |  | Match | Match | Match  | 90%       | ... |    | [WhatsApp] |
-| - Outreach |  +------------------------------------------+    |            |
-+------------+--------------------------------------------------+------------+
-```
-
-### Rules Tab Layout
-```text
-+------------+--------------------------------------------------+------------+
-| Categories |  Rules Table                                     | Rule Form  |
-| (200px)    |  +------------------------------------------+    | (320px)    |
-|            |  | Stage | Name | Type | Condition | ... |      |            |
-| [Types]    |  |-------|------|------|-----------|-----|      | [Builder]  |
-| - Confidence |  | All   | Low AI | Conf | <70%    | ... |    |            |
-| - Business |  | Screen| SLA  | SLA  | >24h      | ... |      | Condition: |
-| - SLA      |  +------------------------------------------+    | Action:    |
-+------------+--------------------------------------------------+------------+
-```
-
----
-
-## Implementation Steps
-
-### Phase 1: Tab Infrastructure
-1. Create `TemplateEditorTabs` component
-2. Add tab state to `PipelineTemplateBuilder`
-3. Extract current canvas into `WorkflowTab` component
-4. Wire up tab switching with content rendering
-
-### Phase 2: Automation Tab
-1. Create `AutomationTab` component
-2. Build stage-to-agent mapping table
-3. Add connector configuration panel
-4. Implement automation state management
-
-### Phase 3: Rules Tab
-1. Create `RulesTab` component
-2. Adapt existing `RulesTable` for template context
-3. Add inline rule builder/editor
-4. Implement template-specific rule filtering
-
-### Phase 4: Integration
-1. Implement unified Save/Publish across all tabs
-2. Add unsaved changes warnings
-3. Cross-tab validation
-4. Test full workflow
+For the redesigned UI, we'll also show automations from `automationEntries` mock data, filtered by the current template context.
 
 ---
 
 ## Technical Notes
 
-1. **State Lifting**: All template state (nodes, edges, automations, rules) will be managed at the `PipelineTemplateBuilder` level and passed down as props to tab components.
+1. **Reuse existing components**: Use existing `Table`, `Select`, `Switch`, `Input`, and `Pagination` components
 
-2. **URL Routing**: Consider adding tab to URL (`?tab=workflow`) for direct linking, but initial implementation will use local state only.
+2. **Filter logic**: Implement client-side filtering with useMemo for performance
 
-3. **Reusable Components**: Leverage existing `AgentRegistry`, `ConnectorRegistry`, and `RulesTable` components with minimal modifications.
+3. **Pagination logic**: Calculate total pages and slice data accordingly
 
-4. **Workflow Context**: Continue using `WorkflowContext` for persistence, extending the `Workflow` interface to include automations and rules if not already present.
+4. **Empty state**: Show message when no automations match filters
 
-5. **Performance**: Each tab component will be lazy-rendered to avoid loading all content upfront.
+5. **Create button**: Opens dialog or navigates to create automation flow (can be a placeholder for now)
