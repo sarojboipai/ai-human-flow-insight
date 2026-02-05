@@ -1,24 +1,9 @@
-import { useState } from "react";
-import {
-  Bot,
-  Settings,
-  CheckCircle,
-  AlertCircle,
-  Pause,
-  Search,
-  Link2,
-  Database,
-  MessageSquare,
-  Calendar,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useMemo } from "react";
+import { Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -34,7 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { agents, connectors, Agent, Connector, StageAutomation } from "@/lib/mockData";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { automationEntries, type AutomationEntry, type StageAutomation } from "@/lib/mockData";
 import { type StageNodeData } from "@/components/orchestration/WorkflowTab";
 import { type Node } from "@xyflow/react";
 
@@ -45,49 +39,39 @@ interface AutomationTabProps {
   onDirtyChange: () => void;
 }
 
-const ACTION_TYPES = [
-  { value: "screen", label: "Screen" },
-  { value: "match", label: "Match" },
-  { value: "outreach", label: "Outreach" },
-  { value: "schedule", label: "Schedule" },
-  { value: "notify", label: "Notify" },
+const ITEMS_PER_PAGE = 10;
+
+const TRIGGER_OPTIONS = [
+  { value: "all", label: "All Triggers" },
+  { value: "stage_entered", label: "Stage Entered" },
+  { value: "stage_completed", label: "Stage Completed" },
+  { value: "candidate_matched", label: "Candidate Matched" },
+  { value: "interview_scheduled", label: "Interview Scheduled" },
+  { value: "offer_released", label: "Offer Released" },
+  { value: "sla_breach", label: "SLA Breach" },
 ];
 
-const ESCALATION_TARGETS = [
-  "Human Recruiter",
-  "Senior Recruiter",
-  "Technical Team",
-  "Hiring Manager",
-  "Compliance Officer",
+const ACTION_OPTIONS = [
+  { value: "all", label: "All Actions" },
+  { value: "send_notification", label: "Send Notification" },
+  { value: "update_ats", label: "Update ATS" },
+  { value: "send_whatsapp", label: "Send WhatsApp" },
+  { value: "create_task", label: "Create Task" },
+  { value: "schedule_interview", label: "Schedule Interview" },
 ];
 
-const getConnectorIcon = (type: Connector["type"]) => {
-  switch (type) {
-    case "ats":
-      return <Database className="h-4 w-4" />;
-    case "messaging":
-      return <MessageSquare className="h-4 w-4" />;
-    case "calendar":
-      return <Calendar className="h-4 w-4" />;
-    default:
-      return <Link2 className="h-4 w-4" />;
-  }
-};
+const TYPE_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "custom", label: "Custom" },
+  { value: "system", label: "System" },
+  { value: "template", label: "Template" },
+];
 
-const getStatusIcon = (status: Agent["status"] | Connector["status"]) => {
-  switch (status) {
-    case "active":
-    case "connected":
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
-    case "paused":
-    case "disconnected":
-      return <Pause className="h-4 w-4 text-amber-500" />;
-    case "error":
-      return <AlertCircle className="h-4 w-4 text-destructive" />;
-    default:
-      return null;
-  }
-};
+const STATUS_OPTIONS = [
+  { value: "all", label: "Active & Inactive" },
+  { value: "active", label: "Active only" },
+  { value: "inactive", label: "Inactive only" },
+];
 
 export function AutomationTab({
   nodes,
@@ -95,342 +79,310 @@ export function AutomationTab({
   onAutomationsChange,
   onDirtyChange,
 }: AutomationTabProps) {
+  const [activeSubTab, setActiveSubTab] = useState("automations");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
+  const [triggerFilter, setTriggerFilter] = useState("all");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Local state for automation toggles
+  const [localAutomations, setLocalAutomations] = useState<AutomationEntry[]>(automationEntries);
 
-  // Get stages that can have automation (AI and Automation types)
-  const automationStages = nodes.filter(
-    (n) => n.data.stageType === "ai" || n.data.stageType === "automation"
+  // Get unique creators for filter dropdown
+  const creators = useMemo(() => {
+    const unique = [...new Set(localAutomations.map(a => a.createdBy))];
+    return ["all", ...unique];
+  }, [localAutomations]);
+
+  const [createdByFilter, setCreatedByFilter] = useState("all");
+
+  // Filter automations
+  const filteredAutomations = useMemo(() => {
+    return localAutomations.filter(automation => {
+      // Search filter
+      if (searchQuery && !automation.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      // Trigger filter
+      if (triggerFilter !== "all" && automation.triggerType !== triggerFilter) {
+        return false;
+      }
+      // Action filter
+      if (actionFilter !== "all" && automation.actionType !== actionFilter) {
+        return false;
+      }
+      // Type filter
+      if (typeFilter !== "all" && automation.type !== typeFilter) {
+        return false;
+      }
+      // Status filter
+      if (statusFilter === "active" && !automation.active) {
+        return false;
+      }
+      if (statusFilter === "inactive" && automation.active) {
+        return false;
+      }
+      // Created by filter
+      if (createdByFilter !== "all" && automation.createdBy !== createdByFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [localAutomations, searchQuery, triggerFilter, actionFilter, typeFilter, statusFilter, createdByFilter]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAutomations.length / ITEMS_PER_PAGE);
+  const paginatedAutomations = filteredAutomations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
-  const filteredAgents = agents.filter(
-    (a) =>
-      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const clearFilters = () => {
+    setSearchQuery("");
+    setTriggerFilter("all");
+    setActionFilter("all");
+    setTypeFilter("all");
+    setStatusFilter("all");
+    setCreatedByFilter("all");
+    setCurrentPage(1);
+  };
 
-  const handleAutomationChange = (
-    stageId: string,
-    field: keyof StageAutomation,
-    value: any
-  ) => {
-    const existing = stageAutomations.find((a) => a.stageId === stageId);
-    if (existing) {
-      const updated = stageAutomations.map((a) =>
-        a.stageId === stageId ? { ...a, [field]: value } : a
-      );
-      onAutomationsChange(updated);
-    } else {
-      // Create new automation entry
-      const stageName =
-        nodes.find((n) => n.id === stageId)?.data.label || "Unknown";
-      const newAutomation: StageAutomation = {
-        stageId,
-        stageName,
-        assignedAgentId: null,
-        actionType: "screen",
-        confidenceThreshold: 85,
-        escalationTarget: "Human Recruiter",
-        enabled: true,
-        integrations: [],
-      };
-      onAutomationsChange([...stageAutomations, { ...newAutomation, [field]: value }]);
-    }
+  const hasActiveFilters = searchQuery || triggerFilter !== "all" || actionFilter !== "all" || 
+    typeFilter !== "all" || statusFilter !== "all" || createdByFilter !== "all";
+
+  const handleToggleActive = (automationId: string, active: boolean) => {
+    setLocalAutomations(prev => 
+      prev.map(a => a.id === automationId ? { ...a, active } : a)
+    );
     onDirtyChange();
   };
 
-  const getAutomation = (stageId: string): StageAutomation | undefined => {
-    return stageAutomations.find((a) => a.stageId === stageId);
+  const getTypeBadgeStyle = (type: AutomationEntry["type"]) => {
+    switch (type) {
+      case "custom":
+        return "bg-muted text-muted-foreground border-border";
+      case "system":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "template":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-muted text-muted-foreground border-border";
+    }
   };
 
   return (
-    <div className="flex-1 flex min-h-0">
-      {/* Left Panel - Agent Registry (Compact) */}
-      <div className="w-60 border-r bg-muted/30 flex flex-col">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold text-sm flex items-center gap-2">
-            <Bot className="h-4 w-4 text-primary" />
-            Agents
-          </h3>
-          <div className="relative mt-2">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Filter agents..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-sm"
-            />
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1">
-          <div className="p-3 space-y-2">
-            {filteredAgents.map((agent) => (
-              <div
-                key={agent.id}
-                className="p-2.5 rounded-lg border bg-background hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(agent.status)}
-                  <span className="text-sm font-medium truncate">{agent.name}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                  {agent.description}
-                </p>
-                <div className="flex items-center gap-1 mt-2">
-                  <Badge variant="outline" className="text-[10px] px-1.5">
-                    {agent.type}
-                  </Badge>
-                  <span className="text-[10px] text-muted-foreground">
-                    {agent.successRate}% success
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b bg-background">
+        <h2 className="text-xl font-semibold">Automation center</h2>
+        <Button className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create New Automation
+        </Button>
       </div>
 
-      {/* Main Content - Automation Mapping Table */}
-      <div className="flex-1 overflow-auto p-6">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold">Stage Automation Mapping</h2>
-            <p className="text-sm text-muted-foreground">
-              Configure AI agents and automation settings for each pipeline stage
-            </p>
+      {/* Sub-tabs */}
+      <div className="px-6 py-3 border-b bg-background">
+        <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
+          <TabsList className="bg-transparent p-0 h-auto gap-6">
+            <TabsTrigger 
+              value="automations" 
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Automations
+            </TabsTrigger>
+            <TabsTrigger 
+              value="audit" 
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Audit History
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics" 
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {activeSubTab === "automations" && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          {/* Filter Bar */}
+          <div className="flex items-center gap-2 px-6 py-4 border-b bg-background flex-wrap">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search for automation"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-9 w-56"
+              />
+            </div>
+
+            <Select value={triggerFilter} onValueChange={(v) => { setTriggerFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="All Triggers" />
+              </SelectTrigger>
+              <SelectContent>
+                {TRIGGER_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="All Actions" />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTION_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={createdByFilter} onValueChange={(v) => { setCreatedByFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Created by All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Created by All</SelectItem>
+                {creators.filter(c => c !== "all").map(creator => (
+                  <SelectItem key={creator} value={creator}>{creator}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Active & Inactive" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                {TYPE_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground gap-1">
+                <X className="h-3 w-3" />
+                Clear
+              </Button>
+            )}
           </div>
 
-          {automationStages.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Bot className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-medium">No Automation Stages</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Add AI or Automation stages in the Workflow tab first
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Stage</TableHead>
-                      <TableHead>Assigned Agent</TableHead>
-                      <TableHead>Action Type</TableHead>
-                      <TableHead>Confidence Threshold</TableHead>
-                      <TableHead>Escalation Target</TableHead>
-                      <TableHead className="text-center">Enabled</TableHead>
+          {/* Table */}
+          <div className="flex-1 overflow-auto px-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Automation name</TableHead>
+                  <TableHead className="w-24">Type</TableHead>
+                  <TableHead className="w-52">Last Run</TableHead>
+                  <TableHead className="w-24">Triggered</TableHead>
+                  <TableHead className="w-36">Created by</TableHead>
+                  <TableHead className="w-20 text-center">Active</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedAutomations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      No automations found matching your filters
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedAutomations.map((automation) => (
+                    <TableRow key={automation.id} className="cursor-pointer">
+                      <TableCell className="font-medium">{automation.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={getTypeBadgeStyle(automation.type)}>
+                          {automation.type.charAt(0).toUpperCase() + automation.type.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {automation.lastRun || "N/A"}
+                      </TableCell>
+                      <TableCell className="font-medium">{automation.triggeredCount}</TableCell>
+                      <TableCell className="text-muted-foreground">{automation.createdBy}</TableCell>
+                      <TableCell className="text-center">
+                        <Switch
+                          checked={automation.active}
+                          onCheckedChange={(checked) => handleToggleActive(automation.id, checked)}
+                        />
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {automationStages.map((stage) => {
-                      const automation = getAutomation(stage.id);
-                      return (
-                        <TableRow key={stage.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className={
-                                  stage.data.stageType === "ai"
-                                    ? "bg-orange-100 text-orange-700 border-orange-200"
-                                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
-                                }
-                              >
-                                {stage.data.stageType.toUpperCase()}
-                              </Badge>
-                              <span className="font-medium">{stage.data.label}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={automation?.assignedAgentId || ""}
-                              onValueChange={(value) =>
-                                handleAutomationChange(stage.id, "assignedAgentId", value)
-                              }
-                            >
-                              <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Select agent" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {agents.map((agent) => (
-                                  <SelectItem key={agent.id} value={agent.id}>
-                                    <div className="flex items-center gap-2">
-                                      {getStatusIcon(agent.status)}
-                                      <span>{agent.name}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={automation?.actionType || "screen"}
-                              onValueChange={(value) =>
-                                handleAutomationChange(stage.id, "actionType", value)
-                              }
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ACTION_TYPES.map((action) => (
-                                  <SelectItem key={action.value} value={action.value}>
-                                    {action.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3 w-40">
-                              <Slider
-                                value={[automation?.confidenceThreshold || 85]}
-                                onValueChange={([value]) =>
-                                  handleAutomationChange(
-                                    stage.id,
-                                    "confidenceThreshold",
-                                    value
-                                  )
-                                }
-                                min={50}
-                                max={99}
-                                step={1}
-                                className="flex-1"
-                              />
-                              <span className="text-sm font-mono w-10">
-                                {automation?.confidenceThreshold || 85}%
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={automation?.escalationTarget || "Human Recruiter"}
-                              onValueChange={(value) =>
-                                handleAutomationChange(stage.id, "escalationTarget", value)
-                              }
-                            >
-                              <SelectTrigger className="w-40">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ESCALATION_TARGETS.map((target) => (
-                                  <SelectItem key={target} value={target}>
-                                    {target}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Switch
-                              checked={automation?.enabled ?? true}
-                              onCheckedChange={(checked) =>
-                                handleAutomationChange(stage.id, "enabled", checked)
-                              }
-                            />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t bg-background">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => i + 1).map(page => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Right Panel - Connector Configuration */}
-      <div className="w-72 border-l bg-muted/30 flex flex-col">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold text-sm flex items-center gap-2">
-            <Link2 className="h-4 w-4 text-primary" />
-            Connectors
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Integration status
-          </p>
+      {activeSubTab === "audit" && (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          <p>Audit History - Coming Soon</p>
         </div>
+      )}
 
-        <ScrollArea className="flex-1">
-          <div className="p-3 space-y-2">
-            {connectors.map((connector) => (
-              <div
-                key={connector.id}
-                onClick={() => setSelectedConnector(connector)}
-                className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                  selectedConnector?.id === connector.id
-                    ? "border-primary bg-primary/5"
-                    : "bg-background hover:bg-muted/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`p-1.5 rounded ${
-                        connector.status === "connected"
-                          ? "bg-primary/10"
-                          : connector.status === "error"
-                          ? "bg-destructive/10"
-                          : "bg-muted"
-                      }`}
-                    >
-                      {getConnectorIcon(connector.type)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{connector.name}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {connector.provider}
-                      </p>
-                    </div>
-                  </div>
-                  {getStatusIcon(connector.status)}
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[10px]">
-                  <Badge
-                    variant="outline"
-                    className={
-                      connector.status === "connected"
-                        ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                        : connector.status === "error"
-                        ? "bg-red-100 text-red-700 border-red-200"
-                        : "bg-muted text-muted-foreground"
-                    }
-                  >
-                    {connector.status}
-                  </Badge>
-                  <span className="text-muted-foreground">
-                    {connector.lastSync}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-
-        {/* Selected Connector Details */}
-        {selectedConnector && (
-          <div className="p-4 border-t bg-background">
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Daily Volume</Label>
-                <p className="text-sm font-medium">
-                  {selectedConnector.dailyVolume.toLocaleString()} events
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full gap-2">
-                <Settings className="h-3.5 w-3.5" />
-                Configure
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      {activeSubTab === "analytics" && (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          <p>Analytics - Coming Soon</p>
+        </div>
+      )}
     </div>
   );
 }
