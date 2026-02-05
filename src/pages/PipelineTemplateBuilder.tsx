@@ -1,17 +1,10 @@
-import { useState, useCallback, useMemo, useRef, DragEvent, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import {
-  ReactFlow,
-  Controls,
-  Background,
-  MiniMap,
   useNodesState,
   useEdgesState,
-  addEdge,
-  BackgroundVariant,
   type Node,
   type Edge,
-  type Connection,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -20,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Upload, AlertCircle, CheckCircle } from "lucide-react";
-import { StagePalette } from "@/components/orchestration/StagePalette";
-import { NodeConfigPanel } from "@/components/orchestration/NodeConfigPanel";
 import { type TemplateMetadata } from "@/components/orchestration/TemplateMetadataForm";
 import {
   TemplateEditorTabs,
@@ -29,16 +20,8 @@ import {
 } from "@/components/orchestration/TemplateEditorTabs";
 import { AutomationTab } from "@/components/orchestration/AutomationTab";
 import { RulesTab } from "@/components/orchestration/RulesTab";
+import { WorkflowTab } from "@/components/orchestration/WorkflowTab";
 import {
-  EditableStageNode,
-  EditableAINode,
-  EditableHumanNode,
-  EditableDecisionNode,
-  EditableEntryExitNode,
-  EditableAutomationNode,
-} from "@/components/orchestration/pipeline-nodes";
-import {
-  agents,
   pipelineTemplates,
   Workflow,
   WorkflowStage,
@@ -47,15 +30,6 @@ import {
   hitlRulesV2,
 } from "@/lib/mockData";
 import { useWorkflows } from "@/contexts/WorkflowContext";
-
-const nodeTypes = {
-  stageNode: EditableStageNode,
-  aiStage: EditableAINode,
-  humanStage: EditableHumanNode,
-  automationStage: EditableAutomationNode,
-  decisionGateway: EditableDecisionNode,
-  entryExit: EditableEntryExitNode,
-};
 
 interface StageNodeData extends Record<string, unknown> {
   label: string;
@@ -128,7 +102,6 @@ export default function PipelineTemplateBuilder() {
   const templateParam = searchParams.get("template");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { addWorkflow, updateWorkflow, getWorkflow } = useWorkflows();
 
   // Get metadata from navigation state (for new pipelines created via dialog)
@@ -146,10 +119,8 @@ export default function PipelineTemplateBuilder() {
   }));
 
   // Workflow state
-  const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [nodes, setNodes] = useNodesState(INITIAL_NODES);
+  const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
 
   // Automation state
   const [stageAutomations, setStageAutomations] = useState<StageAutomation[]>([]);
@@ -157,7 +128,7 @@ export default function PipelineTemplateBuilder() {
   // Rules state
   const [templateRules, setTemplateRules] = useState<HITLRuleV2[]>(() =>
     hitlRulesV2.slice(0, 5)
-  ); // Start with some sample rules
+  );
 
   // Dirty state tracking per section
   const [isDirtyWorkflow, setIsDirtyWorkflow] = useState(false);
@@ -287,11 +258,6 @@ export default function PipelineTemplateBuilder() {
     setIsLoaded(true);
   }, [templateId, templateParam, isLoaded, setNodes, setEdges, getWorkflow]);
 
-  const selectedNode = useMemo(() => {
-    const found = nodes.find((n) => n.id === selectedNodeId);
-    return found || null;
-  }, [nodes, selectedNodeId]);
-
   // Validation
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
@@ -350,124 +316,6 @@ export default function PipelineTemplateBuilder() {
 
     return errors;
   }, [nodes, edges, metadata]);
-
-  const handleNodesChange = useCallback(
-    (changes: any) => {
-      onNodesChange(changes);
-      setIsDirtyWorkflow(true);
-    },
-    [onNodesChange]
-  );
-
-  const handleEdgesChange = useCallback(
-    (changes: any) => {
-      onEdgesChange(changes);
-      setIsDirtyWorkflow(true);
-    },
-    [onEdgesChange]
-  );
-
-  const onConnect = useCallback(
-    (params: Connection) => {
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...params,
-            type: "smoothstep",
-            animated: true,
-            style: { strokeWidth: 2 },
-          },
-          eds
-        )
-      );
-      setIsDirtyWorkflow(true);
-    },
-    [setEdges]
-  );
-
-  const handleNodeClick = useCallback((_: any, node: Node) => {
-    setSelectedNodeId(node.id);
-  }, []);
-
-  const handlePaneClick = useCallback(() => {
-    setSelectedNodeId(null);
-  }, []);
-
-  const handleDeleteNode = useCallback(
-    (nodeId: string) => {
-      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-      setEdges((eds) =>
-        eds.filter((e) => e.source !== nodeId && e.target !== nodeId)
-      );
-      if (selectedNodeId === nodeId) {
-        setSelectedNodeId(null);
-      }
-      setIsDirtyWorkflow(true);
-    },
-    [setNodes, setEdges, selectedNodeId]
-  );
-
-  const handleUpdateNode = useCallback(
-    (nodeId: string, data: Partial<StageNodeData>) => {
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n
-        )
-      );
-      setIsDirtyWorkflow(true);
-    },
-    [setNodes]
-  );
-
-  // Drag and drop from palette
-  const onDragOver = useCallback((event: DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const onDrop = useCallback(
-    (event: DragEvent) => {
-      event.preventDefault();
-
-      if (!reactFlowWrapper.current || !reactFlowInstance) return;
-
-      const type = event.dataTransfer.getData("application/reactflow/type");
-      const label = event.dataTransfer.getData("application/reactflow/label");
-      const stageType = event.dataTransfer.getData(
-        "application/reactflow/stageType"
-      ) as StageNodeData["stageType"];
-      const icon = event.dataTransfer.getData("application/reactflow/icon");
-
-      if (!type) return;
-
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      // Snap to grid
-      const snappedPosition = {
-        x: Math.round(position.x / 20) * 20,
-        y: Math.round(position.y / 20) * 20,
-      };
-
-      const newNode = {
-        id: `${stageType}-${Date.now()}`,
-        type,
-        position: snappedPosition,
-        data: {
-          label,
-          stageType,
-          icon,
-          slaHours: 24,
-        },
-      };
-
-      setNodes((nds) => [...nds, newNode] as any);
-      setIsDirtyWorkflow(true);
-    },
-    [reactFlowInstance, setNodes]
-  );
 
   // Build workflow object from current state
   const buildWorkflowData = useCallback(
@@ -600,91 +448,13 @@ export default function PipelineTemplateBuilder() {
     switch (activeTab) {
       case "workflow":
         return (
-          <div className="flex-1 flex min-h-0">
-            {/* Left Sidebar - Stage Palette */}
-            <StagePalette />
-
-            {/* Canvas */}
-            <div className="flex-1 relative" ref={reactFlowWrapper}>
-              <ReactFlow
-                nodes={nodes.map((n) => {
-                  const nodeData = n.data as StageNodeData;
-                  return {
-                    ...n,
-                    data: {
-                      ...nodeData,
-                      isSelected: n.id === selectedNodeId,
-                      onDelete: () => handleDeleteNode(n.id),
-                      onSelect: () => setSelectedNodeId(n.id),
-                    },
-                  };
-                })}
-                edges={edges}
-                onNodesChange={handleNodesChange}
-                onEdgesChange={handleEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={handleNodeClick}
-                onPaneClick={handlePaneClick}
-                onInit={setReactFlowInstance}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                nodeTypes={nodeTypes}
-                snapToGrid
-                snapGrid={[20, 20]}
-                fitView
-                fitViewOptions={{ padding: 0.2 }}
-                defaultEdgeOptions={{
-                  type: "smoothstep",
-                  animated: true,
-                  style: { strokeWidth: 2 },
-                }}
-              >
-                <Background
-                  variant={BackgroundVariant.Dots}
-                  gap={20}
-                  size={1}
-                  color="#e2e8f0"
-                />
-                <Controls
-                  showInteractive={false}
-                  className="!bg-background !border !shadow-md"
-                />
-                <MiniMap
-                  nodeColor={(node) => {
-                    const stageType = (node.data as Record<string, unknown>)
-                      .stageType as string;
-                    switch (stageType) {
-                      case "ai":
-                        return "#f97316";
-                      case "human":
-                        return "#3b82f6";
-                      case "automation":
-                        return "#10b981";
-                      case "decision":
-                        return "#1e293b";
-                      case "entry":
-                      case "exit":
-                        return "#6b7280";
-                      default:
-                        return "#94a3b8";
-                    }
-                  }}
-                  maskColor="rgba(0, 0, 0, 0.1)"
-                  className="!bg-background/80 !border !shadow-sm"
-                />
-              </ReactFlow>
-            </div>
-
-            {/* Right Sidebar - Node Config */}
-            <NodeConfigPanel
-              node={selectedNode}
-              agents={agents}
-              onUpdate={(data) =>
-                selectedNodeId && handleUpdateNode(selectedNodeId, data)
-              }
-              onClose={() => setSelectedNodeId(null)}
-            />
-          </div>
+          <WorkflowTab
+            nodes={nodes as Node<any>[]}
+            edges={edges}
+            onNodesChange={(newNodes) => setNodes(newNodes as any)}
+            onEdgesChange={setEdges}
+            onDirtyChange={() => setIsDirtyWorkflow(true)}
+          />
         );
 
       case "automation":
