@@ -75,7 +75,7 @@ export function OpsSidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">
-                Operations
+                SWAASA
               </span>
               <span className="text-xs text-muted-foreground">
                 Control Center
