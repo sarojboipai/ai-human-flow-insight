@@ -1,214 +1,19 @@
 
-# Stage Metrics & In-Stage Progress Tracking Enhancement
+# Add Interview Scheduling, Silver Medalist & Talent Community Stage Metrics
 
 ## Summary
-Extend the existing `StageDetailsSheet` component and `EnhancedStageMetrics` data model to include comprehensive stage-specific metrics and in-stage progress funnels for each of the 5 pipeline stages defined in the PRD.
+Add comprehensive stage-specific metrics, in-stage progress funnels, and response time tracking for three additional pipeline stages: Interview Scheduling, Silver Medalist, and Talent Community.
 
 ---
 
-## Current State
+## Current Architecture
 
-The existing `StageDetailsSheet` displays:
-- AI/Human/HITL attribution bar
-- Volume metrics (Sent, Appeared, Qualified)
-- Conversion/Drop-off rates
-- Additional metrics (Disqualified, Pending, Delay Cause)
-- Channel breakdown (optional)
-- Handler & Response time
-
-This generic structure needs to be enhanced with **stage-specific metrics** and **in-stage progress funnels**.
-
----
-
-## Proposed Architecture
-
-```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  StageDetailsSheet (Enhanced)                                                │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │  Header: Stage Name + SLA Badge                                        │  │
-│  │  Subtitle: Avg Time in Stage | SLA Threshold                           │  │
-│  └────────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │  AI vs Human vs HITL Attribution Bar                                   │  │
-│  └────────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │  📊 Core Metrics (Stage-Specific)                                      │  │
-│  │  ├── Reach & Awareness / Search & Discovery / Intent / etc.           │  │
-│  │  ├── Quality Metrics                                                   │  │
-│  │  └── AI vs Human Breakdown                                             │  │
-│  └────────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │  ⏳ In-Stage Progress Funnel                                           │  │
-│  │  ├── Step 1: Label ─────────────────────────────────── 100% (1,234)   │  │
-│  │  ├── Step 2: Label ───────────────────────────── 85% (1,049)          │  │
-│  │  ├── Step 3: Label ──────────────────────── 72% (887)                 │  │
-│  │  ├── Step 4: Label ─────────────────── 58% (714)                      │  │
-│  │  └── Step 5: Label ────────────── 45% (554)                           │  │
-│  └────────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │  Conversion Analysis (Existing)                                        │  │
-│  └────────────────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Changes Required
-
-### 1. Extend Data Model
-**File: `src/lib/mockData.ts`**
-
-Add new interface for stage-specific metrics and in-stage progress:
-
-```typescript
-// In-stage progress step
-interface ProgressStep {
-  label: string;
-  count: number;
-  percentage: number;
-}
-
-// Stage-specific metrics by stage type
-interface JobsSwaasaMetrics {
-  // Reach & Awareness
-  jobImpressions: number;
-  uniqueCandidateViews: number;
-  jobCTR: number; // Impressions → Clicks
-  saveRate: number;
-  shareRate: number;
-  // Quality
-  matchScoreAvg: number;
-  contentQualityScore: number;
-  // AI vs Human
-  aiRankedImpressions: number;
-  manualBoosted: number;
-  hitlOverrideRate: number;
-}
-
-interface JobDiscoveryMetrics {
-  // Search & Discovery
-  searchSessions: number;
-  searchResultCTR: number;
-  filterUsageRate: number;
-  recommendationClickRate: number;
-  // Matching
-  aiMatchConfidence: number;
-  top10RelevanceScore: number;
-  coldStartRate: number;
-  // Operational
-  searchLatency: string;
-  rankingConfidenceDrift: number;
-}
-
-interface EOIMetrics {
-  // Intent
-  eoiClickRate: number;
-  leadCaptureRate: number;
-  consentCompletionRate: number;
-  // Lead Quality
-  intentScore: number;
-  fraudDetectionRate: number;
-  duplicateLeadRate: number;
-  // AI vs Human
-  aiAutoQualified: number;
-  hitlReviewedLeads: number;
-}
-
-interface PreScreenMetrics {
-  // Screening
-  questionStartRate: number;
-  completionRate: number;
-  knockoutRate: number;
-  passRate: number;
-  // Quality
-  falseRejectionRate: number;
-  resumeParseConfidence: number;
-  eligibilityScoreDistribution: Record<string, number>;
-  // AI vs Human
-  aiAutoReject: number;
-  hitlOverride: number;
-  manualApproval: number;
-}
-
-interface VoiceScreeningMetrics {
-  // Engagement
-  callAttemptRate: number;
-  callConnectRate: number;
-  avgCallDuration: string;
-  // Screening Outcome
-  aiPassRate: number;
-  humanPassRate: number;
-  dropOffDuringCall: number;
-  // Quality
-  speechRecognitionConfidence: number;
-  responseConfidenceScore: number;
-  hiringManagerFitScore: number;
-  // AI vs Human
-  aiFullyScreened: number;
-  hitlReview: number;
-  humanInterview: number;
-}
-
-// Updated EnhancedStageMetrics interface
-interface EnhancedStageMetrics {
-  // ... existing fields ...
-  
-  // Stage-specific metrics (only one populated based on stage type)
-  jobsSwaasaMetrics?: JobsSwaasaMetrics;
-  jobDiscoveryMetrics?: JobDiscoveryMetrics;
-  eoiMetrics?: EOIMetrics;
-  preScreenMetrics?: PreScreenMetrics;
-  voiceScreeningMetrics?: VoiceScreeningMetrics;
-  
-  // In-stage progress funnel
-  progressFunnel?: ProgressStep[];
-}
-```
-
-### 2. Create Reusable Components
-**New File: `src/components/customer/stage-metrics/InStageProgressFunnel.tsx`**
-
-A visual funnel component showing micro-progression within a stage:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  ⏳ In-Stage Progress                                       │
-├─────────────────────────────────────────────────────────────┤
-│  Job Published        ████████████████████████  100%  (523) │
-│  Job Indexed          ██████████████████████    95%   (497) │
-│  Job Ranked by AI     █████████████████         85%   (445) │
-│  Job Viewed           ████████████              62%   (324) │
-│  Apply Clicked        ██████                    38%   (199) │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 3. Create Stage-Specific Metric Cards
-**New Files:**
-- `src/components/customer/stage-metrics/JobsSwaasaMetricsCard.tsx`
-- `src/components/customer/stage-metrics/JobDiscoveryMetricsCard.tsx`
-- `src/components/customer/stage-metrics/EOIMetricsCard.tsx`
-- `src/components/customer/stage-metrics/PreScreenMetricsCard.tsx`
-- `src/components/customer/stage-metrics/VoiceScreeningMetricsCard.tsx`
-
-Each card displays the relevant metrics for that stage type in organized sections.
-
-### 4. Update StageDetailsSheet
-**File: `src/components/customer/StageDetailsSheet.tsx`**
-
-- Add a `stageId` prop to identify which stage-specific metrics to render
-- Conditionally render the appropriate metric card based on stage type
-- Add the `InStageProgressFunnel` component
-
-### 5. Add Mock Data
-**File: `src/lib/mockData.ts`**
-
-Populate the enhanced metrics for existing job records with stage-specific data.
+The stage metrics system follows this pattern:
+1. **Types file** (`types.ts`) - Defines the interface for each stage's metrics
+2. **Metrics Card** (`*MetricsCard.tsx`) - Visual component displaying the metrics
+3. **Mock Data** (`mockData.ts`) - Extends `EnhancedStageMetrics` interface and adds sample data
+4. **StageDetailsSheet** - Switch statement to render the correct card based on `stageId`
+5. **Index exports** - Barrel file for clean imports
 
 ---
 
@@ -216,67 +21,288 @@ Populate the enhanced metrics for existing job records with stage-specific data.
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/lib/mockData.ts` | Modify | Extend `EnhancedStageMetrics` interface and add mock data |
-| `src/components/customer/stage-metrics/InStageProgressFunnel.tsx` | Create | Visual funnel showing micro-progression |
-| `src/components/customer/stage-metrics/JobsSwaasaMetricsCard.tsx` | Create | Jobs in Swaasa specific metrics |
-| `src/components/customer/stage-metrics/JobDiscoveryMetricsCard.tsx` | Create | Job Discovery specific metrics |
-| `src/components/customer/stage-metrics/EOIMetricsCard.tsx` | Create | Expression of Interest specific metrics |
-| `src/components/customer/stage-metrics/PreScreenMetricsCard.tsx` | Create | Pre-Screen Questions specific metrics |
-| `src/components/customer/stage-metrics/VoiceScreeningMetricsCard.tsx` | Create | Voice Agent Screening specific metrics |
-| `src/components/customer/stage-metrics/index.ts` | Create | Barrel export file |
-| `src/components/customer/StageDetailsSheet.tsx` | Modify | Integrate new components, add stage type detection |
-| `src/components/customer/PipelineBoardDialog.tsx` | Modify | Pass `stageId` to StageDetailsSheet |
+| `src/components/customer/stage-metrics/types.ts` | Modify | Add 3 new interfaces + update STAGE_IDS |
+| `src/components/customer/stage-metrics/InterviewSchedulingMetricsCard.tsx` | Create | Interview scheduling metrics display |
+| `src/components/customer/stage-metrics/SilverMedalistMetricsCard.tsx` | Create | Silver medalist pool metrics display |
+| `src/components/customer/stage-metrics/TalentCommunityMetricsCard.tsx` | Create | Talent community metrics display |
+| `src/components/customer/stage-metrics/index.ts` | Modify | Export new components |
+| `src/lib/mockData.ts` | Modify | Add new metric interfaces + mock data |
+| `src/components/customer/StageDetailsSheet.tsx` | Modify | Add cases for new stages |
 
 ---
 
-## Visual Layout for Each Stage Card
+## New Type Definitions
 
-### Jobs in Swaasa Metrics Card
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  📊 Reach & Awareness                                       │
-├─────────────────────────────────────────────────────────────┤
-│  Job Impressions         12,450    Unique Views       8,234 │
-│  Job CTR                  3.2%     Save Rate          12.5% │
-│  Share Rate               2.1%                              │
-├─────────────────────────────────────────────────────────────┤
-│  📈 Quality Metrics                                         │
-├─────────────────────────────────────────────────────────────┤
-│  Match Score Avg           78%     Content Quality      85% │
-├─────────────────────────────────────────────────────────────┤
-│  🤖 AI vs Human                                             │
-├─────────────────────────────────────────────────────────────┤
-│  AI-ranked                 85%     Manual Boosted      12%  │
-│  HITL Override Rate         3%                              │
-└─────────────────────────────────────────────────────────────┘
+### Interview Scheduling Metrics
+```typescript
+interface InterviewSchedulingMetrics {
+  // Core Progress
+  candidatesQualifiedForInterview: number;
+  interviewInvitesSent: number;
+  interviewScheduled: number;
+  interviewCompleted: number;
+  noShowRate: number;
+  feedbackSubmitted: number;
+  
+  // AI vs Human Attribution
+  aiSchedulingPercentage: number;
+  humanSchedulingPercentage: number;
+  hitlApprovalPercentage: number;
+  
+  // Avg Response Time
+  aiSlotSuggestionTime: string;
+  recruiterActionTime: string;
+  candidateConfirmationTime: string;
+  
+  // SLA Metrics
+  scheduleWithinSLA: number;        // % scheduled within 24hrs
+  confirmationWithinSLA: number;    // % confirmed within 12hrs
+  feedbackWithinSLA: number;        // % feedback within 48hrs
+  
+  // Outcome Metrics
+  interviewConversionRate: number;
+  timeToInterview: string;
+  interviewToOfferRatio: number;
+}
+```
+
+### Silver Medalist Metrics
+```typescript
+interface SilverMedalistMetrics {
+  // Core Progress
+  candidatesTagged: number;
+  reEngagementInvitesSent: number;
+  reAppliedToNewJobs: number;
+  conversionToHire: number;
+  
+  // AI vs Human Attribution
+  aiTaggingRate: number;
+  humanOverrideRate: number;
+  hitlReviewRate: number;
+  
+  // Avg Response Time
+  aiClassificationTime: string;
+  recruiterReviewTime: string;
+  candidateReEngagementResponseTime: string;
+  
+  // SLA Metrics
+  taggingWithinSLA: number;          // % tagged within 24hrs
+  reEngagementWithinSLA: number;     // % outreach within 7 days
+  followUpWithinSLA: number;         // % follow-up within 72hrs
+  
+  // Outcome Metrics
+  silverToHireConversionRate: number;
+  talentPoolReuseRate: number;
+  costSavedVsFreshSourcing: number;
+  candidateRetentionScore: number;
+}
+```
+
+### Talent Community Metrics
+```typescript
+interface TalentCommunityMetrics {
+  // Core Progress
+  candidatesAddedToCommunity: number;
+  activeCommunityMembers: number;
+  contentEngagementRate: number;
+  candidatesActivatedIntoPipeline: number;
+  communityToHireConversion: number;
+  
+  // AI vs Human Attribution
+  aiCommunityTagging: number;
+  humanCommunityModeration: number;
+  hitlModeration: number;
+  
+  // Avg Response Time
+  aiEngagementTriggerTime: string;
+  recruiterCommunityActionTime: string;
+  candidateResponseTime: string;
+  
+  // SLA Metrics
+  outreachFrequencySLA: string;       // Weekly/Monthly
+  activationWithinSLA: number;        // % activated within 48hrs
+  contentRefreshWithinSLA: number;    // % content refreshed monthly
+  
+  // Outcome Metrics
+  communityActivationRate: number;
+  passiveToActiveRate: number;
+  longTermHireRate: number;
+  employerBrandEngagementIndex: number;
+}
 ```
 
 ---
 
-## Stage ID to Metrics Type Mapping
+## Stage ID Mapping
 
 | Stage ID | Metrics Type | Progress Funnel Steps |
 |----------|--------------|----------------------|
-| `jobs-ankura` | `jobsSwaasaMetrics` | Published → Indexed → Ranked → Viewed → Apply Clicked |
-| `job-discovery` | `jobDiscoveryMetrics` | Search Triggered → Results Generated → Filters Applied → Card Viewed → Job Opened → Interest Clicked |
-| `expression` | `eoiMetrics` | Interest Clicked → Details Submitted → Consent Given → Lead Scored → Routed to Pipeline |
-| `prescreen` | `preScreenMetrics` | Questions Loaded → Started → Completed → Auto-Scored → Passed/Failed/Escalated |
-| `voice-agent` | `voiceScreeningMetrics` | Call Scheduled → Dialed → Connected → Questions Asked → AI Evaluated → Final Outcome |
+| `scheduling` | `interviewSchedulingMetrics` | Qualified for Interview -> Invites Sent -> Scheduled -> Completed -> Feedback Submitted |
+| `silver-med` | `silverMedalistMetrics` | Tagged as Silver -> Re-engagement Sent -> Re-applied -> Converted to Hire |
+| `talent-community` | `talentCommunityMetrics` | Added to Community -> Engaged with Content -> Activated into Pipeline -> Converted |
+
+---
+
+## Visual Layout for Each Card
+
+### Interview Scheduling Metrics Card
+```text
++-------------------------------------------------------+
+|  Progress Metrics                                      |
++-------------------------------------------------------+
+|  Qualified for Interview    34    Invites Sent     28 |
+|  Scheduled                  24    Completed        18 |
+|  No-show Rate             14%     Feedback Done    15 |
++-------------------------------------------------------+
+|  AI vs Human Attribution                              |
++-------------------------------------------------------+
+|  AI Scheduling           75%     Human Scheduling  20%|
+|  HITL Approvals           5%                          |
++-------------------------------------------------------+
+|  Response Times                                        |
++-------------------------------------------------------+
+|  AI Slot Suggestion       2m     Recruiter Action  4h |
+|  Candidate Confirmation   6h                          |
++-------------------------------------------------------+
+|  SLA Compliance                                        |
++-------------------------------------------------------+
+|  Schedule (24h)          88%     Confirm (12h)    82% |
+|  Feedback (48h)          75%                          |
++-------------------------------------------------------+
+|  Outcomes                                              |
++-------------------------------------------------------+
+|  Interview Conversion   75%     Time-to-Interview  3d |
+|  Interview-to-Offer     42%                           |
++-------------------------------------------------------+
+```
+
+### Silver Medalist Metrics Card
+```text
++-------------------------------------------------------+
+|  Progress Metrics                                      |
++-------------------------------------------------------+
+|  Candidates Tagged         8     Re-engagement Sent  6 |
+|  Re-applied to Jobs        4     Converted to Hire   2 |
++-------------------------------------------------------+
+|  AI vs Human Attribution                              |
++-------------------------------------------------------+
+|  AI Tagging Rate         70%     Human Override    25%|
+|  HITL Review Rate          5%                          |
++-------------------------------------------------------+
+|  Response Times                                        |
++-------------------------------------------------------+
+|  AI Classification        1m     Recruiter Review   8h |
+|  Candidate Re-engagement  2d                          |
++-------------------------------------------------------+
+|  SLA Compliance                                        |
++-------------------------------------------------------+
+|  Tagging (24h)          92%     Re-engage (7d)    85% |
+|  Follow-up (72h)        78%                          |
++-------------------------------------------------------+
+|  Outcomes                                              |
++-------------------------------------------------------+
+|  Silver-to-Hire         25%     Pool Reuse Rate   35% |
+|  Cost Saved          $1,200     Retention Score    82 |
++-------------------------------------------------------+
+```
+
+### Talent Community Metrics Card
+```text
++-------------------------------------------------------+
+|  Progress Metrics                                      |
++-------------------------------------------------------+
+|  Added to Community        4     Active Members   3.2k |
+|  Content Engagement      45%     Activated          12 |
+|  Community-to-Hire       3%                           |
++-------------------------------------------------------+
+|  AI vs Human Attribution                              |
++-------------------------------------------------------+
+|  AI Community Tagging    60%     Human Curation    35%|
+|  HITL Moderation          5%                          |
++-------------------------------------------------------+
+|  Response Times                                        |
++-------------------------------------------------------+
+|  AI Engagement Trigger    1h     Recruiter Action  12h |
+|  Candidate Response       2d                          |
++-------------------------------------------------------+
+|  SLA Compliance                                        |
++-------------------------------------------------------+
+|  Outreach Frequency   Weekly     Activation (48h) 70% |
+|  Content Refresh       Monthly                        |
++-------------------------------------------------------+
+|  Outcomes                                              |
++-------------------------------------------------------+
+|  Activation Rate        15%     Passive-to-Active 12% |
+|  Long-term Hire          8%     Brand Engagement   78 |
++-------------------------------------------------------+
+```
+
+---
+
+## In-Stage Progress Funnels
+
+### Interview Scheduling Funnel
+1. Qualified for Interview (100%)
+2. Interview Invites Sent (82%)
+3. Interview Scheduled (71%)
+4. Interview Completed (53%)
+5. Feedback Submitted (44%)
+
+### Silver Medalist Funnel
+1. Tagged as Silver Medalist (100%)
+2. Re-engagement Invites Sent (75%)
+3. Re-applied to New Jobs (50%)
+4. Converted to Hire (25%)
+
+### Talent Community Funnel
+1. Added to Community (100%)
+2. Active Members (80%)
+3. Content Engaged (45%)
+4. Activated into Pipeline (12%)
+5. Converted to Hire (3%)
+
+---
+
+## Implementation Steps
+
+### Step 1: Update Types
+Add the three new interfaces to `types.ts` and update the `STAGE_IDS` constant.
+
+### Step 2: Create Metric Cards
+Create three new components following the existing pattern:
+- `InterviewSchedulingMetricsCard.tsx`
+- `SilverMedalistMetricsCard.tsx`
+- `TalentCommunityMetricsCard.tsx`
+
+Each card will have sections for:
+- Progress Metrics
+- AI vs Human Attribution
+- Response Times
+- SLA Compliance
+- Outcome Metrics
+
+### Step 3: Update Index Exports
+Add the new components to the barrel export file.
+
+### Step 4: Extend Mock Data
+Add the three new metric interfaces to `EnhancedStageMetrics` and populate mock data for `JOB-001` with realistic values.
+
+### Step 5: Update StageDetailsSheet
+Add three new cases to the `StageSpecificMetrics` switch statement and update the `hasStageSpecificMetrics` check.
 
 ---
 
 ## Technical Notes
 
-1. **Stage Detection**: The `StageDetailsSheet` will receive `stageId` and use a mapping to determine which metric card to render
+1. **Consistent Design**: All new cards follow the same visual pattern as existing cards (sectioned cards with icons, metric rows, and color variants)
 
-2. **Graceful Fallback**: If stage-specific metrics are not available, the sheet falls back to the existing generic display
+2. **Response Time Display**: Uses string format for flexibility (e.g., "2m", "4h", "3d")
 
-3. **Progress Funnel Calculation**: Percentages are calculated relative to the first step (100%) for visual consistency
+3. **SLA Percentage Display**: Shows green for high compliance (>80%), amber for medium (60-80%), red for low (<60%)
 
-4. **Responsive Design**: All metric cards use the existing `Card` and grid patterns for consistent styling
+4. **Stage IDs**: Uses existing IDs already defined in the pipeline schema:
+   - `scheduling`
+   - `silver-med`
+   - `talent-community`
 
-5. **Color Coding**: Use existing semantic colors:
-   - Green/Emerald for positive metrics (pass rates, high scores)
-   - Amber for warning metrics (drop-off, at-risk)
-   - Blue for informational metrics
-   - Orange for AI-related metrics
+5. **Mock Data**: Will enhance existing `JOB-001` with full stage-specific metrics and progress funnels for all three new stages
