@@ -11,10 +11,10 @@ import { useNavigate } from "react-router-dom";
 import { NotificationsPopover } from "@/components/hitl/NotificationsPopover";
 
 interface AppHeaderProps {
-  currentPersona?: "Admin" | "Operation Manager" | "HITL" | "Customer";
+  currentPersona?: "Executive" | "Operation Manager" | "HITL" | "Customer";
 }
 
-export function AppHeader({ currentPersona = "Admin" }: AppHeaderProps) {
+export function AppHeader({ currentPersona = "Executive" }: AppHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -43,7 +43,7 @@ export function AppHeader({ currentPersona = "Admin" }: AppHeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => navigate("/")}>
-              Admin
+              Executive
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/ops")}>
               Operation Manager
