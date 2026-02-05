@@ -57,7 +57,7 @@ export function HITLSidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">
-                HITL
+                SWAASA
               </span>
               <span className="text-xs text-muted-foreground">
                 Review Queue
