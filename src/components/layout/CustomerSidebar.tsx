@@ -51,7 +51,7 @@ export function CustomerSidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">
-                SHIP
+                SWAASA
               </span>
               <span className="text-xs text-muted-foreground">
                 Hiring Intelligence
