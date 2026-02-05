@@ -90,6 +90,98 @@ export interface VoiceScreeningMetrics {
   humanInterview: number;
 }
 
+// Stage 6: Interview Scheduling
+export interface InterviewSchedulingMetrics {
+  // Core Progress
+  candidatesQualifiedForInterview: number;
+  interviewInvitesSent: number;
+  interviewScheduled: number;
+  interviewCompleted: number;
+  noShowRate: number;
+  feedbackSubmitted: number;
+  
+  // AI vs Human Attribution
+  aiSchedulingPercentage: number;
+  humanSchedulingPercentage: number;
+  hitlApprovalPercentage: number;
+  
+  // Avg Response Time
+  aiSlotSuggestionTime: string;
+  recruiterActionTime: string;
+  candidateConfirmationTime: string;
+  
+  // SLA Metrics
+  scheduleWithinSLA: number;
+  confirmationWithinSLA: number;
+  feedbackWithinSLA: number;
+  
+  // Outcome Metrics
+  interviewConversionRate: number;
+  timeToInterview: string;
+  interviewToOfferRatio: number;
+}
+
+// Stage 7: Silver Medalist
+export interface SilverMedalistMetrics {
+  // Core Progress
+  candidatesTagged: number;
+  reEngagementInvitesSent: number;
+  reAppliedToNewJobs: number;
+  conversionToHire: number;
+  
+  // AI vs Human Attribution
+  aiTaggingRate: number;
+  humanOverrideRate: number;
+  hitlReviewRate: number;
+  
+  // Avg Response Time
+  aiClassificationTime: string;
+  recruiterReviewTime: string;
+  candidateReEngagementResponseTime: string;
+  
+  // SLA Metrics
+  taggingWithinSLA: number;
+  reEngagementWithinSLA: number;
+  followUpWithinSLA: number;
+  
+  // Outcome Metrics
+  silverToHireConversionRate: number;
+  talentPoolReuseRate: number;
+  costSavedVsFreshSourcing: number;
+  candidateRetentionScore: number;
+}
+
+// Stage 8: Talent Community
+export interface TalentCommunityMetrics {
+  // Core Progress
+  candidatesAddedToCommunity: number;
+  activeCommunityMembers: number;
+  contentEngagementRate: number;
+  candidatesActivatedIntoPipeline: number;
+  communityToHireConversion: number;
+  
+  // AI vs Human Attribution
+  aiCommunityTagging: number;
+  humanCommunityModeration: number;
+  hitlModeration: number;
+  
+  // Avg Response Time
+  aiEngagementTriggerTime: string;
+  recruiterCommunityActionTime: string;
+  candidateResponseTime: string;
+  
+  // SLA Metrics
+  outreachFrequencySLA: string;
+  activationWithinSLA: number;
+  contentRefreshWithinSLA: number;
+  
+  // Outcome Metrics
+  communityActivationRate: number;
+  passiveToActiveRate: number;
+  longTermHireRate: number;
+  employerBrandEngagementIndex: number;
+}
+
 // Stage ID to metrics type mapping
 export const STAGE_IDS = {
   JOBS_SWAASA: "jobs-ankura",
@@ -97,6 +189,9 @@ export const STAGE_IDS = {
   EXPRESSION: "expression",
   PRESCREEN: "prescreen",
   VOICE_AGENT: "voice-agent",
+  SCHEDULING: "scheduling",
+  SILVER_MEDALIST: "silver-med",
+  TALENT_COMMUNITY: "talent-community",
 } as const;
 
 export type StageId = typeof STAGE_IDS[keyof typeof STAGE_IDS];

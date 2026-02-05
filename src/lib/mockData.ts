@@ -475,6 +475,68 @@ export interface VoiceScreeningMetrics {
   humanInterview: number;
 }
 
+export interface InterviewSchedulingMetrics {
+  candidatesQualifiedForInterview: number;
+  interviewInvitesSent: number;
+  interviewScheduled: number;
+  interviewCompleted: number;
+  noShowRate: number;
+  feedbackSubmitted: number;
+  aiSchedulingPercentage: number;
+  humanSchedulingPercentage: number;
+  hitlApprovalPercentage: number;
+  aiSlotSuggestionTime: string;
+  recruiterActionTime: string;
+  candidateConfirmationTime: string;
+  scheduleWithinSLA: number;
+  confirmationWithinSLA: number;
+  feedbackWithinSLA: number;
+  interviewConversionRate: number;
+  timeToInterview: string;
+  interviewToOfferRatio: number;
+}
+
+export interface SilverMedalistMetrics {
+  candidatesTagged: number;
+  reEngagementInvitesSent: number;
+  reAppliedToNewJobs: number;
+  conversionToHire: number;
+  aiTaggingRate: number;
+  humanOverrideRate: number;
+  hitlReviewRate: number;
+  aiClassificationTime: string;
+  recruiterReviewTime: string;
+  candidateReEngagementResponseTime: string;
+  taggingWithinSLA: number;
+  reEngagementWithinSLA: number;
+  followUpWithinSLA: number;
+  silverToHireConversionRate: number;
+  talentPoolReuseRate: number;
+  costSavedVsFreshSourcing: number;
+  candidateRetentionScore: number;
+}
+
+export interface TalentCommunityMetrics {
+  candidatesAddedToCommunity: number;
+  activeCommunityMembers: number;
+  contentEngagementRate: number;
+  candidatesActivatedIntoPipeline: number;
+  communityToHireConversion: number;
+  aiCommunityTagging: number;
+  humanCommunityModeration: number;
+  hitlModeration: number;
+  aiEngagementTriggerTime: string;
+  recruiterCommunityActionTime: string;
+  candidateResponseTime: string;
+  outreachFrequencySLA: string;
+  activationWithinSLA: number;
+  contentRefreshWithinSLA: number;
+  communityActivationRate: number;
+  passiveToActiveRate: number;
+  longTermHireRate: number;
+  employerBrandEngagementIndex: number;
+}
+
 export interface EnhancedStageMetrics extends StageMetrics {
   // AI/Human/HITL attribution
   aiPercentage: number;
@@ -506,6 +568,9 @@ export interface EnhancedStageMetrics extends StageMetrics {
   eoiMetrics?: EOIMetrics;
   preScreenMetrics?: PreScreenMetrics;
   voiceScreeningMetrics?: VoiceScreeningMetrics;
+  interviewSchedulingMetrics?: InterviewSchedulingMetrics;
+  silverMedalistMetrics?: SilverMedalistMetrics;
+  talentCommunityMetrics?: TalentCommunityMetrics;
   
   // In-stage progress funnel
   progressFunnel?: ProgressStep[];
@@ -680,13 +745,65 @@ export const jobs: Job[] = [
         aiPercentage: 75, humanPercentage: 20, hitlPercentage: 5,
         avgTimeInStage: "1 day", slaThreshold: "2 days", slaStatus: "green",
         conversionRate: 75.0, dropOffRate: 25.0,
+        interviewSchedulingMetrics: {
+          candidatesQualifiedForInterview: 34,
+          interviewInvitesSent: 28,
+          interviewScheduled: 24,
+          interviewCompleted: 18,
+          noShowRate: 14,
+          feedbackSubmitted: 15,
+          aiSchedulingPercentage: 75,
+          humanSchedulingPercentage: 20,
+          hitlApprovalPercentage: 5,
+          aiSlotSuggestionTime: "2m",
+          recruiterActionTime: "4h",
+          candidateConfirmationTime: "6h",
+          scheduleWithinSLA: 88,
+          confirmationWithinSLA: 82,
+          feedbackWithinSLA: 75,
+          interviewConversionRate: 75,
+          timeToInterview: "3d",
+          interviewToOfferRatio: 42,
+        },
+        progressFunnel: [
+          { label: "Qualified for Interview", count: 34, percentage: 100 },
+          { label: "Interview Invites Sent", count: 28, percentage: 82 },
+          { label: "Interview Scheduled", count: 24, percentage: 71 },
+          { label: "Interview Completed", count: 18, percentage: 53 },
+          { label: "Feedback Submitted", count: 15, percentage: 44 },
+        ],
       },
       "silver-med": {
         sent: 8, appeared: 8, qualified: 6, disqualified: 0, pending: 2,
         avgResponseTime: "2 days", handler: "R",
-        aiPercentage: 25, humanPercentage: 70, hitlPercentage: 5,
+        aiPercentage: 70, humanPercentage: 25, hitlPercentage: 5,
         avgTimeInStage: "5 days", slaThreshold: "14 days", slaStatus: "green",
         conversionRate: 75.0, dropOffRate: 25.0,
+        silverMedalistMetrics: {
+          candidatesTagged: 8,
+          reEngagementInvitesSent: 6,
+          reAppliedToNewJobs: 4,
+          conversionToHire: 2,
+          aiTaggingRate: 70,
+          humanOverrideRate: 25,
+          hitlReviewRate: 5,
+          aiClassificationTime: "1m",
+          recruiterReviewTime: "8h",
+          candidateReEngagementResponseTime: "2d",
+          taggingWithinSLA: 92,
+          reEngagementWithinSLA: 85,
+          followUpWithinSLA: 78,
+          silverToHireConversionRate: 25,
+          talentPoolReuseRate: 35,
+          costSavedVsFreshSourcing: 1200,
+          candidateRetentionScore: 82,
+        },
+        progressFunnel: [
+          { label: "Tagged as Silver Medalist", count: 8, percentage: 100 },
+          { label: "Re-engagement Invites Sent", count: 6, percentage: 75 },
+          { label: "Re-applied to New Jobs", count: 4, percentage: 50 },
+          { label: "Converted to Hire", count: 2, percentage: 25 },
+        ],
       },
       "talent-community": {
         sent: 4, appeared: 4, qualified: 4, disqualified: 0, pending: 0,
@@ -694,6 +811,33 @@ export const jobs: Job[] = [
         aiPercentage: 60, humanPercentage: 35, hitlPercentage: 5,
         avgTimeInStage: "ongoing", slaThreshold: "N/A", slaStatus: "green",
         conversionRate: 100, dropOffRate: 0,
+        talentCommunityMetrics: {
+          candidatesAddedToCommunity: 4,
+          activeCommunityMembers: 3200,
+          contentEngagementRate: 45,
+          candidatesActivatedIntoPipeline: 12,
+          communityToHireConversion: 3,
+          aiCommunityTagging: 60,
+          humanCommunityModeration: 35,
+          hitlModeration: 5,
+          aiEngagementTriggerTime: "1h",
+          recruiterCommunityActionTime: "12h",
+          candidateResponseTime: "2d",
+          outreachFrequencySLA: "Weekly",
+          activationWithinSLA: 70,
+          contentRefreshWithinSLA: 85,
+          communityActivationRate: 15,
+          passiveToActiveRate: 12,
+          longTermHireRate: 8,
+          employerBrandEngagementIndex: 78,
+        },
+        progressFunnel: [
+          { label: "Added to Community", count: 4, percentage: 100 },
+          { label: "Active Members", count: 3200, percentage: 80 },
+          { label: "Content Engaged", count: 1440, percentage: 45 },
+          { label: "Activated into Pipeline", count: 12, percentage: 12 },
+          { label: "Converted to Hire", count: 1, percentage: 3 },
+        ],
       },
     },
   },
