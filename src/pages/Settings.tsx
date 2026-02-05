@@ -13,7 +13,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="dashboard-title">Settings</h1>
           <p className="text-muted-foreground mt-1">
-            Configure your SHIP dashboard preferences
+            Configure your SWAASA dashboard preferences
           </p>
         </div>
 
