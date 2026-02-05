@@ -1235,6 +1235,22 @@ export const aggregateFunnelData = [
 
 export type RuleType = "confidence" | "business" | "anomaly" | "sla" | "posting" | "sourcing" | "outreach" | "interview" | "application" | "screening";
 export type HiringStage = "cross_stage" | "job_posting" | "sourcing" | "outreach" | "application" | "screening" | "interview";
+export type AutomationActionType = "screen" | "match" | "outreach" | "schedule" | "notify";
+
+export interface StageAutomation {
+  stageId: string;
+  stageName: string;
+  assignedAgentId: string | null;
+  actionType: AutomationActionType;
+  confidenceThreshold: number;
+  escalationTarget: string;
+  enabled: boolean;
+  integrations: {
+    connectorId: string;
+    trigger: string;
+    action: string;
+  }[];
+}
 export type OperatorType = ">" | "<" | "=" | ">=" | "<=" | "!=";
 export type ActionType = "route_to_queue" | "alert" | "escalate" | "block" | "route_to_ai_agent" | "trigger_automation" | "retry_with_fallback";
 export type TargetQueue = "recruiter_review" | "ops_escalation" | "enterprise_priority" | "content_hitl" | "ops_admin_hitl" | "human_sourcer_hitl" | "qa_hitl" | "compliance_hitl" | "hiring_manager_hitl" | "human_screening_pool" | "outreach_hitl" | "recruiter_hitl";
