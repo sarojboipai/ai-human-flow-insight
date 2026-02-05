@@ -92,8 +92,7 @@ const buildNodesFromSchema = (
       const customerShortName = job.employer.split(' ')[0];
       label = `${customerShortName}\nHospital`;
     } else if (stage.id === "jobs-ankura") {
-      const customerShortName = job.employer.split(' ')[0];
-      label = `Jobs in\n${customerShortName}`;
+      label = `Jobs in\nSwaasa`;
     }
     
     const nodeType = getNodeType(stage.type);
@@ -226,9 +225,8 @@ interface PipelineBoardDialogProps {
 
 // Map node IDs to their display labels and icons
 const getNodeMetadata = (nodeId: string, customerName: string): { label: string; icon?: string } => {
-  const shortName = customerName.split(' ')[0];
   const metadata: Record<string, { label: string; icon?: string }> = {
-    "jobs-ankura": { label: `Jobs in ${shortName}`, icon: "briefcase" },
+    "jobs-ankura": { label: `Jobs in Swaasa`, icon: "briefcase" },
     "job-discovery": { label: "Job Discovery", icon: "search" },
     "expression": { label: "Expression of Interest", icon: "heart" },
     "prescreen": { label: "Pre-screen Questions", icon: "clipboard" },
