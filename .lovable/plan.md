@@ -1,80 +1,115 @@
 
-# Plan: Reorder In-Stage Progress Funnel to First Position
+# Plan: Update Customer Dashboard to Show Single-Company Jobs
 
 ## Overview
 
-This change will swap the order of the first two sections in the stage details panel, placing the In-Stage Progress Funnel before the Attribution Bar.
+The Customer Dashboard should only display jobs from one company (since it represents a customer's portal). This plan will:
+1. Add more jobs for "Ankura Hospital" to create a richer dataset
+2. Create a dedicated customer jobs array filtered to Ankura Hospital
+3. Update the CustomerJobsTable to use customer-specific data and remove irrelevant filters
 
 ---
 
-## Current Layout Order
+## Current State
 
-1. **Attribution Bar** (AI vs Human vs HITL) - lines 265-274
-2. Stage-Specific Metrics
-3. In-Stage Progress Funnel - lines 281-284
-4. Conversion Analysis
-5. Volume Metrics / Additional Metrics
-6. Channel Breakdown
-7. Handler & Response Time
-
----
-
-## New Layout Order
-
-1. **In-Stage Progress Funnel** (moved to 1st position)
-2. **Attribution Bar** (moved to 2nd position)
-3. Stage-Specific Metrics
-4. Conversion Analysis
-5. Volume Metrics / Additional Metrics
-6. Channel Breakdown
-7. Handler & Response Time
+- Jobs data includes 10 jobs from 10 different employers
+- CustomerJobsTable imports all jobs and filters by search, company, stage, location
+- The Company filter is irrelevant for a single-customer view
 
 ---
 
 ## Implementation
 
-### File to Modify
+### 1. Add More Ankura Hospital Jobs in Mock Data
 
-**`src/components/customer/StageDetailsSheet.tsx`**
+**File:** `src/lib/mockData.ts`
 
-### Change
+Add 5-6 new jobs for Ankura Hospital with varied roles:
+- JOB-011: Night Shift Nurse
+- JOB-012: Emergency Room Physician
+- JOB-013: Operating Room Technician
+- JOB-014: Head Nurse - Cardiology
+- JOB-015: Junior Resident Doctor
+- JOB-016: Dialysis Technician
 
-Reorder the JSX blocks in lines 264-284 so that:
-- In-Stage Progress Funnel renders first (currently at lines 281-284)
-- Attribution Bar Card renders second (currently at lines 265-274)
-- Stage-Specific Metrics stays in 3rd position
+Each job will include:
+- Full funnel data with candidate counts
+- enhancedStageMetrics matching the existing pattern
+- Varied statuses (active, filled, closed)
+- Different geographies within India
 
-**New code order:**
-```tsx
-<div className="mt-6 space-y-6">
-  {/* In-Stage Progress Funnel (if available) */}
-  {metrics.progressFunnel && metrics.progressFunnel.length > 0 && (
-    <InStageProgressFunnel steps={metrics.progressFunnel} />
-  )}
+---
 
-  {/* AI/Human/HITL Attribution Bar */}
-  <Card>
-    <CardContent className="pt-6">
-      <AttributionBar 
-        aiPercentage={metrics.aiPercentage}
-        humanPercentage={metrics.humanPercentage}
-        hitlPercentage={metrics.hitlPercentage}
-      />
-    </CardContent>
-  </Card>
+### 2. Create Customer-Specific Jobs Export
 
-  {/* Stage-Specific Metrics (if available) */}
-  {hasStageSpecificMetrics && (
-    <StageSpecificMetrics stageId={stageId} metrics={metrics} />
-  )}
-  
-  {/* Rest of the components... */}
+**File:** `src/lib/mockData.ts`
+
+Add a filtered export for customer jobs:
+
+```typescript
+// Customer-specific jobs (Ankura Hospital)
+export const customerJobs = jobs.filter(job => job.employer === "Ankura Hospital");
 ```
+
+---
+
+### 3. Update CustomerJobsTable Component
+
+**File:** `src/components/customer/CustomerJobsTable.tsx`
+
+**Changes:**
+1. Import `customerJobs` instead of `jobs`
+2. Remove the Company column from the table (not needed)
+3. Remove the Company filter from the filter popover
+4. Update the filter options to only include Stage and Location filters
+
+**Before:**
+```typescript
+import { jobs, Job } from "@/lib/mockData";
+// Company filter state and logic
+// Company column in table
+```
+
+**After:**
+```typescript
+import { customerJobs, Job } from "@/lib/mockData";
+// No company filter
+// No company column in table
+```
+
+---
+
+## New Jobs Data Structure
+
+| Job ID | Title | Role Type | Geography | Status |
+|--------|-------|-----------|-----------|--------|
+| JOB-001 | Senior ICU Nurse | Nurse | Mumbai | Active |
+| JOB-011 | Night Shift Nurse | Nurse | Delhi | Active |
+| JOB-012 | Emergency Room Physician | Doctor | Bangalore | Active |
+| JOB-013 | Operating Room Technician | Technician | Mumbai | Filled |
+| JOB-014 | Head Nurse - Cardiology | Nurse | Chennai | Active |
+| JOB-015 | Junior Resident Doctor | Doctor | Hyderabad | Active |
+| JOB-016 | Dialysis Technician | Technician | Delhi | Closed |
+
+---
+
+## Files to Modify
+
+1. **`src/lib/mockData.ts`**
+   - Add 6 new jobs for Ankura Hospital with complete enhancedStageMetrics
+   - Add `customerJobs` export
+
+2. **`src/components/customer/CustomerJobsTable.tsx`**
+   - Import `customerJobs` instead of `jobs`
+   - Remove Company column from table
+   - Remove Company filter from filter popover
+   - Update COMPANY_OPTIONS removal
 
 ---
 
 ## Outcome
 
-- The In-Stage Progress funnel will be the first component users see when opening the stage details panel
-- The Attribution Bar (AI vs Human vs HITL) will appear immediately after the progress funnel
-- This order applies to all 8 hiring stages
+- Customer Dashboard displays 7 jobs all from Ankura Hospital
+- Table has cleaner columns: Job ID, Title, Current Stage, Candidates, Days Open, Actions
+- Filters include only Stage and Location (relevant for single-company view)
+- Each job has complete stage metrics for the Job Workflow Explorer
