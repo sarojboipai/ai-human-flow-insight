@@ -262,6 +262,11 @@ export function StageDetailsSheet({
         </SheetHeader>
         
         <div className="mt-6 space-y-6">
+          {/* In-Stage Progress Funnel (if available) */}
+          {metrics.progressFunnel && metrics.progressFunnel.length > 0 && (
+            <InStageProgressFunnel steps={metrics.progressFunnel} />
+          )}
+
           {/* AI/Human/HITL Attribution Bar */}
           <Card>
             <CardContent className="pt-6">
@@ -276,11 +281,6 @@ export function StageDetailsSheet({
           {/* Stage-Specific Metrics (if available) */}
           {hasStageSpecificMetrics && (
             <StageSpecificMetrics stageId={stageId} metrics={metrics} />
-          )}
-
-          {/* In-Stage Progress Funnel (if available) */}
-          {metrics.progressFunnel && metrics.progressFunnel.length > 0 && (
-            <InStageProgressFunnel steps={metrics.progressFunnel} />
           )}
 
           {/* Conversion & Drop-off */}
