@@ -16,17 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { jobs, Job } from "@/lib/mockData";
+import { customerJobs, Job } from "@/lib/mockData";
 import { PipelineBoardDialog } from "./PipelineBoardDialog";
-
-const COMPANY_OPTIONS = [
-  "Ankura Hospital",
-  "Oasis Fertility",
-  "Manipal Hospitals",
-  "KIMS Hospital",
-  "Yashoda Hospitals",
-  "Aster CMI Hospital",
-];
 
 const STAGE_OPTIONS = [
   "Candidate Lead",
@@ -51,7 +42,6 @@ export function CustomerJobsTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [companyFilter, setCompanyFilter] = useState<string[]>([]);
   const [stageFilter, setStageFilter] = useState<string[]>([]);
   const [locationFilter, setLocationFilter] = useState<string[]>([]);
 
@@ -61,13 +51,10 @@ export function CustomerJobsTable() {
     return lastActiveStage?.name || job.funnel[0]?.name;
   };
 
-  const filteredJobs = jobs.filter((job) => {
+  const filteredJobs = customerJobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCompany =
-      companyFilter.length === 0 || companyFilter.includes(job.employer);
 
     const jobCurrentStage = currentStage(job);
     const matchesStage =
@@ -77,11 +64,10 @@ export function CustomerJobsTable() {
     const matchesLocation =
       locationFilter.length === 0 || locationFilter.includes(job.geography);
 
-    return matchesSearch && matchesCompany && matchesStage && matchesLocation;
+    return matchesSearch && matchesStage && matchesLocation;
   });
 
-  const activeFilterCount =
-    companyFilter.length + stageFilter.length + locationFilter.length;
+  const activeFilterCount = stageFilter.length + locationFilter.length;
 
   const toggleFilter = (
     value: string,
@@ -96,7 +82,6 @@ export function CustomerJobsTable() {
   };
 
   const clearAllFilters = () => {
-    setCompanyFilter([]);
     setStageFilter([]);
     setLocationFilter([]);
   };
@@ -130,29 +115,6 @@ export function CustomerJobsTable() {
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4 bg-popover" align="end">
                 <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-semibold">Company</Label>
-                    <div className="mt-2 space-y-2">
-                      {COMPANY_OPTIONS.map((company) => (
-                        <div key={company} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`company-${company}`}
-                            checked={companyFilter.includes(company)}
-                            onCheckedChange={() =>
-                              toggleFilter(company, companyFilter, setCompanyFilter)
-                            }
-                          />
-                          <Label
-                            htmlFor={`company-${company}`}
-                            className="text-sm font-normal cursor-pointer"
-                          >
-                            {company}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Separator />
                   <div>
                     <Label className="text-sm font-semibold">Stage</Label>
                     <div className="mt-2 space-y-2">
@@ -224,12 +186,9 @@ export function CustomerJobsTable() {
             <TableRow>
               <TableHead>Job ID</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Company</TableHead>
-              
               <TableHead>Current Stage</TableHead>
               <TableHead className="text-right">Candidates</TableHead>
               <TableHead className="text-right">Days Open</TableHead>
-              
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -238,8 +197,6 @@ export function CustomerJobsTable() {
               <TableRow key={job.id}>
                 <TableCell className="font-mono text-xs">{job.id}</TableCell>
                 <TableCell className="font-medium">{job.title}</TableCell>
-                <TableCell>{job.employer}</TableCell>
-                
                 <TableCell>
                   <Badge variant="secondary">{currentStage(job)}</Badge>
                 </TableCell>
@@ -247,7 +204,6 @@ export function CustomerJobsTable() {
                   {totalCandidates(job)}
                 </TableCell>
                 <TableCell className="text-right">{job.daysOpen}</TableCell>
-                
                 <TableCell>
                   <Button
                     variant="outline"
