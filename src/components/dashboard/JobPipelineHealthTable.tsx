@@ -121,7 +121,7 @@ export function JobPipelineHealthTable({
   const [customerFilter, setCustomerFilter] = useState<string>("all");
   const [stageFilter, setStageFilter] = useState<string>("all");
   
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   // Get unique customers for filter dropdown
   const uniqueCustomers = useMemo(() => {
