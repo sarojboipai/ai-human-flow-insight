@@ -4893,27 +4893,38 @@ export interface JobPipelineHealthRow {
   slaDetails: string;
 }
 
-export const jobPipelineHealth: JobPipelineHealthRow[] = jobs.map((job) => {
-  const slaRisk = calculateSLARisk(job.daysOpen, job.status);
-  return {
-    jobId: job.id,
-    jobTitle: job.title,
-    customer: job.employer,
-    currentStage: getCurrentStage(job.daysOpen),
-    bottleneckStage: getBottleneckStage(job.funnel),
-    aiPercentage: job.aiContribution,
-    humanPercentage: job.humanContribution,
-    slaRisk,
-    slaDetails: getSLADetails(job.daysOpen, slaRisk),
-  };
-});
+export const jobPipelineHealth: JobPipelineHealthRow[] = (() => {
+  const mapped = jobs.map((job) => {
+    const slaRisk = calculateSLARisk(job.daysOpen, job.status);
+    return {
+      jobId: job.id,
+      jobTitle: job.title,
+      customer: job.employer,
+      currentStage: getCurrentStage(job.daysOpen),
+      bottleneckStage: getBottleneckStage(job.funnel),
+      aiPercentage: job.aiContribution,
+      humanPercentage: job.humanContribution,
+      slaRisk,
+      slaDetails: getSLADetails(job.daysOpen, slaRisk),
+    };
+  });
 
-// Override JOB-017 to show correct pipeline health values per requirements
-const job017Index = jobPipelineHealth.findIndex(j => j.jobId === "JOB-017");
-if (job017Index >= 0) {
-  jobPipelineHealth[job017Index].currentStage = "Interview Scheduled";
-  jobPipelineHealth[job017Index].bottleneckStage = "Offer Negotiation";
-}
+  // Override JOB-017 to show correct pipeline health values per requirements
+  const job017Index = mapped.findIndex(j => j.jobId === "JOB-017");
+  if (job017Index >= 0) {
+    mapped[job017Index].currentStage = "Interview Scheduled";
+    mapped[job017Index].bottleneckStage = "Offer Negotiation";
+  }
+
+  // Move Bhrungi Hospitals (JOB-017) to the top
+  const bhrungiIndex = mapped.findIndex(j => j.jobId === "JOB-017");
+  if (bhrungiIndex > 0) {
+    const [bhrungiRow] = mapped.splice(bhrungiIndex, 1);
+    mapped.unshift(bhrungiRow);
+  }
+
+  return mapped;
+})();
 
 // Dashboard KPI Metrics
 export const dashboardKPIs = {
