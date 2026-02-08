@@ -537,6 +537,15 @@ export interface TalentCommunityMetrics {
   employerBrandEngagementIndex: number;
 }
 
+export interface JobSEOScore {
+  overall: number;
+  titleOptimization: number;
+  descriptionQuality: number;
+  keywordMatch: number;
+  locationOptimization: number;
+  mobileReadiness: number;
+}
+
 export interface EnhancedStageMetrics extends StageMetrics {
   // AI/Human/HITL attribution
   aiPercentage: number;
@@ -571,6 +580,9 @@ export interface EnhancedStageMetrics extends StageMetrics {
   interviewSchedulingMetrics?: InterviewSchedulingMetrics;
   silverMedalistMetrics?: SilverMedalistMetrics;
   talentCommunityMetrics?: TalentCommunityMetrics;
+  
+  // SEO score (only for jobs-ankura / job posting stage)
+  seoScore?: JobSEOScore;
   
   // In-stage progress funnel
   progressFunnel?: ProgressStep[];
@@ -655,6 +667,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 324, percentage: 62 },
           { label: "Apply Clicked", count: 199, percentage: 38 },
         ],
+        seoScore: {
+          overall: 72, titleOptimization: 68, descriptionQuality: 75,
+          keywordMatch: 65, locationOptimization: 82, mobileReadiness: 78,
+        },
       },
       "job-discovery": {
         sent: 245, appeared: 189, qualified: 156, disqualified: 25, pending: 8,
@@ -889,6 +905,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 187, percentage: 60 },
           { label: "Apply Clicked", count: 112, percentage: 36 },
         ],
+        seoScore: {
+          overall: 85, titleOptimization: 88, descriptionQuality: 82,
+          keywordMatch: 80, locationOptimization: 90, mobileReadiness: 86,
+        },
       },
       "job-discovery": {
         sent: 156, appeared: 112, qualified: 89, disqualified: 15, pending: 8,
@@ -1122,6 +1142,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 442, percentage: 65 },
           { label: "Apply Clicked", count: 272, percentage: 40 },
         ],
+        seoScore: {
+          overall: 68, titleOptimization: 72, descriptionQuality: 65,
+          keywordMatch: 58, locationOptimization: 75, mobileReadiness: 70,
+        },
       },
       "job-discovery": {
         sent: 312, appeared: 256, qualified: 200, disqualified: 40, pending: 16,
@@ -1356,6 +1380,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 273, percentage: 65 },
           { label: "Apply Clicked", count: 168, percentage: 40 },
         ],
+        seoScore: {
+          overall: 82, titleOptimization: 85, descriptionQuality: 80,
+          keywordMatch: 78, locationOptimization: 88, mobileReadiness: 82,
+        },
       },
       "job-discovery": {
         sent: 189, appeared: 145, qualified: 115, disqualified: 22, pending: 8,
@@ -1588,6 +1616,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 137, percentage: 65 },
           { label: "Apply Clicked", count: 84, percentage: 40 },
         ],
+        seoScore: {
+          overall: 91, titleOptimization: 92, descriptionQuality: 88,
+          keywordMatch: 90, locationOptimization: 94, mobileReadiness: 92,
+        },
       },
       "job-discovery": {
         sent: 98, appeared: 76, qualified: 58, disqualified: 12, pending: 6,
@@ -1823,6 +1855,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 99, percentage: 60 },
           { label: "Apply Clicked", count: 56, percentage: 34 },
         ],
+        seoScore: {
+          overall: 55, titleOptimization: 50, descriptionQuality: 58,
+          keywordMatch: 48, locationOptimization: 62, mobileReadiness: 55,
+        },
       },
       "job-discovery": {
         sent: 78, appeared: 52, qualified: 38, disqualified: 10, pending: 4,
@@ -2058,6 +2094,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 111, percentage: 60 },
           { label: "Apply Clicked", count: 63, percentage: 34 },
         ],
+        seoScore: {
+          overall: 78, titleOptimization: 80, descriptionQuality: 76,
+          keywordMatch: 72, locationOptimization: 82, mobileReadiness: 80,
+        },
       },
       "job-discovery": {
         sent: 85, appeared: 62, qualified: 48, disqualified: 10, pending: 4,
@@ -2290,6 +2330,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 598, percentage: 65 },
           { label: "Apply Clicked", count: 368, percentage: 40 },
         ],
+        seoScore: {
+          overall: 88, titleOptimization: 90, descriptionQuality: 85,
+          keywordMatch: 86, locationOptimization: 92, mobileReadiness: 88,
+        },
       },
       "job-discovery": {
         sent: 420, appeared: 345, qualified: 275, disqualified: 50, pending: 20,
@@ -2522,6 +2566,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 85, percentage: 60 },
           { label: "Apply Clicked", count: 48, percentage: 34 },
         ],
+        seoScore: {
+          overall: 63, titleOptimization: 60, descriptionQuality: 68,
+          keywordMatch: 55, locationOptimization: 70, mobileReadiness: 62,
+        },
       },
       "job-discovery": {
         sent: 65, appeared: 48, qualified: 36, disqualified: 8, pending: 4,
@@ -2756,6 +2804,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 171, percentage: 60 },
           { label: "Apply Clicked", count: 97, percentage: 34 },
         ],
+        seoScore: {
+          overall: 76, titleOptimization: 78, descriptionQuality: 74,
+          keywordMatch: 70, locationOptimization: 80, mobileReadiness: 78,
+        },
       },
       "job-discovery": {
         sent: 132, appeared: 98, qualified: 75, disqualified: 17, pending: 6,
@@ -2991,6 +3043,10 @@ export const jobs: Job[] = [
           { label: "Job Viewed", count: 228, percentage: 60 },
           { label: "Apply Clicked", count: 142, percentage: 37 },
         ],
+        seoScore: {
+          overall: 84, titleOptimization: 86, descriptionQuality: 82,
+          keywordMatch: 80, locationOptimization: 88, mobileReadiness: 84,
+        },
       },
       "job-discovery": {
         sent: 180, appeared: 142, qualified: 120, disqualified: 15, pending: 7,

@@ -37,6 +37,7 @@ import {
   InterviewSchedulingMetricsCard,
   SilverMedalistMetricsCard,
   TalentCommunityMetricsCard,
+  SEOScoreRuleCard,
 } from "./stage-metrics";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -265,6 +266,11 @@ export function StageDetailsSheet({
           {/* In-Stage Progress Funnel (if available) */}
           {metrics.progressFunnel && metrics.progressFunnel.length > 0 && (
             <InStageProgressFunnel steps={metrics.progressFunnel} />
+          )}
+
+          {/* SEO Score + Routing Rule (only for Jobs in Swaasa) */}
+          {stageId === "jobs-ankura" && metrics.seoScore && (
+            <SEOScoreRuleCard score={metrics.seoScore} />
           )}
 
           {/* AI/Human/HITL Attribution Bar */}
