@@ -3946,6 +3946,26 @@ export const hitlRulesV2: HITLRuleV2[] = [
     createdBy: "Ananya",
     version: 1,
   },
+  {
+    id: "rule-029",
+    name: "Low SEO Score",
+    description: "Assign job posting to human reviewer when SEO score is below 80",
+    ruleType: "posting",
+    stage: "job_posting",
+    conditionMetric: "seo_score",
+    operator: "<",
+    thresholdValue: 80,
+    actionType: "route_to_queue",
+    targetQueue: "recruiter_review",
+    priority: 2,
+    status: "active",
+    triggerCount: 0,
+    lastTriggered: null,
+    createdAt: "2024-02-08",
+    updatedAt: "2024-02-08",
+    createdBy: "System",
+    version: 1,
+  },
 ];
 
 // HITL Tasks with full details

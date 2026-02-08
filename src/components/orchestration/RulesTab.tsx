@@ -63,6 +63,7 @@ const CONDITION_METRICS = [
   { value: "response_rate", label: "Response Rate (%)" },
   { value: "no_show_rate", label: "No-show Rate (%)" },
   { value: "cost_per_hire", label: "Cost per Hire" },
+  { value: "seo_score", label: "SEO Score (out of 100)" },
 ];
 
 const OPERATORS: { value: HITLRuleV2["operator"]; label: string }[] = [
