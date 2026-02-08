@@ -1,59 +1,59 @@
 
 
-# Plan: Show 10 Jobs Per Page and Add Bhrungi Hospitals Job
+# Plan: Add SEO Score Rule to Routing Rules
 
 ## Overview
 
-Two changes are needed:
-1. Increase the Job Pipeline Health table from 5 rows per page to 10
-2. Add a new job row for Bhrungi Hospitals with the specified details
+Add a new routing rule that automatically assigns a job posting to a human reviewer when its SEO score falls below 80/100.
 
 ---
 
 ## Changes
 
-### 1. Update Pagination to Show 10 Jobs
-
-**File:** `src/components/dashboard/JobPipelineHealthTable.tsx`
-
-Change `itemsPerPage` from `5` to `10` (line 124). This will show all current jobs (16 existing + 1 new = 17) across 2 pages instead of the current 4 pages.
-
----
-
-### 2. Add New Job: Nurse at Bhrungi Hospitals
+### 1. Add New Rule Entry to Mock Data
 
 **File:** `src/lib/mockData.ts`
 
-Add a new job entry (JOB-017) to the `jobs` array with:
+Add a new rule (`rule-029`) to the `hitlRulesV2` array at the end (before the closing bracket on line 3949):
 
 | Field | Value |
 |-------|-------|
-| Job ID | JOB-017 |
-| Title | Nurse |
-| Employer | Bhrungi Hospitals |
-| Role Type | nurse |
-| Status | active |
-| Days Open | 8 (to keep SLA "green" / On Track) |
+| ID | rule-029 |
+| Name | Low SEO Score |
+| Description | Assign job posting to human reviewer when SEO score is below 80 |
+| Rule Type | `posting` (Job Posting category) |
+| Stage | `job_posting` |
+| Condition Metric | `seo_score` |
+| Operator | `<` |
+| Threshold Value | 80 |
+| Action Type | `route_to_queue` (Assign to Human) |
+| Target Queue | `recruiter_review` |
+| Priority | P2 (High) |
+| Status | `active` |
 
-The job will include:
-- A complete 7-stage funnel with the **Interview Scheduling** stage having the most active candidates (matching "Interview" funnel stage)
-- The bottleneck will be set at **Offer Negotiation** (matching "Negotiation" bottleneck)
-- SLA Risk will be **green** ("On Track") with comfortable buffer
-- Full `enhancedStageMetrics` for all 8 stages to support the Job Workflow Explorer
-- AI/Human contribution percentages
+### 2. Add "seo_score" to Condition Metrics List
 
-Since `jobPipelineHealth` is auto-generated from the `jobs` array, the new job will automatically appear in the Pipeline Health table with the correct funnel stage, bottleneck, and SLA status.
+**File:** `src/components/orchestration/RulesTab.tsx`
+
+Add a new entry to the `CONDITION_METRICS` array so users can select "SEO Score" when building or editing rules in the Rule Builder panel:
+
+```
+{ value: "seo_score", label: "SEO Score (out of 100)" }
+```
 
 ---
 
 ## Files to Modify
 
-1. **`src/components/dashboard/JobPipelineHealthTable.tsx`** -- Change `itemsPerPage` from 5 to 10
-2. **`src/lib/mockData.ts`** -- Add JOB-017 (Nurse, Bhrungi Hospitals) with complete mock data
+1. **`src/lib/mockData.ts`** -- Add rule-029 (Low SEO Score) to the `hitlRulesV2` array
+2. **`src/components/orchestration/RulesTab.tsx`** -- Add `seo_score` to the condition metrics dropdown
 
 ---
 
 ## Outcome
 
-- The Pipeline Health table displays 10 rows per page
-- A new "Nurse" job from "Bhrungi Hospitals" appears in the table with Interview stage, Negotiation bottleneck, and On Track SLA status
+- A new "Low SEO Score" rule appears in the Routing Rules table under the "Job Posting" category
+- The rule condition reads: `seo_score < 80`
+- The action is "Route to Queue" targeting the Recruiter Review queue (human assignment)
+- The rule is active and visible in both the HITL rules view and the Pipeline Template Editor's Rules tab
+
