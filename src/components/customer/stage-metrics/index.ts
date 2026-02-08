@@ -7,4 +7,5 @@ export { VoiceScreeningMetricsCard } from "./VoiceScreeningMetricsCard";
 export { InterviewSchedulingMetricsCard } from "./InterviewSchedulingMetricsCard";
 export { SilverMedalistMetricsCard } from "./SilverMedalistMetricsCard";
 export { TalentCommunityMetricsCard } from "./TalentCommunityMetricsCard";
+export { SEOScoreRuleCard } from "./SEOScoreRuleCard";
 export * from "./types";
