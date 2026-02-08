@@ -1,115 +1,59 @@
 
-# Plan: Update Customer Dashboard to Show Single-Company Jobs
+
+# Plan: Show 10 Jobs Per Page and Add Bhrungi Hospitals Job
 
 ## Overview
 
-The Customer Dashboard should only display jobs from one company (since it represents a customer's portal). This plan will:
-1. Add more jobs for "Ankura Hospital" to create a richer dataset
-2. Create a dedicated customer jobs array filtered to Ankura Hospital
-3. Update the CustomerJobsTable to use customer-specific data and remove irrelevant filters
+Two changes are needed:
+1. Increase the Job Pipeline Health table from 5 rows per page to 10
+2. Add a new job row for Bhrungi Hospitals with the specified details
 
 ---
 
-## Current State
+## Changes
 
-- Jobs data includes 10 jobs from 10 different employers
-- CustomerJobsTable imports all jobs and filters by search, company, stage, location
-- The Company filter is irrelevant for a single-customer view
+### 1. Update Pagination to Show 10 Jobs
+
+**File:** `src/components/dashboard/JobPipelineHealthTable.tsx`
+
+Change `itemsPerPage` from `5` to `10` (line 124). This will show all current jobs (16 existing + 1 new = 17) across 2 pages instead of the current 4 pages.
 
 ---
 
-## Implementation
-
-### 1. Add More Ankura Hospital Jobs in Mock Data
+### 2. Add New Job: Nurse at Bhrungi Hospitals
 
 **File:** `src/lib/mockData.ts`
 
-Add 5-6 new jobs for Ankura Hospital with varied roles:
-- JOB-011: Night Shift Nurse
-- JOB-012: Emergency Room Physician
-- JOB-013: Operating Room Technician
-- JOB-014: Head Nurse - Cardiology
-- JOB-015: Junior Resident Doctor
-- JOB-016: Dialysis Technician
+Add a new job entry (JOB-017) to the `jobs` array with:
 
-Each job will include:
-- Full funnel data with candidate counts
-- enhancedStageMetrics matching the existing pattern
-- Varied statuses (active, filled, closed)
-- Different geographies within India
+| Field | Value |
+|-------|-------|
+| Job ID | JOB-017 |
+| Title | Nurse |
+| Employer | Bhrungi Hospitals |
+| Role Type | nurse |
+| Status | active |
+| Days Open | 8 (to keep SLA "green" / On Track) |
 
----
+The job will include:
+- A complete 7-stage funnel with the **Interview Scheduling** stage having the most active candidates (matching "Interview" funnel stage)
+- The bottleneck will be set at **Offer Negotiation** (matching "Negotiation" bottleneck)
+- SLA Risk will be **green** ("On Track") with comfortable buffer
+- Full `enhancedStageMetrics` for all 8 stages to support the Job Workflow Explorer
+- AI/Human contribution percentages
 
-### 2. Create Customer-Specific Jobs Export
-
-**File:** `src/lib/mockData.ts`
-
-Add a filtered export for customer jobs:
-
-```typescript
-// Customer-specific jobs (Ankura Hospital)
-export const customerJobs = jobs.filter(job => job.employer === "Ankura Hospital");
-```
-
----
-
-### 3. Update CustomerJobsTable Component
-
-**File:** `src/components/customer/CustomerJobsTable.tsx`
-
-**Changes:**
-1. Import `customerJobs` instead of `jobs`
-2. Remove the Company column from the table (not needed)
-3. Remove the Company filter from the filter popover
-4. Update the filter options to only include Stage and Location filters
-
-**Before:**
-```typescript
-import { jobs, Job } from "@/lib/mockData";
-// Company filter state and logic
-// Company column in table
-```
-
-**After:**
-```typescript
-import { customerJobs, Job } from "@/lib/mockData";
-// No company filter
-// No company column in table
-```
-
----
-
-## New Jobs Data Structure
-
-| Job ID | Title | Role Type | Geography | Status |
-|--------|-------|-----------|-----------|--------|
-| JOB-001 | Senior ICU Nurse | Nurse | Mumbai | Active |
-| JOB-011 | Night Shift Nurse | Nurse | Delhi | Active |
-| JOB-012 | Emergency Room Physician | Doctor | Bangalore | Active |
-| JOB-013 | Operating Room Technician | Technician | Mumbai | Filled |
-| JOB-014 | Head Nurse - Cardiology | Nurse | Chennai | Active |
-| JOB-015 | Junior Resident Doctor | Doctor | Hyderabad | Active |
-| JOB-016 | Dialysis Technician | Technician | Delhi | Closed |
+Since `jobPipelineHealth` is auto-generated from the `jobs` array, the new job will automatically appear in the Pipeline Health table with the correct funnel stage, bottleneck, and SLA status.
 
 ---
 
 ## Files to Modify
 
-1. **`src/lib/mockData.ts`**
-   - Add 6 new jobs for Ankura Hospital with complete enhancedStageMetrics
-   - Add `customerJobs` export
-
-2. **`src/components/customer/CustomerJobsTable.tsx`**
-   - Import `customerJobs` instead of `jobs`
-   - Remove Company column from table
-   - Remove Company filter from filter popover
-   - Update COMPANY_OPTIONS removal
+1. **`src/components/dashboard/JobPipelineHealthTable.tsx`** -- Change `itemsPerPage` from 5 to 10
+2. **`src/lib/mockData.ts`** -- Add JOB-017 (Nurse, Bhrungi Hospitals) with complete mock data
 
 ---
 
 ## Outcome
 
-- Customer Dashboard displays 7 jobs all from Ankura Hospital
-- Table has cleaner columns: Job ID, Title, Current Stage, Candidates, Days Open, Actions
-- Filters include only Stage and Location (relevant for single-company view)
-- Each job has complete stage metrics for the Job Workflow Explorer
+- The Pipeline Health table displays 10 rows per page
+- A new "Nurse" job from "Bhrungi Hospitals" appears in the table with Interview stage, Negotiation bottleneck, and On Track SLA status
