@@ -27,6 +27,7 @@ import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
 import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
 import OpsJobDetail from "./pages/OpsJobDetail";
+import WBRAOPCockpit from "./pages/WBRAOPCockpit";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/funnel" element={<FunnelAnalytics />} />
+            <Route path="/wbr-aop" element={<WBRAOPCockpit />} />
             <Route path="/human-ai" element={<HumanAIWorkload />} />
             <Route path="/human-activity" element={<RecruiterDashboard />} />
             <Route path="/ai-performance" element={<AIPerformance />} />
