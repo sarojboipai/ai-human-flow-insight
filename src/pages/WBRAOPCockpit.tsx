@@ -42,6 +42,9 @@ import {
   Briefcase,
   Users,
   Gauge,
+  CalendarDays,
+  ArrowRight,
+  Package,
 } from "lucide-react";
 import {
   aopTargets,
@@ -53,6 +56,10 @@ import {
   aopRiskSignals,
   getAOPAttainment,
   getAOPVarianceColor,
+  wbrWeeklyData,
+  wbrBacklogBuckets,
+  wbrRecruiterCapacity,
+  wbrCausalMappings,
 } from "@/lib/mockData";
 
 type KPIMode = "revenue" | "jobs" | "placements" | "sla";
@@ -490,6 +497,156 @@ function RiskAlertsPanel() {
   );
 }
 
+const wbrStatusStyles = {
+  on_track: "bg-success/20 text-success border-success/30",
+  at_risk: "bg-warning/20 text-warning border-warning/30",
+  off_track: "bg-destructive/20 text-destructive border-destructive/30",
+};
+
+const wbrStatusLabels = {
+  on_track: "On Track",
+  at_risk: "At Risk",
+  off_track: "Off Track",
+};
+
+function WBRAssistedHiringSection() {
+  const latestWeek = wbrWeeklyData[wbrWeeklyData.length - 1];
+
+  const wbrKpis = [
+    { title: "Weekly Placements", value: latestWeek.placements.toString(), change: latestWeek.placements - latestWeek.prevPlacements, icon: <Users className="h-4 w-4" /> },
+    { title: "Weekly Revenue", value: `₹${latestWeek.revenue}L`, change: latestWeek.revenue - wbrWeeklyData[wbrWeeklyData.length - 2].revenue, icon: <IndianRupee className="h-4 w-4" /> },
+    { title: "Active Jobs", value: latestWeek.activeJobs.toLocaleString(), change: 0, icon: <Briefcase className="h-4 w-4" /> },
+    { title: "Candidate Backlog", value: latestWeek.backlog.toLocaleString(), change: latestWeek.backlog - wbrWeeklyData[wbrWeeklyData.length - 2].backlog, icon: <Package className="h-4 w-4" />, invertColor: true },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <CalendarDays className="h-5 w-5 text-primary" />
+          WBR — Swaasa Assisted Hiring Execution
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* WBR KPI Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {wbrKpis.map((kpi) => (
+            <div key={kpi.title} className="p-3 rounded-lg border bg-secondary/30">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                {kpi.icon}
+                <span className="text-xs font-medium">{kpi.title}</span>
+              </div>
+              <p className="text-2xl font-semibold">{kpi.value}</p>
+              {kpi.change !== 0 && (
+                <div className={`flex items-center gap-1 text-xs mt-1 ${
+                  (kpi.invertColor ? kpi.change < 0 : kpi.change > 0) ? "text-success" : "text-destructive"
+                }`}>
+                  {(kpi.invertColor ? kpi.change < 0 : kpi.change > 0) ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {kpi.change > 0 ? "+" : ""}{kpi.change} WoW
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Weekly Placements Trend */}
+        <div>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Weekly Placements Trend (Last 8 Weeks)</h4>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={wbrWeeklyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+              <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+              <Bar dataKey="placements" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={32} name="Placements" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Backlog Aging + Recruiter Capacity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Backlog Aging */}
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Backlog Aging Buckets</h4>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={wbrBacklogBuckets} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                <YAxis dataKey="bucket" type="category" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={80} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+                <Legend />
+                <Bar dataKey="screened" stackId="a" fill="hsl(var(--primary))" name="Screened" />
+                <Bar dataKey="interviewed" stackId="a" fill="hsl(var(--warning))" name="Interviewed" />
+                <Bar dataKey="offered" stackId="a" fill="hsl(var(--success))" name="Offered" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Recruiter Capacity vs Demand */}
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Recruiter Capacity vs Demand</h4>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={wbrRecruiterCapacity} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                <YAxis dataKey="team" type="category" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} width={120} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+                <Legend />
+                <Bar dataKey="available" fill="hsl(var(--primary))" name="Available" barSize={12} radius={[0, 4, 4, 0]} />
+                <Bar dataKey="demand" fill="hsl(var(--destructive))" name="Demand" barSize={12} radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function WBRtoAOPCausalMapping() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <ArrowRight className="h-5 w-5 text-primary" />
+          WBR → AOP Causal Mapping
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>WBR Metric</TableHead>
+              <TableHead>AOP Impact</TableHead>
+              <TableHead className="text-right">Current</TableHead>
+              <TableHead className="text-right">Required</TableHead>
+              <TableHead className="text-right">Status</TableHead>
+              <TableHead>Logic</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {wbrCausalMappings.map((m) => (
+              <TableRow key={m.wbrMetric}>
+                <TableCell className="font-medium">{m.wbrMetric}</TableCell>
+                <TableCell className="text-muted-foreground">{m.aopImpact}</TableCell>
+                <TableCell className="text-right font-medium">{m.currentValue}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{m.requiredValue}</TableCell>
+                <TableCell className="text-right">
+                  <Badge className={`${wbrStatusStyles[m.status]} border text-xs`}>
+                    {wbrStatusLabels[m.status]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground max-w-[200px]">{m.logic}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+
 export default function WBRAOPCockpit() {
   const [kpiMode, setKpiMode] = useState<KPIMode>("revenue");
   const [timePeriod, setTimePeriod] = useState("year");
@@ -497,19 +654,20 @@ export default function WBRAOPCockpit() {
   const [clientTier, setClientTier] = useState("all");
 
   return (
-    <DashboardLayout title="AOP x WBR Cockpit" subtitle={`${aopTargets.year} — Annual Operating Plan vs Weekly Business Review`}>
+    <DashboardLayout title="AOP x WBR Cockpit" subtitle={aopTargets.year}>
       {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <Select value={timePeriod} onValueChange={setTimePeriod}>
-          <SelectTrigger className="w-[140px] h-9 bg-secondary/50 border-none">
+          <SelectTrigger className="w-[160px] h-9 bg-secondary/50 border-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="year">Full Year</SelectItem>
-            <SelectItem value="q1">Q1 (Apr–Jun)</SelectItem>
-            <SelectItem value="q2">Q2 (Jul–Sep)</SelectItem>
-            <SelectItem value="q3">Q3 (Oct–Dec)</SelectItem>
-            <SelectItem value="q4">Q4 (Jan–Mar)</SelectItem>
+            <SelectItem value="q1">Q1 (Feb–Apr)</SelectItem>
+            <SelectItem value="q2">Q2 (May–Jul)</SelectItem>
+            <SelectItem value="q3">Q3 (Aug–Oct)</SelectItem>
+            <SelectItem value="q4">Q4 (Nov–Jan)</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
           </SelectContent>
         </Select>
 
@@ -561,6 +719,16 @@ export default function WBRAOPCockpit() {
           <AOPTrendChart mode={kpiMode} />
         </div>
         <RunRateChart mode={kpiMode} />
+      </section>
+
+      {/* WBR Assisted Hiring Section */}
+      <section className="mb-6">
+        <WBRAssistedHiringSection />
+      </section>
+
+      {/* WBR → AOP Causal Mapping */}
+      <section className="mb-6">
+        <WBRtoAOPCausalMapping />
       </section>
 
       {/* Pipeline Health */}
