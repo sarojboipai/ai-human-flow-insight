@@ -19,12 +19,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { jobs, workflows } from "@/lib/mockData";
+import { workflows } from "@/lib/mockData";
+import { useJobs } from "@/hooks/useJobs";
 
 export default function OpsJobOrchestration() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [pipelineFilter, setPipelineFilter] = useState<string>("all");
+  const { data: jobs = [] } = useJobs();
 
   // Compute metrics
   const metrics = useMemo(() => {

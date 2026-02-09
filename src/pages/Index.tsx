@@ -20,18 +20,19 @@ import {
   aiWorkloadData,
   revenueMetrics,
   aiEvaluationMetrics,
-  jobs,
   enterpriseCustomers,
   getJobPipelineHealthByCustomer,
   calculateCustomerKPIs,
   type Job,
 } from "@/lib/mockData";
+import { useJobs } from "@/hooks/useJobs";
 
 const Index = () => {
   const [duration, setDuration] = useState("30days");
   const [customer, setCustomer] = useState("all");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: jobs = [] } = useJobs();
 
   // Get customer name from ID
   const selectedCustomerName = useMemo(() => {
