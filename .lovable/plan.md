@@ -1,156 +1,139 @@
 
 
-# Plan: Add "AOP x WBR" Tab to Admin Dashboard Overview Section
+# Plan: Upgrade AOP x WBR Cockpit to Feb-Jan Fiscal Year with WBR Assisted Hiring Layer
 
 ## Overview
 
-Add a new "AOP x WBR" navigation item in the Admin sidebar under the "Overview" group, linking to a new `/wbr-aop` route. This page will be a unified executive dashboard that aligns Weekly Business Review (WBR) operations with Annual Operating Plan (AOP) targets, providing KPIs, target vs actual tracking, trend charts, segment drill-downs, and risk alerts.
+Transform the existing AOP x WBR Cockpit to align with Swaasa's Feb-Jan fiscal year cycle and add a new WBR (Weekly Business Review) section focused on Assisted Hiring execution metrics, plus a causal mapping layer that links weekly performance to annual AOP targets.
 
 ---
 
-## What Will Be Built
+## What Changes
 
-### Sidebar Navigation
-A new "AOP x WBR" item will be added to the Admin sidebar's "Overview" section, right after "Dashboard" and "Job Pipeline", using the `Target` icon (or `BarChart3`).
+### A. Fiscal Calendar Alignment (Feb-Jan)
 
-### Dashboard Sections
+All monthly trend data, labels, and fiscal year references will be updated from the current Apr-Mar assumption to a **Feb-Jan cycle**:
+- Month 1 = February, Month 12 = January
+- Fiscal year label changes from "FY 2025-26" to "FY2026 (Feb 2025 - Jan 2026)"
+- Quarter definitions: Q1 (Feb-Apr), Q2 (May-Jul), Q3 (Aug-Oct), Q4 (Nov-Jan)
+- Time selector labels updated accordingly
 
-The page will contain six main sections:
+### B. New WBR Assisted Hiring Section
 
-| Section | Description |
-|---------|-------------|
-| **Header + Filters** | Year/Quarter/Month time selector, Geography, Client Tier, Job Category filters, KPI mode toggle (Revenue / Jobs / Placements / SLA) |
-| **AOP Scorecard** | 4 KPI cards: Revenue Attainment, Jobs Attainment, Placement Attainment, Ops Efficiency Index |
-| **AOP Trend and Forecast** | Cumulative line chart (Target vs Actual vs Forecast) + monthly run-rate bar chart with gap indicators |
-| **Pipeline Health vs AOP Impact** | Funnel visualization showing volume, conversion, drop-off, and AOP risk score per stage |
-| **Segment Drill-Down Tables** | 3 tables: Performance by Client Segment, by Category, and by Team/Recruiter |
-| **Risk and Alerts Panel** | AOP risk signals, pipeline bottleneck alerts, SLA breach alerts |
+A new collapsible section inserted between the AOP Trend charts and Pipeline Health table, containing:
+
+| Component | Description |
+|-----------|-------------|
+| **Weekly Placements Trend** | Bar chart showing Assisted Hiring placements for the last 8 weeks (WoW comparison) |
+| **WBR KPI Row** | 4 mini KPI cards: Weekly Placements, Weekly Revenue, Active Assisted Hiring Jobs, Candidate Backlog |
+| **Backlog Aging Buckets** | Horizontal stacked bar: 0-3 days, 4-7 days, 8+ days candidates in pipeline |
+| **Recruiter Capacity vs Demand** | Bar chart comparing available recruiter slots vs open demand |
+
+### C. WBR-to-AOP Causal Mapping Panel
+
+A new card showing how weekly metrics translate to annual targets:
+
+| WBR Metric | AOP Impact | Current Value | Required | Status |
+|------------|-----------|--------------|----------|--------|
+| Weekly Placements | Annual Placement Target | 168/wk | 192/wk | At Risk |
+| Weekly Revenue | Annual Revenue Target | 222L/wk | 250L/wk | At Risk |
+| Screening SLA | Fill Rate | 82% | 90% | Warning |
+| Recruiter Productivity | Capacity vs AOP | 14.2/rec | 16.0/rec | On Track |
 
 ---
 
-## Implementation
+## Implementation Details
 
-### 1. Add AOP Mock Data
+### 1. Update Mock Data -- Fiscal Calendar + WBR Data
 
 **File:** `src/lib/mockData.ts`
 
-Add comprehensive mock data including:
-- AOP targets interface and data (annual goals for Revenue, Jobs, Placements, Margin, AI Coverage)
-- Monthly actuals and forecast data for trend charts
-- Client segment performance data
-- Job category performance data
-- Team/recruiter AOP performance data
-- Risk signals array
-- Helper functions for calculating attainment percentages and run-rates
+**Changes:**
+- Update `aopTargets.year` to `"FY2026 (Feb 2025 – Jan 2026)"`
+- Replace `aopMonthlyTrends` months from `["Apr","May",...,"Mar"]` to `["Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan"]` with adjusted cumulative values
+- Add new WBR interfaces and mock data:
 
 ```typescript
-export interface AOPTargets {
-  year: string;
-  revenue: { target: number; actual: number; forecast: number };
-  jobs: { target: number; actual: number; forecast: number };
-  placements: { target: number; actual: number; forecast: number };
-  margin: { target: number; actual: number };
-  aiCoverage: { target: number; actual: number };
+export interface WBRWeeklyData {
+  week: string;        // e.g. "W1 Feb", "W2 Feb"
+  placements: number;
+  revenue: number;
+  activeJobs: number;
+  backlog: number;
 }
 
-export interface AOPMonthlyTrend {
-  month: string;
-  revenueTarget: number;
-  revenueActual: number;
-  revenueForecast: number;
-  jobsTarget: number;
-  jobsActual: number;
-  placementsTarget: number;
-  placementsActual: number;
+export interface WBRBacklogBucket {
+  bucket: string;      // "0-3 days", "4-7 days", "8+ days"
+  screened: number;
+  interviewed: number;
+  offered: number;
+}
+
+export interface WBRCausalMapping {
+  wbrMetric: string;
+  aopImpact: string;
+  currentValue: string;
+  requiredValue: string;
+  status: "on_track" | "at_risk" | "off_track";
+  logic: string;
 }
 ```
 
-### 2. Create the AOP x WBR Dashboard Page
+- Add 8 weeks of `wbrWeeklyData`
+- Add `wbrBacklogBuckets` data
+- Add `wbrRecruiterCapacity` data (available vs demand)
+- Add `wbrCausalMappings` array
+- Update quarter filter labels to match Feb-Jan fiscal calendar
+- Update risk signals to reference fiscal quarters correctly
 
-**File:** `src/pages/WBRAOPCockpit.tsx` (new file)
+### 2. Update the WBRAOPCockpit Page
 
-A comprehensive page using `DashboardLayout` with these sections:
+**File:** `src/pages/WBRAOPCockpit.tsx`
 
-**Header and Filters:**
-- Time selector (Year / Q1-Q4 / Monthly)
-- Filters: Geography, Client Tier, Job Category
-- KPI mode toggle buttons: Revenue | Jobs | Placements | SLA
+**Changes:**
 
-**AOP Scorecard (4 KPI Cards):**
-- Revenue AOP Attainment (target, actual, attainment %, forecast)
-- Jobs AOP Attainment (posted, active, filled)
-- Placement AOP Attainment (target, actual, fill rate)
-- Ops Efficiency Index (SLA adherence, automation %, HITL escalations)
-- Each card uses color-coded variance: Green (within 5%), Yellow (5-15% gap), Red (>15% gap)
+**Header/Filters:**
+- Update subtitle to show "FY2026 (Feb 2025 - Jan 2026)"
+- Change quarter filter labels: Q1 (Feb-Apr), Q2 (May-Jul), Q3 (Aug-Oct), Q4 (Nov-Jan)
+- Add "Week" option to time toggle
 
-**AOP Trend and Forecast Section:**
-- Cumulative line chart using Recharts (Target line, Actual line, Forecast dashed line)
-- Monthly run-rate bar chart showing required vs current run-rate
-- Gap indicator badges (red/amber/green)
+**New WBR Section (between Trend charts and Pipeline Health):**
+- Add a `WBRAssistedHiringSection` component containing:
+  - Section header: "WBR -- Swaasa Assisted Hiring Execution"
+  - 4 mini KPI cards in a row (Weekly Placements, Weekly Revenue, Active Jobs, Backlog)
+  - Weekly placements bar chart (last 8 weeks, WoW trend)
+  - Backlog aging horizontal stacked bar chart
+  - Recruiter capacity vs demand bar chart
 
-**Pipeline Health vs AOP Impact:**
-- Horizontal funnel bars for each stage (Job Posting through Placement)
-- Each stage shows: Volume, Conversion %, Drop-off %, SLA breach count, AOP risk score
+**New Causal Mapping Card (after WBR section):**
+- Add a `WBRtoAOPCausalMapping` component:
+  - Table showing WBR metric, AOP impact, current vs required values, color-coded status
+  - Brief logic description for each mapping
 
-**Segment Drill-Down Tables:**
-- Table 1: Client Segment (Enterprise/Mid-Market/SMB) with AOP target vs actual
-- Table 2: Job Category (Doctors/Nurses/Allied Health/Non-Clinical)
-- Table 3: Team/Recruiter performance against AOP targets
-
-**Risk and Alerts Panel:**
-- Color-coded alert cards with risk messages
-- Pipeline bottleneck alerts
-- SLA breach alerts
-- Automation fallback alerts
-
-### 3. Update Sidebar Navigation
-
-**File:** `src/components/layout/AppSidebar.tsx`
-
-Add "AOP x WBR" to the `mainNavItems` array in the "Overview" section:
-
-```typescript
-const mainNavItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Job Pipeline", url: "/funnel", icon: TrendingUp },
-  { title: "AOP x WBR", url: "/wbr-aop", icon: BarChart3 },  // NEW
-];
-```
-
-### 4. Add Route
-
-**File:** `src/App.tsx`
-
-Add the route for the new page:
-
-```typescript
-import WBRAOPCockpit from "./pages/WBRAOPCockpit";
-// ...
-<Route path="/wbr-aop" element={<WBRAOPCockpit />} />
-```
+**Updated page layout order:**
+1. Filters row (with fiscal year labels)
+2. AOP Scorecard (4 KPI cards) -- existing, no change
+3. AOP Trend + Run-Rate charts -- existing, fiscal months updated via data
+4. **WBR Assisted Hiring Section** -- NEW
+5. **WBR to AOP Causal Mapping** -- NEW
+6. Pipeline Health table -- existing, no change
+7. Segment Drill-Down tables -- existing, no change
+8. Risk and Alerts panel -- existing, risk messages updated
 
 ---
 
-## Files to Create/Modify
+## Files to Modify
 
-1. **`src/lib/mockData.ts`** -- Add AOP targets, monthly trends, segment data, risk signals, and helper functions
-2. **`src/pages/WBRAOPCockpit.tsx`** -- New page with all 6 dashboard sections (new file)
-3. **`src/components/layout/AppSidebar.tsx`** -- Add "AOP x WBR" nav item to Overview group
-4. **`src/App.tsx`** -- Add `/wbr-aop` route
+1. **`src/lib/mockData.ts`** -- Update fiscal calendar in monthly trends, add WBR interfaces and mock data, update risk signal messages
+2. **`src/pages/WBRAOPCockpit.tsx`** -- Update fiscal labels, add WBR section and causal mapping components
 
 ---
 
-## Technical Details
+## Technical Notes
 
-- Uses `DashboardLayout` (same as Dashboard, Job Pipeline, Revenue pages) for consistent Admin persona layout
-- Reuses existing `MetricCard` component for KPI cards where applicable
-- Uses Recharts (already installed) for line charts, bar charts, and area charts
-- Uses existing UI components: Card, Table, Badge, Tabs, Select, Button
-- Color-coded variance heatmap thresholds:
-  - Green: variance >= -5% (on track)
-  - Yellow: variance >= -15% (at risk)
-  - Red: variance < -15% (off track)
-- KPI mode toggle switches all charts and tables between Revenue, Jobs, Placements, and SLA views
-- All data is mock data with realistic values aligned to the existing enterprise customers and job data
-- The page follows the existing pattern of other Admin pages (DashboardLayout wrapper, header with title/subtitle, filters row, content sections)
+- All new components are defined inline within `WBRAOPCockpit.tsx` (following existing pattern -- `AOPScorecard`, `AOPTrendChart`, etc. are all inline)
+- Recharts is used for all new charts (already installed)
+- Color coding reuses existing `varianceBadgeMap` and `getAOPVarianceColor` utilities
+- No new dependencies required
+- The fiscal month order in the trend chart X-axis will naturally read Feb, Mar, Apr, ..., Dec, Jan since the data array is ordered that way
 
