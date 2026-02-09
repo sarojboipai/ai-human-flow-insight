@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Users, Bot, DollarSign, GitBranch, Settings, Target } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Users, Bot, DollarSign, GitBranch, Settings, Target, BarChart3 } from "lucide-react";
 import swaasaLogo from "@/assets/swaasa-logo.png";
 import { NavLink, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
@@ -11,6 +11,10 @@ const mainNavItems = [{
   title: "Job Pipeline",
   url: "/funnel",
   icon: TrendingUp
+}, {
+  title: "AOP x WBR",
+  url: "/wbr-aop",
+  icon: BarChart3
 }];
 const operationsItems = [{
   title: "Human Activity",

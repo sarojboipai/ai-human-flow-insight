@@ -7180,3 +7180,153 @@ jobs.push(...ankuraHospitalJobs);
 
 // Customer-specific jobs (Ankura Hospital)
 export const customerJobs = jobs.filter(job => job.employer === "Ankura Hospital");
+
+// =============================================
+// AOP x WBR Dashboard Data
+// =============================================
+
+export interface AOPTargets {
+  year: string;
+  revenue: { target: number; actual: number; forecast: number };
+  jobs: { target: number; actual: number; forecast: number };
+  placements: { target: number; actual: number; forecast: number };
+  margin: { target: number; actual: number };
+  aiCoverage: { target: number; actual: number };
+}
+
+export interface AOPMonthlyTrend {
+  month: string;
+  revenueTarget: number;
+  revenueActual: number;
+  revenueForecast: number;
+  jobsTarget: number;
+  jobsActual: number;
+  jobsForecast: number;
+  placementsTarget: number;
+  placementsActual: number;
+  placementsForecast: number;
+}
+
+export interface AOPSegmentPerformance {
+  segment: string;
+  revenueTarget: number;
+  revenueActual: number;
+  jobsTarget: number;
+  jobsActual: number;
+  placementsTarget: number;
+  placementsActual: number;
+  attainment: number;
+}
+
+export interface AOPCategoryPerformance {
+  category: string;
+  jobsTarget: number;
+  jobsActual: number;
+  placementsTarget: number;
+  placementsActual: number;
+  fillRate: number;
+  avgTimeToFill: string;
+}
+
+export interface AOPTeamPerformance {
+  team: string;
+  lead: string;
+  placementsTarget: number;
+  placementsActual: number;
+  productivity: number;
+  slaAdherence: number;
+  attainment: number;
+}
+
+export interface AOPPipelineStage {
+  stage: string;
+  volume: number;
+  conversionRate: number;
+  dropOffRate: number;
+  slaBreaches: number;
+  aopRiskScore: number;
+}
+
+export interface AOPRiskSignal {
+  id: string;
+  type: "aop_gap" | "pipeline_bottleneck" | "sla_breach" | "automation_fallback";
+  severity: "critical" | "warning" | "info";
+  message: string;
+  metric: string;
+  value: string;
+}
+
+export const aopTargets: AOPTargets = {
+  year: "FY 2025-26",
+  revenue: { target: 12000, actual: 8940, forecast: 10680 },
+  jobs: { target: 50000, actual: 37200, forecast: 44800 },
+  placements: { target: 10000, actual: 7150, forecast: 8720 },
+  margin: { target: 45, actual: 42.3 },
+  aiCoverage: { target: 75, actual: 68.5 },
+};
+
+export const aopMonthlyTrends: AOPMonthlyTrend[] = [
+  { month: "Apr", revenueTarget: 800, revenueActual: 720, revenueForecast: 720, jobsTarget: 3500, jobsActual: 3200, jobsForecast: 3200, placementsTarget: 650, placementsActual: 580, placementsForecast: 580 },
+  { month: "May", revenueTarget: 1600, revenueActual: 1520, revenueForecast: 1520, jobsTarget: 7000, jobsActual: 6800, jobsForecast: 6800, placementsTarget: 1300, placementsActual: 1220, placementsForecast: 1220 },
+  { month: "Jun", revenueTarget: 2400, revenueActual: 2380, revenueForecast: 2380, jobsTarget: 10500, jobsActual: 10400, jobsForecast: 10400, placementsTarget: 1950, placementsActual: 1900, placementsForecast: 1900 },
+  { month: "Jul", revenueTarget: 3200, revenueActual: 3150, revenueForecast: 3150, jobsTarget: 14000, jobsActual: 13600, jobsForecast: 13600, placementsTarget: 2600, placementsActual: 2480, placementsForecast: 2480 },
+  { month: "Aug", revenueTarget: 4000, revenueActual: 3870, revenueForecast: 3870, jobsTarget: 17500, jobsActual: 16900, jobsForecast: 16900, placementsTarget: 3250, placementsActual: 3050, placementsForecast: 3050 },
+  { month: "Sep", revenueTarget: 4800, revenueActual: 4650, revenueForecast: 4650, jobsTarget: 21000, jobsActual: 20100, jobsForecast: 20100, placementsTarget: 3900, placementsActual: 3620, placementsForecast: 3620 },
+  { month: "Oct", revenueTarget: 5600, revenueActual: 5480, revenueForecast: 5480, jobsTarget: 24500, jobsActual: 23500, jobsForecast: 23500, placementsTarget: 4550, placementsActual: 4200, placementsForecast: 4200 },
+  { month: "Nov", revenueTarget: 6400, revenueActual: 6280, revenueForecast: 6280, jobsTarget: 28000, jobsActual: 26800, jobsForecast: 26800, placementsTarget: 5200, placementsActual: 4780, placementsForecast: 4780 },
+  { month: "Dec", revenueTarget: 7200, revenueActual: 7100, revenueForecast: 7100, jobsTarget: 31500, jobsActual: 30100, jobsForecast: 30100, placementsTarget: 5850, placementsActual: 5380, placementsForecast: 5380 },
+  { month: "Jan", revenueTarget: 8000, revenueActual: 7920, revenueForecast: 7920, jobsTarget: 35000, jobsActual: 33400, jobsForecast: 33400, placementsTarget: 6500, placementsActual: 5990, placementsForecast: 5990 },
+  { month: "Feb", revenueTarget: 8800, revenueActual: 8940, revenueForecast: 8940, jobsTarget: 38500, jobsActual: 37200, jobsForecast: 37200, placementsTarget: 7150, placementsActual: 7150, placementsForecast: 7150 },
+  { month: "Mar", revenueTarget: 12000, revenueActual: 0, revenueForecast: 10680, jobsTarget: 50000, jobsActual: 0, jobsForecast: 44800, placementsTarget: 10000, placementsActual: 0, placementsForecast: 8720 },
+];
+
+export const aopSegmentPerformance: AOPSegmentPerformance[] = [
+  { segment: "Enterprise", revenueTarget: 6000, revenueActual: 4820, jobsTarget: 20000, jobsActual: 16200, placementsTarget: 4000, placementsActual: 3180, attainment: 80.3 },
+  { segment: "Mid-Market", revenueTarget: 3600, revenueActual: 2680, jobsTarget: 18000, jobsActual: 13400, placementsTarget: 3600, placementsActual: 2540, attainment: 74.4 },
+  { segment: "SMB", revenueTarget: 2400, revenueActual: 1440, jobsTarget: 12000, jobsActual: 7600, placementsTarget: 2400, placementsActual: 1430, attainment: 60.0 },
+];
+
+export const aopCategoryPerformance: AOPCategoryPerformance[] = [
+  { category: "Doctors", jobsTarget: 12000, jobsActual: 9200, placementsTarget: 2400, placementsActual: 1820, fillRate: 75.8, avgTimeToFill: "28 days" },
+  { category: "Nurses", jobsTarget: 20000, jobsActual: 15600, placementsTarget: 4000, placementsActual: 3100, fillRate: 77.5, avgTimeToFill: "18 days" },
+  { category: "Allied Health", jobsTarget: 12000, jobsActual: 8400, placementsTarget: 2400, placementsActual: 1530, fillRate: 63.8, avgTimeToFill: "22 days" },
+  { category: "Non-Clinical", jobsTarget: 6000, jobsActual: 4000, placementsTarget: 1200, placementsActual: 700, fillRate: 58.3, avgTimeToFill: "15 days" },
+];
+
+export const aopTeamPerformance: AOPTeamPerformance[] = [
+  { team: "Nursing Fulfillment", lead: "Priya Sharma", placementsTarget: 2800, placementsActual: 2240, productivity: 18.7, slaAdherence: 92, attainment: 80.0 },
+  { team: "Physician Recruitment", lead: "Rahul Mehta", placementsTarget: 2000, placementsActual: 1520, productivity: 12.7, slaAdherence: 88, attainment: 76.0 },
+  { team: "Allied Health", lead: "Ananya Patel", placementsTarget: 2400, placementsActual: 1680, productivity: 15.3, slaAdherence: 85, attainment: 70.0 },
+  { team: "General Staffing", lead: "Vikram Singh", placementsTarget: 1600, placementsActual: 1040, productivity: 13.0, slaAdherence: 90, attainment: 65.0 },
+  { team: "Enterprise Accounts", lead: "Deepa Kumar", placementsTarget: 1200, placementsActual: 670, productivity: 11.2, slaAdherence: 94, attainment: 55.8 },
+];
+
+export const aopPipelineHealth: AOPPipelineStage[] = [
+  { stage: "Job Posting", volume: 37200, conversionRate: 92, dropOffRate: 8, slaBreaches: 45, aopRiskScore: 12 },
+  { stage: "Sourcing", volume: 34224, conversionRate: 78, dropOffRate: 22, slaBreaches: 120, aopRiskScore: 28 },
+  { stage: "Outreach", volume: 26695, conversionRate: 65, dropOffRate: 35, slaBreaches: 210, aopRiskScore: 42 },
+  { stage: "Application", volume: 17352, conversionRate: 72, dropOffRate: 28, slaBreaches: 85, aopRiskScore: 22 },
+  { stage: "Screening", volume: 12493, conversionRate: 68, dropOffRate: 32, slaBreaches: 156, aopRiskScore: 35 },
+  { stage: "Interview", volume: 8495, conversionRate: 58, dropOffRate: 42, slaBreaches: 92, aopRiskScore: 38 },
+  { stage: "Offer", volume: 4927, conversionRate: 82, dropOffRate: 18, slaBreaches: 34, aopRiskScore: 15 },
+  { stage: "Placement", volume: 7150, conversionRate: 100, dropOffRate: 0, slaBreaches: 12, aopRiskScore: 8 },
+];
+
+export const aopRiskSignals: AOPRiskSignal[] = [
+  { id: "risk-001", type: "aop_gap", severity: "critical", message: "At current run-rate, Q4 revenue target will miss by ₹1,320L (11%)", metric: "Revenue Run-Rate", value: "₹890L/mo vs ₹1,000L required" },
+  { id: "risk-002", type: "pipeline_bottleneck", severity: "critical", message: "Outreach stage drop-off at 35% — 8% above benchmark, blocking 2,400 potential placements", metric: "Outreach Conversion", value: "65% vs 73% target" },
+  { id: "risk-003", type: "sla_breach", severity: "warning", message: "Screening SLA breaches increased 23% MoM — 156 candidates delayed beyond 48h window", metric: "Screening SLA", value: "156 breaches this month" },
+  { id: "risk-004", type: "automation_fallback", severity: "warning", message: "AI coverage dropped to 68.5% from 72% — HITL escalations up 15% in Allied Health category", metric: "AI Coverage", value: "68.5% vs 75% target" },
+  { id: "risk-005", type: "aop_gap", severity: "info", message: "SMB segment at 60% attainment — lowest across all segments, consider reallocation of recruiter capacity", metric: "SMB Attainment", value: "60% vs 74% average" },
+  { id: "risk-006", type: "sla_breach", severity: "warning", message: "Interview scheduling TAT increased to 3.2 days — above 2-day SLA for Enterprise accounts", metric: "Interview TAT", value: "3.2 days vs 2 days SLA" },
+];
+
+export function getAOPAttainment(actual: number, target: number): number {
+  return Math.round((actual / target) * 1000) / 10;
+}
+
+export function getAOPVarianceColor(attainment: number): "green" | "amber" | "red" {
+  if (attainment >= 95) return "green";
+  if (attainment >= 85) return "amber";
+  return "red";
+}
