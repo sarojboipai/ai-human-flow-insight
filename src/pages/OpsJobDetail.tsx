@@ -8,10 +8,11 @@ import { JobFunnelVisualization } from "@/components/jobs/JobFunnelVisualization
 import { AIHumanContributionChart } from "@/components/jobs/AIHumanContributionChart";
 import { HITLTimeline } from "@/components/jobs/HITLTimeline";
 import { JobEconomicsCard } from "@/components/jobs/JobEconomicsCard";
-import { jobs } from "@/lib/mockData";
+import { useJobs } from "@/hooks/useJobs";
 
 const OpsJobDetail = () => {
   const { jobId } = useParams<{ jobId: string }>();
+  const { data: jobs = [] } = useJobs();
   const job = jobs.find((j) => j.id === jobId);
 
   if (!job) {

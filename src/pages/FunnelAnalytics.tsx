@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
 import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealthTable";
 import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
-import { funnelData, jobs, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
+import { funnelData, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
+import { useJobs } from "@/hooks/useJobs";
 import { Button } from "@/components/ui/button";
 import {
   BarChart,
@@ -42,6 +43,7 @@ const timeToStageData = [
 export default function FunnelAnalytics() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: jobs = [] } = useJobs();
 
   const activeJobs = jobs.filter((j) => j.status === "active").length;
   const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel[0]?.candidates || 0), 0);
