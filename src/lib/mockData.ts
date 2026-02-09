@@ -7257,7 +7257,7 @@ export interface AOPRiskSignal {
 }
 
 export const aopTargets: AOPTargets = {
-  year: "FY 2025-26",
+  year: "FY2026 (Feb 2025 – Jan 2026)",
   revenue: { target: 12000, actual: 8940, forecast: 10680 },
   jobs: { target: 50000, actual: 37200, forecast: 44800 },
   placements: { target: 10000, actual: 7150, forecast: 8720 },
@@ -7266,18 +7266,18 @@ export const aopTargets: AOPTargets = {
 };
 
 export const aopMonthlyTrends: AOPMonthlyTrend[] = [
-  { month: "Apr", revenueTarget: 800, revenueActual: 720, revenueForecast: 720, jobsTarget: 3500, jobsActual: 3200, jobsForecast: 3200, placementsTarget: 650, placementsActual: 580, placementsForecast: 580 },
-  { month: "May", revenueTarget: 1600, revenueActual: 1520, revenueForecast: 1520, jobsTarget: 7000, jobsActual: 6800, jobsForecast: 6800, placementsTarget: 1300, placementsActual: 1220, placementsForecast: 1220 },
-  { month: "Jun", revenueTarget: 2400, revenueActual: 2380, revenueForecast: 2380, jobsTarget: 10500, jobsActual: 10400, jobsForecast: 10400, placementsTarget: 1950, placementsActual: 1900, placementsForecast: 1900 },
-  { month: "Jul", revenueTarget: 3200, revenueActual: 3150, revenueForecast: 3150, jobsTarget: 14000, jobsActual: 13600, jobsForecast: 13600, placementsTarget: 2600, placementsActual: 2480, placementsForecast: 2480 },
-  { month: "Aug", revenueTarget: 4000, revenueActual: 3870, revenueForecast: 3870, jobsTarget: 17500, jobsActual: 16900, jobsForecast: 16900, placementsTarget: 3250, placementsActual: 3050, placementsForecast: 3050 },
-  { month: "Sep", revenueTarget: 4800, revenueActual: 4650, revenueForecast: 4650, jobsTarget: 21000, jobsActual: 20100, jobsForecast: 20100, placementsTarget: 3900, placementsActual: 3620, placementsForecast: 3620 },
-  { month: "Oct", revenueTarget: 5600, revenueActual: 5480, revenueForecast: 5480, jobsTarget: 24500, jobsActual: 23500, jobsForecast: 23500, placementsTarget: 4550, placementsActual: 4200, placementsForecast: 4200 },
-  { month: "Nov", revenueTarget: 6400, revenueActual: 6280, revenueForecast: 6280, jobsTarget: 28000, jobsActual: 26800, jobsForecast: 26800, placementsTarget: 5200, placementsActual: 4780, placementsForecast: 4780 },
-  { month: "Dec", revenueTarget: 7200, revenueActual: 7100, revenueForecast: 7100, jobsTarget: 31500, jobsActual: 30100, jobsForecast: 30100, placementsTarget: 5850, placementsActual: 5380, placementsForecast: 5380 },
-  { month: "Jan", revenueTarget: 8000, revenueActual: 7920, revenueForecast: 7920, jobsTarget: 35000, jobsActual: 33400, jobsForecast: 33400, placementsTarget: 6500, placementsActual: 5990, placementsForecast: 5990 },
-  { month: "Feb", revenueTarget: 8800, revenueActual: 8940, revenueForecast: 8940, jobsTarget: 38500, jobsActual: 37200, jobsForecast: 37200, placementsTarget: 7150, placementsActual: 7150, placementsForecast: 7150 },
-  { month: "Mar", revenueTarget: 12000, revenueActual: 0, revenueForecast: 10680, jobsTarget: 50000, jobsActual: 0, jobsForecast: 44800, placementsTarget: 10000, placementsActual: 0, placementsForecast: 8720 },
+  { month: "Feb", revenueTarget: 800, revenueActual: 720, revenueForecast: 720, jobsTarget: 3500, jobsActual: 3200, jobsForecast: 3200, placementsTarget: 650, placementsActual: 580, placementsForecast: 580 },
+  { month: "Mar", revenueTarget: 1600, revenueActual: 1520, revenueForecast: 1520, jobsTarget: 7000, jobsActual: 6800, jobsForecast: 6800, placementsTarget: 1300, placementsActual: 1220, placementsForecast: 1220 },
+  { month: "Apr", revenueTarget: 2400, revenueActual: 2380, revenueForecast: 2380, jobsTarget: 10500, jobsActual: 10400, jobsForecast: 10400, placementsTarget: 1950, placementsActual: 1900, placementsForecast: 1900 },
+  { month: "May", revenueTarget: 3200, revenueActual: 3150, revenueForecast: 3150, jobsTarget: 14000, jobsActual: 13600, jobsForecast: 13600, placementsTarget: 2600, placementsActual: 2480, placementsForecast: 2480 },
+  { month: "Jun", revenueTarget: 4000, revenueActual: 3870, revenueForecast: 3870, jobsTarget: 17500, jobsActual: 16900, jobsForecast: 16900, placementsTarget: 3250, placementsActual: 3050, placementsForecast: 3050 },
+  { month: "Jul", revenueTarget: 4800, revenueActual: 4650, revenueForecast: 4650, jobsTarget: 21000, jobsActual: 20100, jobsForecast: 20100, placementsTarget: 3900, placementsActual: 3620, placementsForecast: 3620 },
+  { month: "Aug", revenueTarget: 5600, revenueActual: 5480, revenueForecast: 5480, jobsTarget: 24500, jobsActual: 23500, jobsForecast: 23500, placementsTarget: 4550, placementsActual: 4200, placementsForecast: 4200 },
+  { month: "Sep", revenueTarget: 6400, revenueActual: 6280, revenueForecast: 6280, jobsTarget: 28000, jobsActual: 26800, jobsForecast: 26800, placementsTarget: 5200, placementsActual: 4780, placementsForecast: 4780 },
+  { month: "Oct", revenueTarget: 7200, revenueActual: 7100, revenueForecast: 7100, jobsTarget: 31500, jobsActual: 30100, jobsForecast: 30100, placementsTarget: 5850, placementsActual: 5380, placementsForecast: 5380 },
+  { month: "Nov", revenueTarget: 8000, revenueActual: 7920, revenueForecast: 7920, jobsTarget: 35000, jobsActual: 33400, jobsForecast: 33400, placementsTarget: 6500, placementsActual: 5990, placementsForecast: 5990 },
+  { month: "Dec", revenueTarget: 8800, revenueActual: 8940, revenueForecast: 8940, jobsTarget: 38500, jobsActual: 37200, jobsForecast: 37200, placementsTarget: 7150, placementsActual: 7150, placementsForecast: 7150 },
+  { month: "Jan", revenueTarget: 12000, revenueActual: 0, revenueForecast: 10680, jobsTarget: 50000, jobsActual: 0, jobsForecast: 44800, placementsTarget: 10000, placementsActual: 0, placementsForecast: 8720 },
 ];
 
 export const aopSegmentPerformance: AOPSegmentPerformance[] = [
@@ -7313,12 +7313,80 @@ export const aopPipelineHealth: AOPPipelineStage[] = [
 ];
 
 export const aopRiskSignals: AOPRiskSignal[] = [
-  { id: "risk-001", type: "aop_gap", severity: "critical", message: "At current run-rate, Q4 revenue target will miss by ₹1,320L (11%)", metric: "Revenue Run-Rate", value: "₹890L/mo vs ₹1,000L required" },
+  { id: "risk-001", type: "aop_gap", severity: "critical", message: "At current run-rate, Q4 (Nov–Jan) revenue target will miss by ₹1,320L (11%)", metric: "Revenue Run-Rate", value: "₹890L/mo vs ₹1,000L required" },
   { id: "risk-002", type: "pipeline_bottleneck", severity: "critical", message: "Outreach stage drop-off at 35% — 8% above benchmark, blocking 2,400 potential placements", metric: "Outreach Conversion", value: "65% vs 73% target" },
   { id: "risk-003", type: "sla_breach", severity: "warning", message: "Screening SLA breaches increased 23% MoM — 156 candidates delayed beyond 48h window", metric: "Screening SLA", value: "156 breaches this month" },
   { id: "risk-004", type: "automation_fallback", severity: "warning", message: "AI coverage dropped to 68.5% from 72% — HITL escalations up 15% in Allied Health category", metric: "AI Coverage", value: "68.5% vs 75% target" },
   { id: "risk-005", type: "aop_gap", severity: "info", message: "SMB segment at 60% attainment — lowest across all segments, consider reallocation of recruiter capacity", metric: "SMB Attainment", value: "60% vs 74% average" },
   { id: "risk-006", type: "sla_breach", severity: "warning", message: "Interview scheduling TAT increased to 3.2 days — above 2-day SLA for Enterprise accounts", metric: "Interview TAT", value: "3.2 days vs 2 days SLA" },
+];
+
+// =============================================
+// WBR (Weekly Business Review) — Assisted Hiring
+// =============================================
+
+export interface WBRWeeklyData {
+  week: string;
+  placements: number;
+  revenue: number;
+  activeJobs: number;
+  backlog: number;
+  prevPlacements: number;
+}
+
+export interface WBRBacklogBucket {
+  bucket: string;
+  screened: number;
+  interviewed: number;
+  offered: number;
+}
+
+export interface WBRRecruiterCapacity {
+  team: string;
+  available: number;
+  demand: number;
+}
+
+export interface WBRCausalMapping {
+  wbrMetric: string;
+  aopImpact: string;
+  currentValue: string;
+  requiredValue: string;
+  status: "on_track" | "at_risk" | "off_track";
+  logic: string;
+}
+
+export const wbrWeeklyData: WBRWeeklyData[] = [
+  { week: "W1 Nov", placements: 152, revenue: 198, activeJobs: 4200, backlog: 1820, prevPlacements: 148 },
+  { week: "W2 Nov", placements: 160, revenue: 210, activeJobs: 4150, backlog: 1780, prevPlacements: 152 },
+  { week: "W3 Nov", placements: 155, revenue: 204, activeJobs: 4300, backlog: 1850, prevPlacements: 160 },
+  { week: "W4 Nov", placements: 170, revenue: 225, activeJobs: 4250, backlog: 1720, prevPlacements: 155 },
+  { week: "W1 Dec", placements: 178, revenue: 232, activeJobs: 4380, backlog: 1690, prevPlacements: 170 },
+  { week: "W2 Dec", placements: 165, revenue: 218, activeJobs: 4320, backlog: 1760, prevPlacements: 178 },
+  { week: "W3 Dec", placements: 172, revenue: 228, activeJobs: 4400, backlog: 1710, prevPlacements: 165 },
+  { week: "W4 Dec", placements: 168, revenue: 222, activeJobs: 4350, backlog: 1740, prevPlacements: 172 },
+];
+
+export const wbrBacklogBuckets: WBRBacklogBucket[] = [
+  { bucket: "0–3 days", screened: 420, interviewed: 280, offered: 150 },
+  { bucket: "4–7 days", screened: 310, interviewed: 190, offered: 85 },
+  { bucket: "8+ days", screened: 180, interviewed: 95, offered: 30 },
+];
+
+export const wbrRecruiterCapacity: WBRRecruiterCapacity[] = [
+  { team: "Nursing Fulfillment", available: 24, demand: 30 },
+  { team: "Physician Recruitment", available: 16, demand: 20 },
+  { team: "Allied Health", available: 14, demand: 18 },
+  { team: "General Staffing", available: 10, demand: 12 },
+  { team: "Enterprise Accounts", available: 8, demand: 10 },
+];
+
+export const wbrCausalMappings: WBRCausalMapping[] = [
+  { wbrMetric: "Weekly Assisted Hiring Placements", aopImpact: "Annual Placement Target", currentValue: "168/wk", requiredValue: "192/wk", status: "at_risk", logic: "Direct contribution to FY AOP" },
+  { wbrMetric: "Weekly Assisted Hiring Revenue", aopImpact: "Annual Revenue Target", currentValue: "₹222L/wk", requiredValue: "₹250L/wk", status: "at_risk", logic: "Run-rate projection" },
+  { wbrMetric: "Screening SLA Compliance", aopImpact: "Fill Rate", currentValue: "82%", requiredValue: "90%", status: "at_risk", logic: "Delays reduce placement velocity" },
+  { wbrMetric: "Recruiter Productivity", aopImpact: "Capacity vs AOP Demand", currentValue: "14.2/rec", requiredValue: "16.0/rec", status: "on_track", logic: "Determines ability to hit FY AOP" },
+  { wbrMetric: "Backlog Volume", aopImpact: "Forecast Risk", currentValue: "1,740", requiredValue: "<1,200", status: "off_track", logic: "High backlog indicates near-term placement potential" },
 ];
 
 export function getAOPAttainment(actual: number, target: number): number {
