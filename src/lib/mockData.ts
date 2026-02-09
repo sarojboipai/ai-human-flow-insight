@@ -7258,7 +7258,7 @@ export interface AOPRiskSignal {
 
 export const aopTargets: AOPTargets = {
   year: "FY2026 (Feb 2025 – Jan 2026)",
-  revenue: { target: 12000, actual: 8940, forecast: 10680 },
+  revenue: { target: 10000, actual: 7450, forecast: 8900 },
   jobs: { target: 50000, actual: 37200, forecast: 44800 },
   placements: { target: 10000, actual: 7150, forecast: 8720 },
   margin: { target: 45, actual: 42.3 },
@@ -7266,24 +7266,24 @@ export const aopTargets: AOPTargets = {
 };
 
 export const aopMonthlyTrends: AOPMonthlyTrend[] = [
-  { month: "Feb", revenueTarget: 800, revenueActual: 720, revenueForecast: 720, jobsTarget: 3500, jobsActual: 3200, jobsForecast: 3200, placementsTarget: 650, placementsActual: 580, placementsForecast: 580 },
-  { month: "Mar", revenueTarget: 1600, revenueActual: 1520, revenueForecast: 1520, jobsTarget: 7000, jobsActual: 6800, jobsForecast: 6800, placementsTarget: 1300, placementsActual: 1220, placementsForecast: 1220 },
-  { month: "Apr", revenueTarget: 2400, revenueActual: 2380, revenueForecast: 2380, jobsTarget: 10500, jobsActual: 10400, jobsForecast: 10400, placementsTarget: 1950, placementsActual: 1900, placementsForecast: 1900 },
-  { month: "May", revenueTarget: 3200, revenueActual: 3150, revenueForecast: 3150, jobsTarget: 14000, jobsActual: 13600, jobsForecast: 13600, placementsTarget: 2600, placementsActual: 2480, placementsForecast: 2480 },
-  { month: "Jun", revenueTarget: 4000, revenueActual: 3870, revenueForecast: 3870, jobsTarget: 17500, jobsActual: 16900, jobsForecast: 16900, placementsTarget: 3250, placementsActual: 3050, placementsForecast: 3050 },
-  { month: "Jul", revenueTarget: 4800, revenueActual: 4650, revenueForecast: 4650, jobsTarget: 21000, jobsActual: 20100, jobsForecast: 20100, placementsTarget: 3900, placementsActual: 3620, placementsForecast: 3620 },
-  { month: "Aug", revenueTarget: 5600, revenueActual: 5480, revenueForecast: 5480, jobsTarget: 24500, jobsActual: 23500, jobsForecast: 23500, placementsTarget: 4550, placementsActual: 4200, placementsForecast: 4200 },
-  { month: "Sep", revenueTarget: 6400, revenueActual: 6280, revenueForecast: 6280, jobsTarget: 28000, jobsActual: 26800, jobsForecast: 26800, placementsTarget: 5200, placementsActual: 4780, placementsForecast: 4780 },
-  { month: "Oct", revenueTarget: 7200, revenueActual: 7100, revenueForecast: 7100, jobsTarget: 31500, jobsActual: 30100, jobsForecast: 30100, placementsTarget: 5850, placementsActual: 5380, placementsForecast: 5380 },
-  { month: "Nov", revenueTarget: 8000, revenueActual: 7920, revenueForecast: 7920, jobsTarget: 35000, jobsActual: 33400, jobsForecast: 33400, placementsTarget: 6500, placementsActual: 5990, placementsForecast: 5990 },
-  { month: "Dec", revenueTarget: 8800, revenueActual: 8940, revenueForecast: 8940, jobsTarget: 38500, jobsActual: 37200, jobsForecast: 37200, placementsTarget: 7150, placementsActual: 7150, placementsForecast: 7150 },
-  { month: "Jan", revenueTarget: 12000, revenueActual: 0, revenueForecast: 10680, jobsTarget: 50000, jobsActual: 0, jobsForecast: 44800, placementsTarget: 10000, placementsActual: 0, placementsForecast: 8720 },
+  { month: "Feb", revenueTarget: 833, revenueActual: 600, revenueForecast: 600, jobsTarget: 3500, jobsActual: 3200, jobsForecast: 3200, placementsTarget: 650, placementsActual: 580, placementsForecast: 580 },
+  { month: "Mar", revenueTarget: 1667, revenueActual: 1267, revenueForecast: 1267, jobsTarget: 7000, jobsActual: 6800, jobsForecast: 6800, placementsTarget: 1300, placementsActual: 1220, placementsForecast: 1220 },
+  { month: "Apr", revenueTarget: 2500, revenueActual: 1983, revenueForecast: 1983, jobsTarget: 10500, jobsActual: 10400, jobsForecast: 10400, placementsTarget: 1950, placementsActual: 1900, placementsForecast: 1900 },
+  { month: "May", revenueTarget: 3333, revenueActual: 2625, revenueForecast: 2625, jobsTarget: 14000, jobsActual: 13600, jobsForecast: 13600, placementsTarget: 2600, placementsActual: 2480, placementsForecast: 2480 },
+  { month: "Jun", revenueTarget: 4167, revenueActual: 3225, revenueForecast: 3225, jobsTarget: 17500, jobsActual: 16900, jobsForecast: 16900, placementsTarget: 3250, placementsActual: 3050, placementsForecast: 3050 },
+  { month: "Jul", revenueTarget: 5000, revenueActual: 3875, revenueForecast: 3875, jobsTarget: 21000, jobsActual: 20100, jobsForecast: 20100, placementsTarget: 3900, placementsActual: 3620, placementsForecast: 3620 },
+  { month: "Aug", revenueTarget: 5833, revenueActual: 4567, revenueForecast: 4567, jobsTarget: 24500, jobsActual: 23500, jobsForecast: 23500, placementsTarget: 4550, placementsActual: 4200, placementsForecast: 4200 },
+  { month: "Sep", revenueTarget: 6667, revenueActual: 5233, revenueForecast: 5233, jobsTarget: 28000, jobsActual: 26800, jobsForecast: 26800, placementsTarget: 5200, placementsActual: 4780, placementsForecast: 4780 },
+  { month: "Oct", revenueTarget: 7500, revenueActual: 5917, revenueForecast: 5917, jobsTarget: 31500, jobsActual: 30100, jobsForecast: 30100, placementsTarget: 5850, placementsActual: 5380, placementsForecast: 5380 },
+  { month: "Nov", revenueTarget: 8333, revenueActual: 6600, revenueForecast: 6600, jobsTarget: 35000, jobsActual: 33400, jobsForecast: 33400, placementsTarget: 6500, placementsActual: 5990, placementsForecast: 5990 },
+  { month: "Dec", revenueTarget: 9167, revenueActual: 7450, revenueForecast: 7450, jobsTarget: 38500, jobsActual: 37200, jobsForecast: 37200, placementsTarget: 7150, placementsActual: 7150, placementsForecast: 7150 },
+  { month: "Jan", revenueTarget: 10000, revenueActual: 0, revenueForecast: 8900, jobsTarget: 50000, jobsActual: 0, jobsForecast: 44800, placementsTarget: 10000, placementsActual: 0, placementsForecast: 8720 },
 ];
 
 export const aopSegmentPerformance: AOPSegmentPerformance[] = [
-  { segment: "Enterprise", revenueTarget: 6000, revenueActual: 4820, jobsTarget: 20000, jobsActual: 16200, placementsTarget: 4000, placementsActual: 3180, attainment: 80.3 },
-  { segment: "Mid-Market", revenueTarget: 3600, revenueActual: 2680, jobsTarget: 18000, jobsActual: 13400, placementsTarget: 3600, placementsActual: 2540, attainment: 74.4 },
-  { segment: "SMB", revenueTarget: 2400, revenueActual: 1440, jobsTarget: 12000, jobsActual: 7600, placementsTarget: 2400, placementsActual: 1430, attainment: 60.0 },
+  { segment: "Enterprise", revenueTarget: 5000, revenueActual: 4020, jobsTarget: 20000, jobsActual: 16200, placementsTarget: 4000, placementsActual: 3180, attainment: 80.3 },
+  { segment: "Mid-Market", revenueTarget: 3000, revenueActual: 2230, jobsTarget: 18000, jobsActual: 13400, placementsTarget: 3600, placementsActual: 2540, attainment: 74.4 },
+  { segment: "SMB", revenueTarget: 2000, revenueActual: 1200, jobsTarget: 12000, jobsActual: 7600, placementsTarget: 2400, placementsActual: 1430, attainment: 60.0 },
 ];
 
 export const aopCategoryPerformance: AOPCategoryPerformance[] = [
