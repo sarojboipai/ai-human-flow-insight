@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidates: {
+        Row: {
+          created_at: string
+          email: string
+          experience_years: number
+          first_name: string
+          geography: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          resume_url: string | null
+          role_type: string
+          source: string | null
+          specialization: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          experience_years?: number
+          first_name: string
+          geography?: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          role_type?: string
+          source?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          experience_years?: number
+          first_name?: string
+          geography?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          role_type?: string
+          source?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           ai_contribution: number
