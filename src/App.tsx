@@ -27,6 +27,7 @@ import OpsRecruiterDashboard from "./pages/OpsRecruiterDashboard";
 import OpsAIPerformance from "./pages/OpsAIPerformance";
 import PipelineTemplateBuilder from "./pages/PipelineTemplateBuilder";
 import OpsJobDetail from "./pages/OpsJobDetail";
+import OpsJobList from "./pages/OpsJobList";
 import WBRAOPCockpit from "./pages/WBRAOPCockpit";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/ops" element={<OpsDashboard />} />
             <Route path="/ops/pipeline-config" element={<OpsPipelineConfig />} />
             <Route path="/ops/job-orchestration" element={<OpsJobOrchestration />} />
+            <Route path="/ops/jobs" element={<OpsJobList />} />
             <Route path="/ops/recruiters" element={<OpsRecruiterDashboard />} />
             <Route path="/ops/ai-performance" element={<OpsAIPerformance />} />
             <Route path="/ops/template-builder" element={<PipelineTemplateBuilder />} />
