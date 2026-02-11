@@ -1,27 +1,26 @@
 
 
-## Add Edit and Delete Actions to Job List
+## Add Role-Based Access Settings Section to Settings Page
 
 ### What You Will See
-- A new **Actions** column on the right side of the job table with a three-dot menu on each row
-- Clicking the menu shows two options: **Edit** and **Delete**
-- **Edit** opens a dialog pre-filled with the job's current data, allowing you to update and save
-- **Delete** shows a confirmation prompt before removing the job
+A new **"Roles & Access Control"** section on the Settings page (between Security and the bottom of the page) that displays:
+
+- A table/list of the four personas (Executive, Operation Manager, HITL Reviewer, Customer) with their permissions
+- Each role shows which sections of the app they can access (e.g., Dashboard, Pipeline, Orchestration, HITL Queue, etc.)
+- Toggle switches to visually enable/disable access per role (non-functional, for display only)
+- A note indicating "Contact admin to modify role permissions"
+
+This is a **visual mockup only** -- no real authentication or enforcement will be added.
 
 ### Technical Details
 
-**1. New Component: `EditJobDialog.tsx`** (`src/components/ops/EditJobDialog.tsx`)
-- Reuses the same form layout as `AddJobDialog` but pre-populated with existing job data
-- Accepts a `job` prop and an `open`/`onOpenChange` control
-- On submit, calls `supabase.from("jobs").update({...}).eq("id", job.id)`
-- Invalidates the `["jobs"]` query cache on success
+**File: `src/pages/Settings.tsx`**
+- Add a new section card using the existing `chart-container` pattern with a `Shield` or `Users` icon
+- Define a static array of roles and their permission sets:
+  - **Executive**: Dashboard, Job Pipeline, AOP x WBR, Human Activity, AI Activity, Human vs AI, Revenue & Costs, Staffing Planner
+  - **Operation Manager**: Ops Dashboard, Pipeline Config, Job Orchestration, Job List, Recruiters, AI Performance
+  - **HITL Reviewer**: HITL Queue, HITL Analytics, Audit Log
+  - **Customer**: Customer Dashboard, Business View
+- Each role rendered as an expandable or inline card showing its allowed sections with `Switch` toggles (default checked, read-only style)
+- No new files or database changes needed
 
-**2. Update `OpsJobList.tsx`**
-- Add an "Actions" column header to the table
-- Add a `DropdownMenu` (three-dot icon button) in each row with "Edit" and "Delete" options
-- Stop click propagation on the actions cell so it doesn't trigger row navigation
-- **Edit**: Opens `EditJobDialog` with the selected job's data
-- **Delete**: Opens an `AlertDialog` confirmation; on confirm, calls `supabase.from("jobs").delete().eq("id", job.id)` and invalidates the query cache
-
-**3. No database changes needed**
-- INSERT, UPDATE, and DELETE RLS policies are already in place on the `jobs` table
