@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { jobs as mockJobs, type Job } from "@/lib/mockData";
 
@@ -25,7 +26,6 @@ interface DbJob {
 }
 
 function mapDbJobToJob(dbJob: DbJob): Job {
-  // Find matching mock job for stage_metrics/enhanced_stage_metrics fallback
   const mockJob = mockJobs.find(j => j.id === dbJob.id);
 
   return {
@@ -56,6 +56,25 @@ function mapDbJobToJob(dbJob: DbJob): Job {
 }
 
 export function useJobs() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("jobs-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "jobs" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["jobs"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ["jobs"],
     queryFn: async (): Promise<Job[]> => {
@@ -74,6 +93,6 @@ export function useJobs() {
 
       return (data as unknown as DbJob[]).map(mapDbJobToJob);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }

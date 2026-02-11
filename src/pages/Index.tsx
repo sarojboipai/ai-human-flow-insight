@@ -21,10 +21,10 @@ import {
   revenueMetrics,
   aiEvaluationMetrics,
   enterpriseCustomers,
-  getJobPipelineHealthByCustomer,
   calculateCustomerKPIs,
   type Job,
 } from "@/lib/mockData";
+import { deriveJobPipelineHealth } from "@/lib/jobPipelineHealthUtils";
 import { useJobs } from "@/hooks/useJobs";
 
 const Index = () => {
@@ -46,17 +46,17 @@ const Index = () => {
     if (customer === "all") return jobs;
     const selectedCustomer = enterpriseCustomers.find(c => c.id === customer);
     return jobs.filter(job => job.employer === selectedCustomer?.name);
-  }, [customer]);
+  }, [customer, jobs]);
 
   // Calculate customer-specific KPIs
   const filteredKPIs = useMemo(() => {
     return calculateCustomerKPIs(filteredJobs);
   }, [filteredJobs]);
 
-  // Get filtered job pipeline health data
+  // Derive pipeline health from live DB jobs
   const filteredJobPipelineHealth = useMemo(() => {
-    return getJobPipelineHealthByCustomer(selectedCustomerName);
-  }, [selectedCustomerName]);
+    return deriveJobPipelineHealth(jobs, selectedCustomerName);
+  }, [jobs, selectedCustomerName]);
 
   const handleJobClick = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
