@@ -1,9 +1,79 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Settings, User, Bell, Shield, Database, Palette } from "lucide-react";
+import { Settings, User, Bell, Shield, Database, Palette, Users, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+const rolesData = [
+  {
+    name: "Executive",
+    description: "Strategic overview and business metrics",
+    permissions: ["Dashboard", "Job Pipeline", "AOP x WBR", "Human Activity", "AI Activity", "Human vs AI", "Revenue & Costs", "Staffing Planner"],
+  },
+  {
+    name: "Operation Manager",
+    description: "Day-to-day operations and pipeline management",
+    permissions: ["Ops Dashboard", "Pipeline Config", "Job Orchestration", "Job List", "Recruiters", "AI Performance"],
+  },
+  {
+    name: "HITL Reviewer",
+    description: "Human-in-the-loop review tasks",
+    permissions: ["HITL Queue", "HITL Analytics", "Audit Log"],
+  },
+  {
+    name: "Customer",
+    description: "Customer-facing dashboards and reports",
+    permissions: ["Customer Dashboard", "Business View"],
+  },
+];
+
+function RolesAccessSection() {
+  const [openRoles, setOpenRoles] = useState<Record<string, boolean>>({});
+
+  const toggleRole = (name: string) => {
+    setOpenRoles((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  return (
+    <div className="chart-container">
+      <div className="flex items-center gap-3 mb-4">
+        <Users className="h-5 w-5 text-primary" />
+        <h3 className="section-title">Roles & Access Control</h3>
+      </div>
+      <div className="space-y-3">
+        {rolesData.map((role) => (
+          <Collapsible key={role.name} open={openRoles[role.name]} onOpenChange={() => toggleRole(role.name)}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                {openRoles[role.name] ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                <div className="text-left">
+                  <p className="font-medium">{role.name}</p>
+                  <p className="text-sm text-muted-foreground">{role.description}</p>
+                </div>
+              </div>
+              <Badge variant="secondary">{role.permissions.length} sections</Badge>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2 pl-10 pr-3 pb-1">
+              <div className="space-y-2">
+                {role.permissions.map((perm) => (
+                  <div key={perm} className="flex items-center justify-between py-1">
+                    <span className="text-sm">{perm}</span>
+                    <Switch defaultChecked disabled />
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mt-4">Contact admin to modify role permissions</p>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   return (
@@ -139,8 +209,11 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground">View activity history</p>
                 </div>
                 <Button variant="outline" size="sm">View Logs</Button>
-              </div>
-            </div>
+          </div>
+
+          {/* Roles & Access Control */}
+          <RolesAccessSection />
+        </div>
           </div>
         </div>
       </div>
