@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Briefcase, TrendingUp, Clock, IndianRupee } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AggregateFunnelChart } from "@/components/jobs/AggregateFunnelChart";
 import { JobPipelineHealthTable } from "@/components/dashboard/JobPipelineHealthTable";
 import { PipelineBoardDialog } from "@/components/customer/PipelineBoardDialog";
-import { funnelData, aggregateFunnelData, getJobPipelineHealthByCustomer, type Job } from "@/lib/mockData";
+import { funnelData, aggregateFunnelData, type Job } from "@/lib/mockData";
+import { deriveJobPipelineHealth } from "@/lib/jobPipelineHealthUtils";
 import { useJobs } from "@/hooks/useJobs";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,8 +53,8 @@ export default function FunnelAnalytics() {
   const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel[6]?.candidates || 0), 0);
   const avgConversion = totalCandidates > 0 ? ((totalPlacements / totalCandidates) * 100).toFixed(1) : "0";
 
-  // Get all job pipeline health data
-  const jobPipelineHealthData = getJobPipelineHealthByCustomer("all");
+  // Derive pipeline health from live DB jobs
+  const jobPipelineHealthData = useMemo(() => deriveJobPipelineHealth(jobs), [jobs]);
 
   const handleJobClick = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
