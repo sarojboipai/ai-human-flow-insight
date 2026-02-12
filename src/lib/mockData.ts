@@ -423,6 +423,13 @@ export interface JobPostMetrics {
   detailsAdded: string[];
 }
 
+export interface SourcingMetrics {
+  candidatesSourcedBy: string;
+  candidatesSourcedCount: number;
+  candidatesActiveLabel: string;
+  candidatesActiveCount: number;
+}
+
 export interface JobsSwaasaMetrics {
   jobImpressions: number;
   uniqueCandidateViews: number;
@@ -584,6 +591,7 @@ export interface EnhancedStageMetrics extends StageMetrics {
   
   // Stage-specific metrics (only one populated based on stage type)
   jobPostMetrics?: JobPostMetrics;
+  sourcingMetrics?: SourcingMetrics;
   jobsSwaasaMetrics?: JobsSwaasaMetrics;
   jobDiscoveryMetrics?: JobDiscoveryMetrics;
   eoiMetrics?: EOIMetrics;
