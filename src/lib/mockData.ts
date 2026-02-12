@@ -5166,7 +5166,7 @@ export const calculateCustomerKPIs = (filteredJobs: Job[]) => {
   const totalJobs = filteredJobs.length || 1;
   return {
     activeJobPipelines: filteredJobs.filter(j => j.status === "active").length,
-    candidatesInPipeline: filteredJobs.reduce((acc, job) => acc + job.funnel[0].candidates, 0),
+    candidatesInPipeline: filteredJobs.reduce((acc, job) => acc + (job.funnel?.[0]?.candidates || 0), 0),
     aiAutomationCoverage: Math.round(
       filteredJobs.reduce((acc, job) => acc + job.aiContribution, 0) / totalJobs
     ),
