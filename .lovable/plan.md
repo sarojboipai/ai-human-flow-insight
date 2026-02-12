@@ -1,38 +1,26 @@
 
-## Custom Workflow Nodes for Anaesthesia Technician (Chandan Hospital)
 
-### What Changes
-When you click on the "Anaesthesia Technician" job (P-139819) in the Pipeline Health table, the Job Workflow Explorer will now show a custom pipeline with these 7 stages instead of the default Ankura Hospital flow:
+## Fix: Missing Icon Mappings Crashing Anaesthesia Technician Pipeline
 
-**Job Post -> Marketing -> Sourcing -> Application -> Prescreening -> Interview Scheduling -> Hire**
+### Root Cause
+The Chandan Hospital workflow uses icon names (`"check"`, `"briefcase"`, `"clipboard"`, `"megaphone"`, `"search"`) that don't exist in the `iconMap` of the respective node components. When React tries to render `undefined` as a component, it crashes with "Element type is invalid."
 
-### What You Will See
-- A new horizontal flow with 7 distinct nodes representing the custom pipeline
-- No decision/branching nodes -- this is a simple linear flow
-- The final "Hire" node shown as an outcome node
-- Clicking each node will still open the stage details sheet
+### Changes
 
-### Technical Details
+**1. `src/components/customer/pipeline-nodes/OutcomeNode.tsx`**
+- Add `Check` from lucide-react to imports
+- Add `"check": Check` to `iconMap`
 
-**File: `src/lib/mockData.ts`**
-- Add a new `CustomerWorkflowSchema` entry for **"Chandan Hospital"** to the `customerWorkflowSchemas` array
-- The schema will define 7 main stages in a linear sequence:
-  1. **Source** node: "Chandan Hospital" (type: source)
-  2. **Job Post** (type: candidate, icon: briefcase)
-  3. **Marketing** (type: automation, icon: megaphone)
-  4. **Sourcing** (type: ai, icon: search)
-  5. **Application** (type: candidate, icon: clipboard)
-  6. **Prescreening** (type: automation, icon: send)
-  7. **Interview Scheduling** (type: automation, icon: calendar)
-- One outcome stage: **Hire** (type: outcome, icon: check)
-- Positions will be evenly spaced horizontally for a clean linear layout
-- No decision node, so no branching edges -- all edges connect sequentially, with the last stage connecting to "Hire"
+**2. `src/components/customer/pipeline-nodes/CandidateNode.tsx`**
+- Add `Briefcase`, `ClipboardList` from lucide-react
+- Add `"briefcase": Briefcase` and `"clipboard": ClipboardList` to `iconMap`
 
-**File: `src/components/customer/PipelineBoardDialog.tsx`**
-- Update the edge-building logic in `buildEdgesFromSchema` to handle schemas without a decision node -- connect the last main stage directly to the first outcome stage when no decision node exists
-- Update `getNodeMetadata` to include labels for the new node IDs (job-post, marketing, sourcing, application, prescreening)
+**3. `src/components/customer/pipeline-nodes/AutomationNode.tsx`**
+- Add `Megaphone` from lucide-react
+- Add `"megaphone": Megaphone` to `iconMap`
 
-**File: `src/lib/mockData.ts`** (enhancedStageMetrics)
-- Add mock `enhancedStageMetrics` entries for the Anaesthesia Technician job (P-139819) keyed by the new stage IDs so clicking nodes shows meaningful data in the details sheet
+**4. `src/components/customer/pipeline-nodes/AIAgentNode.tsx`**
+- Add `Search` from lucide-react
+- Add `"search": Search` to `iconMap`
 
-No database changes are needed -- this is purely a UI/mock-data update.
+These are small, targeted additions -- just importing the missing Lucide icons and registering them in each node's `iconMap`. No logic changes needed.
