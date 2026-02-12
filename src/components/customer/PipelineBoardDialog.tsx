@@ -148,23 +148,43 @@ const buildNodesFromSchema = (
 const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
   const edges: Edge[] = [];
   const mainStages = schema.stages;
+  const allStages = [...mainStages, ...schema.outcomeStages];
+  const stageMap = new Map(allStages.map(s => [s.id, s]));
   
-  // Connect main stages in sequence
-  for (let i = 0; i < mainStages.length - 1; i++) {
-    const sourceStage = mainStages[i];
-    const targetStage = mainStages[i + 1];
-    
-    edges.push({
-      id: `e-${sourceStage.id}-${targetStage.id}`,
-      source: sourceStage.id,
-      target: targetStage.id,
-      type: "default",
-      style: { 
-        stroke: getEdgeColor(sourceStage.type), 
-        strokeWidth: sourceStage.type === "source" ? 1 : 2,
-        strokeDasharray: sourceStage.type === "source" ? "5,5" : undefined,
-      },
+  if (schema.connections && schema.connections.length > 0) {
+    // Use custom connections
+    schema.connections.forEach(conn => {
+      const sourceStage = stageMap.get(conn.source);
+      edges.push({
+        id: `e-${conn.source}-${conn.target}`,
+        source: conn.source,
+        target: conn.target,
+        type: "default",
+        style: { 
+          stroke: sourceStage ? getEdgeColor(sourceStage.type) : "#94a3b8", 
+          strokeWidth: sourceStage?.type === "source" ? 1 : 2,
+          strokeDasharray: sourceStage?.type === "source" ? "5,5" : undefined,
+        },
+      });
     });
+  } else {
+    // Connect main stages in sequence
+    for (let i = 0; i < mainStages.length - 1; i++) {
+      const sourceStage = mainStages[i];
+      const targetStage = mainStages[i + 1];
+      
+      edges.push({
+        id: `e-${sourceStage.id}-${targetStage.id}`,
+        source: sourceStage.id,
+        target: targetStage.id,
+        type: "default",
+        style: { 
+          stroke: getEdgeColor(sourceStage.type), 
+          strokeWidth: sourceStage.type === "source" ? 1 : 2,
+          strokeDasharray: sourceStage.type === "source" ? "5,5" : undefined,
+        },
+      });
+    }
   }
   
   // Connect decision node to outcomes (branching) or last stage to outcomes (linear)
@@ -249,6 +269,7 @@ const getNodeMetadata = (nodeId: string, customerName: string): { label: string;
     "job-post": { label: "Job Post", icon: "briefcase" },
     "marketing": { label: "Marketing", icon: "megaphone" },
     "sourcing": { label: "Sourcing", icon: "search" },
+    "outreach": { label: "Outreach", icon: "send" },
     "application": { label: "Application", icon: "clipboard" },
     "prescreening": { label: "Prescreening", icon: "send" },
     "hire": { label: "Hire", icon: "check" },

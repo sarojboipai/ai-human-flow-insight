@@ -5049,6 +5049,7 @@ export interface CustomerWorkflowSchema {
   workflowId: string;
   stages: PipelineWorkflowStage[];
   outcomeStages: PipelineWorkflowStage[];
+  connections?: { source: string; target: string }[];
 }
 
 export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
@@ -5174,14 +5175,24 @@ export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
       { id: "source", type: "source", label: "Chandan\nHospital", icon: "hospital", position: { x: 50, y: 140 } },
       { id: "job-post", type: "candidate", label: "Job\nPost", icon: "briefcase", position: { x: 220, y: 130 } },
       { id: "sourcing", type: "ai", label: "Sourcing", icon: "search", position: { x: 390, y: 130 } },
-      { id: "outreach", type: "automation", label: "Outreach", icon: "send", position: { x: 560, y: 130 } },
-      { id: "marketing", type: "automation", label: "Marketing", icon: "megaphone", position: { x: 730, y: 130 } },
-      { id: "application", type: "candidate", label: "Application", icon: "clipboard", position: { x: 900, y: 130 } },
-      { id: "prescreening", type: "automation", label: "Prescreening", icon: "send", position: { x: 1070, y: 130 } },
-      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1240, y: 130 } },
+      { id: "outreach", type: "automation", label: "Outreach", icon: "send", position: { x: 560, y: 50 } },
+      { id: "marketing", type: "automation", label: "Marketing", icon: "megaphone", position: { x: 560, y: 210 } },
+      { id: "application", type: "candidate", label: "Application", icon: "clipboard", position: { x: 730, y: 130 } },
+      { id: "prescreening", type: "automation", label: "Prescreening", icon: "send", position: { x: 900, y: 130 } },
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1070, y: 130 } },
     ],
     outcomeStages: [
-      { id: "hire", type: "outcome", label: "Hire", icon: "check", position: { x: 1410, y: 130 } },
+      { id: "hire", type: "outcome", label: "Hire", icon: "check", position: { x: 1240, y: 130 } },
+    ],
+    connections: [
+      { source: "source", target: "job-post" },
+      { source: "job-post", target: "sourcing" },
+      { source: "sourcing", target: "outreach" },
+      { source: "sourcing", target: "marketing" },
+      { source: "outreach", target: "application" },
+      { source: "marketing", target: "application" },
+      { source: "application", target: "prescreening" },
+      { source: "prescreening", target: "scheduling" },
     ],
   },
 ];
