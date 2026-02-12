@@ -1,26 +1,37 @@
 
+## Custom Job Post Stage Details for Anaesthesia Technician
 
-## Fix: Missing Icon Mappings Crashing Anaesthesia Technician Pipeline
+### What Changes
+When you click the **Job Post** node in the Anaesthesia Technician pipeline, the sidebar will show a custom "Job Posting Details" card with three sections:
 
-### Root Cause
-The Chandan Hospital workflow uses icon names (`"check"`, `"briefcase"`, `"clipboard"`, `"megaphone"`, `"search"`) that don't exist in the `iconMap` of the respective node components. When React tries to render `undefined` as a component, it crashes with "Element type is invalid."
+- **Posted by**: Recruiter in HRM
+- **JD Reviewed by**: AI Agent, then HITL (Rahul Das)
+- **Details Added**: Matching criteria confirmation, Right Ideal Candidate, Screening Questions
 
-### Changes
+### Technical Details
 
-**1. `src/components/customer/pipeline-nodes/OutcomeNode.tsx`**
-- Add `Check` from lucide-react to imports
-- Add `"check": Check` to `iconMap`
+**1. New type: `JobPostMetrics`** in `src/components/customer/stage-metrics/types.ts`
+- Add a new interface with fields: `postedBy`, `jdReviewedBy` (array of reviewer objects with name and role), and `detailsAdded` (string array).
 
-**2. `src/components/customer/pipeline-nodes/CandidateNode.tsx`**
-- Add `Briefcase`, `ClipboardList` from lucide-react
-- Add `"briefcase": Briefcase` and `"clipboard": ClipboardList` to `iconMap`
+**2. New component: `JobPostMetricsCard`** in `src/components/customer/stage-metrics/JobPostMetricsCard.tsx`
+- Renders three sections in cards:
+  - "Posted by" with a user icon and "Recruiter in HRM"
+  - "JD Reviewed by" showing a timeline/list: "AI Agent" then "HITL (Rahul Das)"
+  - "Details Added" as a checklist of items
 
-**3. `src/components/customer/pipeline-nodes/AutomationNode.tsx`**
-- Add `Megaphone` from lucide-react
-- Add `"megaphone": Megaphone` to `iconMap`
+**3. Update `EnhancedStageMetrics`** in `src/lib/mockData.ts`
+- Add optional `jobPostMetrics?: JobPostMetrics` field to the interface.
 
-**4. `src/components/customer/pipeline-nodes/AIAgentNode.tsx`**
-- Add `Search` from lucide-react
-- Add `"search": Search` to `iconMap`
+**4. Update `StageDetailsSheet.tsx`**
+- Import the new `JobPostMetricsCard`
+- Add a `case "job-post"` to the `StageSpecificMetrics` switch
+- Add `"job-post"` to the `hasStageSpecificMetrics` check
 
-These are small, targeted additions -- just importing the missing Lucide icons and registering them in each node's `iconMap`. No logic changes needed.
+**5. Update `stage-metrics/index.ts`**
+- Export the new `JobPostMetricsCard`
+
+**6. Populate mock data** in `src/lib/mockData.ts`
+- Add `jobPostMetrics` to the Anaesthesia Technician job's `enhancedStageMetrics["job-post"]` entry with the specified values.
+
+**7. Update database** for job P-139819
+- Update the `enhanced_stage_metrics` JSON in the `jobs` table to include the `jobPostMetrics` data for the `job-post` stage.
