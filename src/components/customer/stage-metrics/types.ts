@@ -195,3 +195,15 @@ export const STAGE_IDS = {
 } as const;
 
 export type StageId = typeof STAGE_IDS[keyof typeof STAGE_IDS];
+
+// Job Post stage metrics
+export interface JobPostReviewer {
+  name: string;
+  role: "ai" | "hitl" | "recruiter";
+}
+
+export interface JobPostMetrics {
+  postedBy: string;
+  jdReviewedBy: JobPostReviewer[];
+  detailsAdded: string[];
+}
