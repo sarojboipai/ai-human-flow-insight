@@ -57,16 +57,7 @@ export function deriveJobPipelineHealth(jobs: Job[], customerFilter?: string): J
     };
   });
 
-  // Pin JOB-017 to top with overrides
-  const job017Index = mapped.findIndex(j => j.jobId === "JOB-017");
-  if (job017Index >= 0) {
-    mapped[job017Index].currentStage = "Interview Scheduled";
-    mapped[job017Index].bottleneckStage = "Offer Negotiation";
-    if (job017Index > 0) {
-      const [row] = mapped.splice(job017Index, 1);
-      mapped.unshift(row);
-    }
-  }
+  mapped.sort((a, b) => a.jobTitle.localeCompare(b.jobTitle));
 
   return mapped;
 }
