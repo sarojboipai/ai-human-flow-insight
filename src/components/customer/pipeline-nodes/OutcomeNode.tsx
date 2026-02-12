@@ -1,12 +1,13 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Calendar, Award, Users, ArrowRight } from "lucide-react";
+import { Calendar, Award, Users, ArrowRight, Check } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
   calendar: Calendar,
   award: Award,
   users: Users,
   arrow: ArrowRight,
+  check: Check,
 };
 
 interface OutcomeNodeData {

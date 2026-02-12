@@ -1,12 +1,13 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Zap, Calendar, Send, RefreshCw } from "lucide-react";
+import { Zap, Calendar, Send, RefreshCw, Megaphone } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
   zap: Zap,
   calendar: Calendar,
   send: Send,
   refresh: RefreshCw,
+  megaphone: Megaphone,
 };
 
 interface AutomationNodeData {
