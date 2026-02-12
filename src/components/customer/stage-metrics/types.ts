@@ -207,3 +207,11 @@ export interface JobPostMetrics {
   jdReviewedBy: JobPostReviewer[];
   detailsAdded: string[];
 }
+
+// Sourcing stage metrics
+export interface SourcingMetrics {
+  candidatesSourcedBy: string;
+  candidatesSourcedCount: number;
+  candidatesActiveLabel: string;
+  candidatesActiveCount: number;
+}
