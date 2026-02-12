@@ -167,7 +167,7 @@ const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
     });
   }
   
-  // Connect decision node to outcomes
+  // Connect decision node to outcomes (branching) or last stage to outcomes (linear)
   const decisionStage = mainStages.find(s => s.type === "decision");
   if (decisionStage && schema.outcomeStages.length >= 3) {
     const [scheduling, silverMed, talentCommunity] = schema.outcomeStages;
@@ -204,6 +204,17 @@ const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
       label: "Knockout",
       labelStyle: { fontSize: 10, fill: "#a855f7", fontWeight: 600 },
     });
+  } else if (!decisionStage && schema.outcomeStages.length > 0) {
+    // Linear flow: connect last main stage to first outcome
+    const lastMain = mainStages[mainStages.length - 1];
+    const firstOutcome = schema.outcomeStages[0];
+    edges.push({
+      id: `e-${lastMain.id}-${firstOutcome.id}`,
+      source: lastMain.id,
+      target: firstOutcome.id,
+      type: "default",
+      style: { stroke: "#10b981", strokeWidth: 2 },
+    });
   }
   
   return edges;
@@ -235,6 +246,12 @@ const getNodeMetadata = (nodeId: string, customerName: string): { label: string;
     "scheduling": { label: "Interview Scheduling", icon: "calendar" },
     "silver-med": { label: "Silver Medalist Pool", icon: "award" },
     "talent-community": { label: "Talent Community", icon: "users" },
+    "job-post": { label: "Job Post", icon: "briefcase" },
+    "marketing": { label: "Marketing", icon: "megaphone" },
+    "sourcing": { label: "Sourcing", icon: "search" },
+    "application": { label: "Application", icon: "clipboard" },
+    "prescreening": { label: "Prescreening", icon: "send" },
+    "hire": { label: "Hire", icon: "check" },
   };
   return metadata[nodeId] || { label: "Stage Details" };
 };
