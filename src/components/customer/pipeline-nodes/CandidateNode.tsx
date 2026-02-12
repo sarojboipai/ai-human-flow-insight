@@ -1,12 +1,14 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { User, Eye, Heart, Search } from "lucide-react";
+import { User, Eye, Heart, Search, Briefcase, ClipboardList } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
   user: User,
   eye: Eye,
   heart: Heart,
   search: Search,
+  briefcase: Briefcase,
+  clipboard: ClipboardList,
 };
 
 interface CandidateNodeData {

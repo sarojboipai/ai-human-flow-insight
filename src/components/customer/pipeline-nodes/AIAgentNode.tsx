@@ -1,12 +1,13 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Bot, Phone, Cpu, Sparkles } from "lucide-react";
+import { Bot, Phone, Cpu, Sparkles, Search } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
   bot: Bot,
   phone: Phone,
   cpu: Cpu,
   sparkles: Sparkles,
+  search: Search,
 };
 
 interface AIAgentNodeData {
