@@ -5146,6 +5146,23 @@ export const customerWorkflowSchemas: CustomerWorkflowSchema[] = [
       { id: "talent-community", type: "candidate", label: "Talent\nCommunity", icon: "user", position: { x: 1200, y: 260 } },
     ],
   },
+  {
+    customerId: "cust-007",
+    customerName: "Chandan Hospital",
+    workflowId: "wf-chandan",
+    stages: [
+      { id: "source", type: "source", label: "Chandan\nHospital", icon: "hospital", position: { x: 50, y: 140 } },
+      { id: "job-post", type: "candidate", label: "Job\nPost", icon: "briefcase", position: { x: 220, y: 130 } },
+      { id: "marketing", type: "automation", label: "Marketing", icon: "megaphone", position: { x: 390, y: 130 } },
+      { id: "sourcing", type: "ai", label: "Sourcing", icon: "search", position: { x: 560, y: 130 } },
+      { id: "application", type: "candidate", label: "Application", icon: "clipboard", position: { x: 730, y: 130 } },
+      { id: "prescreening", type: "automation", label: "Prescreening", icon: "send", position: { x: 900, y: 130 } },
+      { id: "scheduling", type: "automation", label: "Interview\nScheduling", icon: "calendar", position: { x: 1070, y: 130 } },
+    ],
+    outcomeStages: [
+      { id: "hire", type: "outcome", label: "Hire", icon: "check", position: { x: 1240, y: 130 } },
+    ],
+  },
 ];
 
 // Helper: Get workflow schema for a customer
