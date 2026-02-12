@@ -1,30 +1,38 @@
 
-
-## Realtime Job Sync Across Pipeline Views
+## Custom Workflow Nodes for Anaesthesia Technician (Chandan Hospital)
 
 ### What Changes
-When you add, edit, or delete a job from the Job List, **all pipeline views will update automatically in real-time** -- no page refresh needed. The Pipeline Health table on the Job Pipeline page will also switch from static demo data to live database-driven data.
+When you click on the "Anaesthesia Technician" job (P-139819) in the Pipeline Health table, the Job Workflow Explorer will now show a custom pipeline with these 7 stages instead of the default Ankura Hospital flow:
+
+**Job Post -> Marketing -> Sourcing -> Application -> Prescreening -> Interview Scheduling -> Hire**
 
 ### What You Will See
-- Delete a job in Job List -- it disappears from Pipeline Health and Funnel Analytics instantly
-- Add a job in Job List -- it appears in Pipeline Health within seconds
-- Edit a job -- changes reflect across all views immediately
+- A new horizontal flow with 7 distinct nodes representing the custom pipeline
+- No decision/branching nodes -- this is a simple linear flow
+- The final "Hire" node shown as an outcome node
+- Clicking each node will still open the stage details sheet
 
 ### Technical Details
 
-**1. Enable Realtime on `jobs` table** (database migration)
-- Run `ALTER PUBLICATION supabase_realtime ADD TABLE public.jobs;` so the database broadcasts changes.
+**File: `src/lib/mockData.ts`**
+- Add a new `CustomerWorkflowSchema` entry for **"Chandan Hospital"** to the `customerWorkflowSchemas` array
+- The schema will define 7 main stages in a linear sequence:
+  1. **Source** node: "Chandan Hospital" (type: source)
+  2. **Job Post** (type: candidate, icon: briefcase)
+  3. **Marketing** (type: automation, icon: megaphone)
+  4. **Sourcing** (type: ai, icon: search)
+  5. **Application** (type: candidate, icon: clipboard)
+  6. **Prescreening** (type: automation, icon: send)
+  7. **Interview Scheduling** (type: automation, icon: calendar)
+- One outcome stage: **Hire** (type: outcome, icon: check)
+- Positions will be evenly spaced horizontally for a clean linear layout
+- No decision node, so no branching edges -- all edges connect sequentially, with the last stage connecting to "Hire"
 
-**2. Update `useJobs` hook** (`src/hooks/useJobs.ts`)
-- Add a Supabase Realtime subscription inside the hook that listens for INSERT, UPDATE, and DELETE events on the `jobs` table.
-- On any change, call `queryClient.invalidateQueries({ queryKey: ["jobs"] })` to trigger a refetch.
-- Clean up the subscription on unmount using `useEffect` return.
+**File: `src/components/customer/PipelineBoardDialog.tsx`**
+- Update the edge-building logic in `buildEdgesFromSchema` to handle schemas without a decision node -- connect the last main stage directly to the first outcome stage when no decision node exists
+- Update `getNodeMetadata` to include labels for the new node IDs (job-post, marketing, sourcing, application, prescreening)
 
-**3. Derive Pipeline Health data from DB jobs** (`src/pages/FunnelAnalytics.tsx`)
-- Replace `getJobPipelineHealthByCustomer("all")` with a transformation of the `jobs` array (already fetched via `useJobs`).
-- Map each job to a `JobPipelineHealthRow` shape by deriving `currentStage` from `job.funnel`, `aiPercentage`/`humanPercentage` from `job.aiContribution`/`job.humanContribution`, and SLA risk from `job.daysOpen`.
-- This ensures the Pipeline Health table shows the same live data as the Job List.
+**File: `src/lib/mockData.ts`** (enhancedStageMetrics)
+- Add mock `enhancedStageMetrics` entries for the Anaesthesia Technician job (P-139819) keyed by the new stage IDs so clicking nodes shows meaningful data in the details sheet
 
-**4. Update Ops Dashboard pipeline table** (`src/pages/Index.tsx`)
-- Same approach: replace `getJobPipelineHealthByCustomer(selectedCustomerName)` with a derived mapping from the `useJobs` data, filtered by customer name.
-
+No database changes are needed -- this is purely a UI/mock-data update.
