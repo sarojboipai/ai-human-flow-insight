@@ -296,22 +296,24 @@ export function StageDetailsSheet({
             <StageSpecificMetrics stageId={stageId} metrics={metrics} />
           )}
 
-          {/* Conversion & Drop-off */}
-          <Card>
-            <CardContent className="pt-6">
-              <h4 className="text-sm font-medium text-muted-foreground mb-4">Conversion Analysis</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg bg-success/10 p-3 text-center">
-                  <p className="text-2xl font-bold text-success">{metrics.conversionRate}%</p>
-                  <p className="text-xs text-muted-foreground">Conversion Rate</p>
+          {/* Conversion & Drop-off - hide for job-post */}
+          {stageId !== "job-post" && (
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="text-sm font-medium text-muted-foreground mb-4">Conversion Analysis</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg bg-success/10 p-3 text-center">
+                    <p className="text-2xl font-bold text-success">{metrics.conversionRate}%</p>
+                    <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                  </div>
+                  <div className="rounded-lg bg-destructive/10 p-3 text-center">
+                    <p className="text-2xl font-bold text-destructive">{metrics.dropOffRate}%</p>
+                    <p className="text-xs text-muted-foreground">Drop-off Rate</p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-destructive/10 p-3 text-center">
-                  <p className="text-2xl font-bold text-destructive">{metrics.dropOffRate}%</p>
-                  <p className="text-xs text-muted-foreground">Drop-off Rate</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Volume Metrics - only show if no stage-specific metrics */}
           {!hasStageSpecificMetrics && (
@@ -358,40 +360,42 @@ export function StageDetailsSheet({
             </Card>
           )}
 
-          {/* Additional Metrics */}
-          <Card>
-            <CardContent className="pt-6 space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Additional Metrics</h4>
-              
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-red-500" />
-                  Disqualified
-                </span>
-                <span className="font-semibold">{metrics.disqualified} <span className="text-muted-foreground font-normal">({disqualifiedPercent}%)</span></span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2">
-                  <Timer className="h-4 w-4 text-amber-500" />
-                  Pending
-                </span>
-                <span className="font-semibold">{metrics.pending} <span className="text-muted-foreground font-normal">({pendingPercent}%)</span></span>
-              </div>
-
-              {metrics.delayCause && (
-                <div className="flex items-center justify-between text-sm pt-2 border-t">
+          {/* Additional Metrics - hide for job-post */}
+          {stageId !== "job-post" && (
+            <Card>
+              <CardContent className="pt-6 space-y-3">
+                <h4 className="text-sm font-medium text-muted-foreground">Additional Metrics</h4>
+                
+                <div className="flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-warning" />
-                    Delay Cause
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    Disqualified
                   </span>
-                  <Badge variant="outline" className="text-warning border-warning">
-                    {metrics.delayCause}
-                  </Badge>
+                  <span className="font-semibold">{metrics.disqualified} <span className="text-muted-foreground font-normal">({disqualifiedPercent}%)</span></span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <Timer className="h-4 w-4 text-amber-500" />
+                    Pending
+                  </span>
+                  <span className="font-semibold">{metrics.pending} <span className="text-muted-foreground font-normal">({pendingPercent}%)</span></span>
+                </div>
+
+                {metrics.delayCause && (
+                  <div className="flex items-center justify-between text-sm pt-2 border-t">
+                    <span className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-warning" />
+                      Delay Cause
+                    </span>
+                    <Badge variant="outline" className="text-warning border-warning">
+                      {metrics.delayCause}
+                    </Badge>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Channel Breakdown (if available) */}
           {metrics.channels && (
