@@ -8,4 +8,5 @@ export { InterviewSchedulingMetricsCard } from "./InterviewSchedulingMetricsCard
 export { SilverMedalistMetricsCard } from "./SilverMedalistMetricsCard";
 export { TalentCommunityMetricsCard } from "./TalentCommunityMetricsCard";
 export { SEOScoreRuleCard } from "./SEOScoreRuleCard";
+export { JobPostMetricsCard } from "./JobPostMetricsCard";
 export * from "./types";

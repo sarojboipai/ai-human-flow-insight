@@ -38,6 +38,7 @@ import {
   SilverMedalistMetricsCard,
   TalentCommunityMetricsCard,
   SEOScoreRuleCard,
+  JobPostMetricsCard,
 } from "./stage-metrics";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -146,6 +147,11 @@ function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics:
   if (!stageId) return null;
 
   switch (stageId) {
+    case "job-post":
+      if (metrics.jobPostMetrics) {
+        return <JobPostMetricsCard metrics={metrics.jobPostMetrics} />;
+      }
+      break;
     case "jobs-ankura":
       if (metrics.jobsSwaasaMetrics) {
         return <JobsSwaasaMetricsCard metrics={metrics.jobsSwaasaMetrics} />;
@@ -229,6 +235,7 @@ export function StageDetailsSheet({
 
   // Check if we have stage-specific metrics
   const hasStageSpecificMetrics = stageId && (
+    (stageId === "job-post" && metrics.jobPostMetrics) ||
     (stageId === "jobs-ankura" && metrics.jobsSwaasaMetrics) ||
     (stageId === "job-discovery" && metrics.jobDiscoveryMetrics) ||
     (stageId === "expression" && metrics.eoiMetrics) ||

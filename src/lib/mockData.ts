@@ -412,6 +412,17 @@ export interface ProgressStep {
 }
 
 // Stage-specific metrics types
+export interface JobPostReviewer {
+  name: string;
+  role: "ai" | "hitl" | "recruiter";
+}
+
+export interface JobPostMetrics {
+  postedBy: string;
+  jdReviewedBy: JobPostReviewer[];
+  detailsAdded: string[];
+}
+
 export interface JobsSwaasaMetrics {
   jobImpressions: number;
   uniqueCandidateViews: number;
@@ -572,6 +583,7 @@ export interface EnhancedStageMetrics extends StageMetrics {
   };
   
   // Stage-specific metrics (only one populated based on stage type)
+  jobPostMetrics?: JobPostMetrics;
   jobsSwaasaMetrics?: JobsSwaasaMetrics;
   jobDiscoveryMetrics?: JobDiscoveryMetrics;
   eoiMetrics?: EOIMetrics;
