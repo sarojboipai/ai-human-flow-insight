@@ -47,10 +47,10 @@ export default function FunnelAnalytics() {
   const { data: jobs = [] } = useJobs();
 
   const activeJobs = jobs.filter((j) => j.status === "active").length;
-  const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel[0]?.candidates || 0), 0);
-  const avgDaysOpen = Math.round(jobs.reduce((sum, j) => sum + j.daysOpen, 0) / jobs.length);
+  const totalCandidates = jobs.reduce((sum, j) => sum + (j.funnel?.[0]?.candidates || 0), 0);
+  const avgDaysOpen = jobs.length > 0 ? Math.round(jobs.reduce((sum, j) => sum + j.daysOpen, 0) / jobs.length) : 0;
   const totalPipelineValue = jobs.reduce((sum, j) => sum + j.revenue, 0);
-  const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel[6]?.candidates || 0), 0);
+  const totalPlacements = jobs.reduce((sum, j) => sum + (j.funnel?.[6]?.candidates || 0), 0);
   const avgConversion = totalCandidates > 0 ? ((totalPlacements / totalCandidates) * 100).toFixed(1) : "0";
 
   // Derive pipeline health from live DB jobs
