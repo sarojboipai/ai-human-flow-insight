@@ -1,13 +1,16 @@
 import { useState } from "react";
 import {
-  X,
   User,
   Bot,
   Clock,
   CheckCircle,
   XCircle,
-  ArrowUpRight,
+  ExternalLink,
   FileText,
+  AlertTriangle,
+  Info,
+  Wrench,
+  Timer,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { HITLTask, TaskStatus, recruiters } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
@@ -37,7 +50,7 @@ interface TaskDetailPanelProps {
   onAssign: (taskId: string, assignee: string) => void;
   onResolve: (
     taskId: string,
-    resolution: "approved" | "rejected" | "escalated",
+    resolution: "fixed" | "ignored",
     notes: string
   ) => void;
 }
@@ -49,6 +62,14 @@ const statusColors: Record<TaskStatus, string> = {
   approved: "bg-success/20 text-success",
   rejected: "bg-destructive/20 text-destructive",
   escalated: "bg-orange-500/20 text-orange-500",
+  fixed: "bg-success/20 text-success",
+  ignored: "bg-muted text-muted-foreground",
+};
+
+const priorityColors: Record<string, string> = {
+  high: "bg-destructive/20 text-destructive",
+  medium: "bg-warning/20 text-warning",
+  low: "bg-muted text-muted-foreground",
 };
 
 export function TaskDetailPanel({
@@ -61,6 +82,8 @@ export function TaskDetailPanel({
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
   const [selectedAssignee, setSelectedAssignee] = useState("");
+  const [showIgnoreConfirm, setShowIgnoreConfirm] = useState(false);
+  const [ignoreComment, setIgnoreComment] = useState("");
 
   if (!task) return null;
 
@@ -81,241 +104,267 @@ export function TaskDetailPanel({
     setSelectedAssignee("");
   };
 
-  const handleResolve = (resolution: "approved" | "rejected" | "escalated") => {
-    onResolve(task.id, resolution, notes);
+  const handleMarkFixed = () => {
+    onResolve(task.id, "fixed", notes);
     toast({
-      title: `Task ${resolution.charAt(0).toUpperCase() + resolution.slice(1)}`,
-      description: `Task ${task.id} has been ${resolution}.`,
+      title: "Issue Marked as Fixed",
+      description: `Task ${task.id} has been resolved.`,
     });
     setNotes("");
     onOpenChange(false);
   };
 
-  const isResolved =
-    task.status === "approved" ||
-    task.status === "rejected" ||
-    task.status === "escalated";
+  const handleIgnore = () => {
+    if (!ignoreComment.trim()) {
+      toast({
+        title: "Comment Required",
+        description: "Please provide a reason for ignoring this issue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    onResolve(task.id, "ignored", ignoreComment);
+    toast({
+      title: "Issue Ignored",
+      description: `Task ${task.id} has been marked as ignored.`,
+    });
+    setIgnoreComment("");
+    setShowIgnoreConfirm(false);
+    onOpenChange(false);
+  };
+
+  const isResolved = task.status === "fixed" || task.status === "ignored" || task.status === "approved" || task.status === "rejected";
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto bg-card border-border">
-        <SheetHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <SheetTitle className="text-foreground flex items-center gap-2">
-                Task {task.id}
-                <Badge className={`capitalize ${statusColors[task.status]}`}>
-                  {task.status.replace("_", " ")}
-                </Badge>
-              </SheetTitle>
-              <SheetDescription className="mt-1">
-                Created {task.createdAt}
-                {task.dueAt && ` • Due in ${task.dueAt}`}
-              </SheetDescription>
-            </div>
-          </div>
-        </SheetHeader>
-
-        <div className="mt-6 space-y-6">
-          {/* Task & AI Decision Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Task Details
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rule:</span>
-                  <span>{task.ruleName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Priority:</span>
-                  <span className="capitalize">{task.priority}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Candidate:</span>
-                  <span>{task.candidateId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Job:</span>
-                  <span>{task.jobId}</span>
-                </div>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto bg-card border-border">
+          <SheetHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <SheetTitle className="text-foreground flex items-center gap-2">
+                  {task.jobTitle}
+                  <Badge className={`capitalize ${statusColors[task.status]}`}>
+                    {task.status === "in_review" ? "In Progress" : task.status}
+                  </Badge>
+                </SheetTitle>
+                <SheetDescription className="mt-1">
+                  {task.id} • Created {task.createdAt}
+                </SheetDescription>
               </div>
             </div>
+          </SheetHeader>
 
+          <div className="mt-6 space-y-5">
+            {/* Section 1: Issue Summary */}
             <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Bot className="h-4 w-4" />
-                AI Decision
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Info className="h-4 w-4 text-primary" />
+                Issue Summary
               </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Decision:</span>
-                  <span>{task.aiDecision}</span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Job Title</span>
+                  <span className="font-medium">{task.jobTitle}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Confidence:</span>
-                  <span
-                    className={
-                      task.confidenceScore < 0.7
-                        ? "text-warning"
-                        : "text-success"
-                    }
-                  >
-                    {(task.confidenceScore * 100).toFixed(0)}%
-                  </span>
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Customer</span>
+                  <span className="font-medium">{task.customerName}</span>
                 </div>
-                {task.aiAgentId && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Agent:</span>
-                    <span>{task.aiAgentId}</span>
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Stage</span>
+                  <span className="font-medium">{task.stage}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Rule Triggered</span>
+                  <span className="font-medium">{task.ruleName}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Priority</span>
+                  <Badge variant="outline" className={`w-fit capitalize ${priorityColors[task.priority]}`}>
+                    {task.priority}
+                  </Badge>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-xs">Source</span>
+                  <span className="font-medium">{task.source}</span>
+                </div>
+                {task.slaDeadline && (
+                  <div className="flex flex-col col-span-2">
+                    <span className="text-muted-foreground text-xs">SLA Remaining</span>
+                    <div className="flex items-center gap-1">
+                      <Timer className="h-3.5 w-3.5" />
+                      <span className={`font-medium ${task.dueAt === "OVERDUE" ? "text-destructive" : ""}`}>
+                        {task.dueAt === "OVERDUE" ? "Breached" : task.dueAt}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Candidate & Job Summary */}
-          <div className="rounded-lg border border-border p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium mb-2">Candidate</h4>
-                <p className="text-lg font-semibold">{task.candidateName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {task.candidateId}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium mb-2">Job Position</h4>
-                <p className="text-lg font-semibold">{task.jobTitle}</p>
-                <p className="text-sm text-muted-foreground">{task.jobId}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Metadata */}
-          {Object.keys(task.metadata).length > 0 && (
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <h4 className="text-sm font-medium mb-3">Additional Context</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                {Object.entries(task.metadata).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span className="text-muted-foreground capitalize">
-                      {key.replace(/([A-Z])/g, " $1").trim()}:
-                    </span>
-                    <span>{String(value)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Current Assignment */}
-          <div className="rounded-lg border border-border p-4">
-            <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Assignment
-            </h4>
-            {task.assignedTo ? (
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">{task.assignedTo}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Assigned {task.assignedAt}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Select
-                  value={selectedAssignee}
-                  onValueChange={setSelectedAssignee}
-                >
-                  <SelectTrigger className="flex-1 bg-background">
-                    <SelectValue placeholder="Select recruiter..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
-                    {recruiters.map((r) => (
-                      <SelectItem key={r.id} value={r.name}>
-                        {r.name} ({r.team})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAssign} disabled={!selectedAssignee}>
-                  Assign
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Resolution (if already resolved) */}
-          {isResolved && task.resolution && (
-            <div className="rounded-lg border border-success/30 bg-success/10 p-4">
-              <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-success">
-                <CheckCircle className="h-4 w-4" />
-                Resolution
+            {/* Section 2: What is the issue? */}
+            <div className="rounded-lg border border-border p-4">
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                What is the issue?
               </h4>
-              <p className="text-sm">{task.resolution}</p>
-              {task.resolvedAt && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Resolved {task.resolvedAt}
-                </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {task.issueDescription}
+              </p>
+              {task.confidenceScore > 0 && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Bot className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">AI Decision: {task.aiDecision}</span>
+                  <span className={`text-xs font-medium ${task.confidenceScore < 0.7 ? "text-warning" : "text-success"}`}>
+                    ({(task.confidenceScore * 100).toFixed(0)}% confidence)
+                  </span>
+                </div>
               )}
             </div>
-          )}
 
-          {/* Actions (if not resolved) */}
-          {!isResolved && (
-            <>
-              <Separator />
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Resolution Notes
-                  </label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add notes about your review decision..."
-                    className="bg-background resize-none"
-                    rows={3}
-                  />
+            {/* Section 3: What needs to be resolved? */}
+            <div className="rounded-lg border border-border p-4">
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Wrench className="h-4 w-4 text-info" />
+                What needs to be resolved?
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {task.requiredAction}
+              </p>
+            </div>
+
+            {/* Section 4: External CTA */}
+            {task.externalLink && (
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => window.open(task.externalLink, "_blank")}
+              >
+                <span className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Open in Source Tool
+                </span>
+                <span className="text-xs text-muted-foreground">Opens in new tab</span>
+              </Button>
+            )}
+
+            {/* Assignment */}
+            <div className="rounded-lg border border-border p-4">
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Assignment
+              </h4>
+              {task.assignedTo ? (
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{task.assignedTo}</p>
+                    <p className="text-sm text-muted-foreground">Assigned {task.assignedAt}</p>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <Button
-                    className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
-                    onClick={() => handleResolve("approved")}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    className="flex-1"
-                    onClick={() => handleResolve("rejected")}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleResolve("escalated")}
-                  >
-                    <ArrowUpRight className="h-4 w-4 mr-2" />
-                    Escalate
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Select value={selectedAssignee} onValueChange={setSelectedAssignee}>
+                    <SelectTrigger className="flex-1 bg-background">
+                      <SelectValue placeholder="Select recruiter..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      {recruiters.map((r) => (
+                        <SelectItem key={r.id} value={r.name}>
+                          {r.name} ({r.team})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleAssign} disabled={!selectedAssignee}>
+                    Assign
                   </Button>
                 </div>
+              )}
+            </div>
+
+            {/* Resolution (if already resolved) */}
+            {isResolved && (task.resolution || task.resolutionComment) && (
+              <div className={`rounded-lg border p-4 ${task.status === "ignored" ? "border-muted bg-muted/20" : "border-success/30 bg-success/10"}`}>
+                <h4 className={`text-sm font-semibold mb-2 flex items-center gap-2 ${task.status === "ignored" ? "text-muted-foreground" : "text-success"}`}>
+                  <CheckCircle className="h-4 w-4" />
+                  Resolution
+                </h4>
+                <p className="text-sm">{task.resolutionComment || task.resolution}</p>
+                {task.resolvedAt && (
+                  <p className="text-xs text-muted-foreground mt-2">Resolved {task.resolvedAt}</p>
+                )}
               </div>
-            </>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+            )}
+
+            {/* Section 5: Resolution Actions (if not resolved) */}
+            {!isResolved && (
+              <>
+                <Separator />
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Resolution Notes
+                    </label>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Describe what was done to resolve this issue..."
+                      className="bg-background resize-none"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
+                      onClick={handleMarkFixed}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark as Fixed
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowIgnoreConfirm(true)}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Ignore Issue
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Ignore Confirmation Dialog */}
+      <AlertDialog open={showIgnoreConfirm} onOpenChange={setShowIgnoreConfirm}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ignore this issue?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark the issue as ignored and remove it from the active queue. Please provide a reason.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={ignoreComment}
+            onChange={(e) => setIgnoreComment(e.target.value)}
+            placeholder="Reason for ignoring this issue (required)..."
+            className="bg-background resize-none"
+            rows={3}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleIgnore} disabled={!ignoreComment.trim()}>
+              Confirm Ignore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
