@@ -54,6 +54,9 @@ const iconMap: Record<string, React.ElementType> = {
   calendar: Calendar,
   award: Award,
   userPlus: UserPlus,
+  megaphone: Briefcase,
+  send: FileText,
+  check: CheckCircle,
 };
 
 const handlerNames: Record<string, string> = {
@@ -212,7 +215,7 @@ export function StageDetailsSheet({
   stageId,
   metrics 
 }: StageDetailsSheetProps) {
-  const Icon = stageIcon ? iconMap[stageIcon] : Briefcase;
+  const Icon = (stageIcon && iconMap[stageIcon]) ? iconMap[stageIcon] : Briefcase;
   
   if (!metrics) {
     return (
