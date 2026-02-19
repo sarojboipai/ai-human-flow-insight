@@ -3292,8 +3292,9 @@ export type OperatorType = ">" | "<" | "=" | ">=" | "<=" | "!=";
 export type ActionType = "route_to_queue" | "alert" | "escalate" | "block" | "route_to_ai_agent" | "trigger_automation" | "retry_with_fallback";
 export type TargetQueue = "recruiter_review" | "ops_escalation" | "enterprise_priority" | "content_hitl" | "ops_admin_hitl" | "human_sourcer_hitl" | "qa_hitl" | "compliance_hitl" | "hiring_manager_hitl" | "human_screening_pool" | "outreach_hitl" | "recruiter_hitl";
 export type RuleStatus = "active" | "paused" | "draft";
-export type TaskStatus = "pending" | "assigned" | "in_review" | "approved" | "rejected" | "escalated";
+export type TaskStatus = "pending" | "assigned" | "in_review" | "approved" | "rejected" | "escalated" | "fixed" | "ignored";
 export type TaskPriority = "high" | "medium" | "low";
+export type TaskSource = "AI" | "Automation" | "Manual";
 export type AuditEventType = "rule_triggered" | "task_created" | "task_assigned" | "task_resolved" | "task_escalated";
 
 export interface HITLRuleV2 {
@@ -3337,6 +3338,17 @@ export interface HITLTask {
   dueAt: string | null;
   createdAt: string;
   metadata: Record<string, string | number>;
+  // New fields for enhanced HITL queue
+  customerName: string;
+  stage: string;
+  source: TaskSource;
+  externalLink?: string;
+  resolutionComment?: string;
+  issueDescription: string;
+  requiredAction: string;
+  slaDeadline?: string;
+  firstViewedAt?: string;
+  actionedAt?: string;
 }
 
 export interface HITLAuditLog {
@@ -4066,6 +4078,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "4 hours",
     createdAt: "2 hours ago",
     metadata: { skillGap: "35%", roleMatch: "72%", experience: "6 years" },
+    customerName: "Ankura Hospital",
+    stage: "Screening",
+    source: "AI",
+    externalLink: "https://phenom.com/candidate/CAN-45892",
+    issueDescription: "AI confidence score dropped below threshold (62/100). The candidate's skill profile shows a 35% gap with the job requirements.",
+    requiredAction: "Review candidate's skill match manually and verify whether the 35% skill gap is acceptable for this role.",
+    slaDeadline: "2025-02-19T18:00:00Z",
   },
   {
     id: "HITL-002",
@@ -4087,6 +4106,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "2 hours",
     createdAt: "4 hours ago",
     metadata: { employerTier: "enterprise", salary: "₹18,00,000" },
+    customerName: "Swaasa Healthcare",
+    stage: "Sourcing",
+    source: "Automation",
+    externalLink: "https://ats.swaasa.com/candidates/CAN-45901",
+    issueDescription: "Enterprise employer requires mandatory human review for all candidate matches regardless of AI confidence.",
+    requiredAction: "Verify candidate credentials and confirm match suitability for enterprise client standards.",
+    slaDeadline: "2025-02-19T16:00:00Z",
   },
   {
     id: "HITL-003",
@@ -4108,6 +4134,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "8 hours",
     createdAt: "6 hours ago",
     metadata: { roleLevel: "senior", specialization: "Cardiology" },
+    customerName: "Ankura Hospital",
+    stage: "Screening",
+    source: "AI",
+    externalLink: "https://phenom.com/candidate/CAN-45876",
+    issueDescription: "Senior doctor role requires human verification. AI matched with 78% confidence but specialization alignment needs manual review.",
+    requiredAction: "Verify cardiology specialization credentials and confirm fit for senior role requirements.",
+    slaDeadline: "2025-02-20T06:00:00Z",
   },
   {
     id: "HITL-004",
@@ -4129,6 +4162,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "1 hour",
     createdAt: "8 hours ago",
     metadata: { waitTime: "52 hours", schedulingAttempts: 3 },
+    customerName: "Swaasa Healthcare",
+    stage: "Interview",
+    source: "Automation",
+    externalLink: "https://calendly.com/schedule/CAN-45912",
+    issueDescription: "SLA breached for interview scheduling stage. Candidate has been waiting 52 hours with 3 failed scheduling attempts.",
+    requiredAction: "Manually schedule interview with candidate. Contact hiring manager for available slots.",
+    slaDeadline: "2025-02-19T15:00:00Z",
   },
   {
     id: "HITL-005",
@@ -4141,7 +4181,7 @@ export const hitlTasks: HITLTask[] = [
     aiAgentId: "agent-002",
     aiDecision: "Weak Match",
     confidenceScore: 0.58,
-    status: "approved",
+    status: "fixed",
     priority: "low",
     assignedTo: "Vikram Singh",
     assignedAt: "1 day ago",
@@ -4150,6 +4190,12 @@ export const hitlTasks: HITLTask[] = [
     dueAt: null,
     createdAt: "1 day ago",
     metadata: { skillGap: "42%", roleMatch: "65%" },
+    customerName: "Ankura Hospital",
+    stage: "Screening",
+    source: "AI",
+    issueDescription: "AI confidence dropped below 65%. Candidate's skill profile shows 42% gap with job requirements.",
+    requiredAction: "Review candidate lab technician certifications and verify practical experience.",
+    resolutionComment: "Verified skills manually. Candidate has relevant certifications despite AI gap score.",
   },
   {
     id: "HITL-006",
@@ -4162,7 +4208,7 @@ export const hitlTasks: HITLTask[] = [
     aiAgentId: null,
     aiDecision: "N/A - Anomaly Alert",
     confidenceScore: 0,
-    status: "rejected",
+    status: "ignored",
     priority: "low",
     assignedTo: "Deepa Kumar",
     assignedAt: "2 days ago",
@@ -4171,6 +4217,12 @@ export const hitlTasks: HITLTask[] = [
     dueAt: null,
     createdAt: "2 days ago",
     metadata: { dropOffStage: "Interview Scheduled", dropOffRate: "45%" },
+    customerName: "Swaasa Healthcare",
+    stage: "Application",
+    source: "Automation",
+    issueDescription: "High drop-off rate detected (45%) at Interview Scheduled stage. Candidate withdrew application.",
+    requiredAction: "Investigate drop-off reason and update candidate record.",
+    resolutionComment: "Candidate found another position. No action needed.",
   },
   {
     id: "HITL-007",
@@ -4192,6 +4244,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "6 hours",
     createdAt: "3 hours ago",
     metadata: { proposedSalary: "₹32,00,000", budgetMax: "₹28,00,000" },
+    customerName: "Ankura Hospital",
+    stage: "Offer Negotiation",
+    source: "Manual",
+    externalLink: "https://crm.ankura.com/offers/CAN-45934",
+    issueDescription: "Candidate's salary expectation (₹32,00,000) exceeds budget maximum (₹28,00,000) by 14%.",
+    requiredAction: "Negotiate salary with candidate or seek budget approval from hiring manager.",
+    slaDeadline: "2025-02-19T20:00:00Z",
   },
   {
     id: "HITL-008",
@@ -4204,7 +4263,7 @@ export const hitlTasks: HITLTask[] = [
     aiAgentId: "agent-002",
     aiDecision: "Matched",
     confidenceScore: 0.81,
-    status: "escalated",
+    status: "pending",
     priority: "high",
     assignedTo: "Saroj Manager",
     assignedAt: "5 hours ago",
@@ -4213,6 +4272,13 @@ export const hitlTasks: HITLTask[] = [
     dueAt: "OVERDUE",
     createdAt: "12 hours ago",
     metadata: { escalationReason: "Client requested senior attention" },
+    customerName: "Ankura Hospital",
+    stage: "Sourcing",
+    source: "Manual",
+    externalLink: "https://phenom.com/candidate/CAN-45945",
+    issueDescription: "Enterprise client escalation — client requested senior attention for this candidate match. SLA has been breached.",
+    requiredAction: "Immediately review candidate profile and provide resolution to enterprise client.",
+    slaDeadline: "2025-02-19T10:00:00Z",
   },
 ];
 

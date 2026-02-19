@@ -13,9 +13,8 @@ export default function HITLQueue() {
     (t) => t.status === "pending" || t.status === "assigned"
   ).length;
   const highPriorityTasks = tasks.filter((t) => t.priority === "high").length;
-  const resolvedToday = tasks.filter(
-    (t) => t.status === "approved" || t.status === "rejected"
-  ).length;
+  const fixedToday = tasks.filter((t) => t.status === "fixed").length;
+  const ignoredCount = tasks.filter((t) => t.status === "ignored").length;
 
   // Task handlers
   const handleAssignTask = (taskId: string, assignee: string) => {
@@ -35,7 +34,7 @@ export default function HITLQueue() {
 
   const handleResolveTask = (
     taskId: string,
-    resolution: "approved" | "rejected" | "escalated",
+    resolution: "fixed" | "ignored",
     notes: string
   ) => {
     setTasks((prev) =>
@@ -44,8 +43,10 @@ export default function HITLQueue() {
           ? {
               ...t,
               status: resolution,
+              resolutionComment: notes || `Task ${resolution}`,
               resolution: notes || `Task ${resolution}`,
               resolvedAt: "Just now",
+              actionedAt: new Date().toISOString(),
             }
           : t
       )
@@ -57,9 +58,9 @@ export default function HITLQueue() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="dashboard-title">HITL Queue</h1>
+          <h1 className="dashboard-title">HITL Review Queue</h1>
           <p className="text-muted-foreground mt-1">
-            Human-in-the-Loop review tasks
+            Actionable issue management — review, resolve, and track rule-triggered escalations
           </p>
         </div>
 
@@ -88,8 +89,8 @@ export default function HITLQueue() {
             variant="success"
           />
           <MetricCard
-            title="Completed Today"
-            value={String(resolvedToday)}
+            title="Fixed Today"
+            value={String(fixedToday)}
             change={25}
             changeLabel="vs yesterday"
             icon={<CheckCircle className="h-5 w-5" />}
