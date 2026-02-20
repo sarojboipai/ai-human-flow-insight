@@ -25,6 +25,7 @@ import {
   XCircle,
   Timer,
   AlertTriangle,
+  Bot,
 } from "lucide-react";
 import type { EnhancedStageMetrics } from "@/lib/mockData";
 import {
@@ -145,6 +146,20 @@ function AttributionBar({
     </div>
   );
 }
+
+// Default attribution data per stage (fallback when not in metrics)
+const stageAttributionDefaults: Record<string, { aiAgentName: string; aiTaskDescription: string; humanRoleName: string; humanTaskDescription: string }> = {
+  "jobs-ankura": { aiAgentName: "Content Optimization Agent", aiTaskDescription: "Auto-optimize job descriptions and SEO ranking", humanRoleName: "Recruiter", humanTaskDescription: "Review and approve job postings" },
+  "job-discovery": { aiAgentName: "Discovery Ranking Agent", aiTaskDescription: "AI-powered job ranking and candidate recommendations", humanRoleName: "Ops Specialist", humanTaskDescription: "Manual job boosting and search curation" },
+  "expression": { aiAgentName: "Lead Scoring Agent", aiTaskDescription: "Auto-score and qualify candidate interest signals", humanRoleName: "Recruiter", humanTaskDescription: "Manual lead review and candidate outreach" },
+  "prescreen": { aiAgentName: "Pre-Screen Agent", aiTaskDescription: "Automated questionnaire scoring and resume parsing", humanRoleName: "Recruiter", humanTaskDescription: "Manual review of edge-case candidates" },
+  "voice-agent": { aiAgentName: "Voice Screening Agent", aiTaskDescription: "Automated phone screening with NLP analysis", humanRoleName: "Recruiter", humanTaskDescription: "Manual interview for flagged candidates" },
+  "scheduling": { aiAgentName: "Scheduling Agent", aiTaskDescription: "AI-powered slot suggestion and auto-booking", humanRoleName: "Recruiter", humanTaskDescription: "Manual calendar coordination for senior roles" },
+  "silver-med": { aiAgentName: "Talent Classification Agent", aiTaskDescription: "Auto-tag and classify silver medalist candidates", humanRoleName: "Recruiter", humanTaskDescription: "Manual re-engagement and follow-ups" },
+  "talent-community": { aiAgentName: "Community Engagement Agent", aiTaskDescription: "Automated community content and engagement triggers", humanRoleName: "Community Manager", humanTaskDescription: "Manual moderation and relationship building" },
+  "job-post": { aiAgentName: "JD Optimization Agent", aiTaskDescription: "Auto-generate and optimize job descriptions", humanRoleName: "Recruiter", humanTaskDescription: "Final review and approval of job postings" },
+  "sourcing": { aiAgentName: "Sourcing Agent", aiTaskDescription: "Automated candidate search across job boards", humanRoleName: "Sourcer", humanTaskDescription: "College outreach and referral follow-ups" },
+};
 
 // Render stage-specific metrics card based on stageId
 function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics: EnhancedStageMetrics }) {
@@ -301,7 +316,64 @@ export function StageDetailsSheet({
             </CardContent>
           </Card>
 
-          {/* Stage-Specific Metrics (if available) */}
+          {/* AI Agent Involved */}
+          {(() => {
+            const defaults = stageId ? stageAttributionDefaults[stageId] : undefined;
+            const agentName = metrics.aiAgentName || defaults?.aiAgentName;
+            const agentTask = metrics.aiTaskDescription || defaults?.aiTaskDescription;
+            if (!agentName) return null;
+            return (
+              <Card className="border-orange-200 dark:border-orange-800">
+                <CardContent className="pt-6 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium text-muted-foreground">AI Agent Involved</h4>
+                    <Badge className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800">
+                      {metrics.aiPercentage}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-orange-100 dark:bg-orange-900/30">
+                      <Bot className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <span className="font-semibold text-sm">{agentName}</span>
+                  </div>
+                  {agentTask && (
+                    <p className="text-xs text-muted-foreground pl-8">{agentTask}</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* Human Involved */}
+          {(() => {
+            const defaults = stageId ? stageAttributionDefaults[stageId] : undefined;
+            const roleName = metrics.humanRoleName || defaults?.humanRoleName;
+            const roleTask = metrics.humanTaskDescription || defaults?.humanTaskDescription;
+            if (!roleName) return null;
+            return (
+              <Card className="border-blue-200 dark:border-blue-800">
+                <CardContent className="pt-6 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium text-muted-foreground">Human Involved</h4>
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                      {metrics.humanPercentage}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30">
+                      <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="font-semibold text-sm">{roleName}</span>
+                  </div>
+                  {roleTask && (
+                    <p className="text-xs text-muted-foreground pl-8">{roleTask}</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           {hasStageSpecificMetrics && (
             <StageSpecificMetrics stageId={stageId} metrics={metrics} />
           )}
