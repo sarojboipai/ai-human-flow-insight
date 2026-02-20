@@ -86,13 +86,10 @@ const buildNodesFromSchema = (
   
   // Build main stage nodes
   schema.stages.forEach((stage) => {
-    // Customize label based on customer name
     let label = stage.label;
-    if (stage.id === "source") {
+    if (stage.id === "customer-job-posting") {
       const customerShortName = job.employer.split(' ')[0];
-      label = `${customerShortName}\nHospital`;
-    } else if (stage.id === "jobs-ankura") {
-      label = `Jobs in\nSwaasa`;
+      label = `${customerShortName}\nJob Posting`;
     }
     
     const nodeType = getNodeType(stage.type);
@@ -257,22 +254,22 @@ interface PipelineBoardDialogProps {
 // Map node IDs to their display labels and icons
 const getNodeMetadata = (nodeId: string, customerName: string): { label: string; icon?: string } => {
   const metadata: Record<string, { label: string; icon?: string }> = {
-    "jobs-ankura": { label: `Jobs in Swaasa`, icon: "briefcase" },
-    "job-discovery": { label: "Job Discovery", icon: "search" },
-    "expression": { label: "Expression of Interest", icon: "heart" },
-    "prescreen": { label: "Pre-screen Questions", icon: "clipboard" },
-    "voice-agent": { label: "Voice Agent Screening", icon: "phone" },
-    "decision": { label: "Decision Node", icon: "users" },
-    "scheduling": { label: "Interview Scheduling", icon: "calendar" },
-    "silver-med": { label: "Silver Medalist Pool", icon: "award" },
-    "talent-community": { label: "Talent Community", icon: "users" },
-    "job-post": { label: "Job Post", icon: "briefcase" },
-    "marketing": { label: "Marketing", icon: "megaphone" },
+    "customer-job-posting": { label: "Customer Job Posting", icon: "briefcase" },
+    "review-jd-seo": { label: "Review JD SEO", icon: "search" },
+    "review-jd-criteria": { label: "Review JD Criteria & Screening Question", icon: "clipboard" },
+    "job-post-swaasa": { label: "Job Post in Swaasa", icon: "eye" },
     "sourcing": { label: "Sourcing", icon: "search" },
     "outreach": { label: "Outreach", icon: "send" },
+    "campaigns": { label: "Campaigns", icon: "megaphone" },
+    "marketing": { label: "Marketing", icon: "megaphone" },
     "application": { label: "Application", icon: "clipboard" },
-    "prescreening": { label: "Prescreening", icon: "send" },
-    "hire": { label: "Hire", icon: "check" },
+    "primary-screening": { label: "Primary Screening", icon: "phone" },
+    "interview-scheduling": { label: "Interview Scheduling / Validation", icon: "calendar" },
+    "placement-candidate": { label: "Placement Candidate", icon: "check" },
+    "2ndpri": { label: "2nd Priority", icon: "users" },
+    "human-screening": { label: "Human Screening", icon: "userCheck" },
+    "backup-candidate": { label: "Backup Candidate", icon: "users" },
+    "talent-pool": { label: "Talent Pool", icon: "user" },
   };
   return metadata[nodeId] || { label: "Stage Details" };
 };
