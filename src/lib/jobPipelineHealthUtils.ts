@@ -51,7 +51,7 @@ export function deriveJobPipelineHealth(jobs: Job[], customerFilter?: string): J
     };
   });
 
-  const pinnedIds = ["P-139789"];
+  const pinnedIds = ["P-139798", "P-139789"];
   const pinnedTitles = [
     "Medical Oncologist",
     "Staff Nurse - Emergency Room",
