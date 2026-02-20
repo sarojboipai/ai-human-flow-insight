@@ -51,6 +51,7 @@ export function deriveJobPipelineHealth(jobs: Job[], customerFilter?: string): J
     };
   });
 
+  const pinnedIds = ["P-139789"];
   const pinnedTitles = [
     "Medical Oncologist",
     "Staff Nurse - Emergency Room",
@@ -58,13 +59,19 @@ export function deriveJobPipelineHealth(jobs: Job[], customerFilter?: string): J
   ];
 
   mapped.sort((a, b) => {
-    const aPin = pinnedTitles.findIndex(t => a.jobTitle.includes(t));
-    const bPin = pinnedTitles.findIndex(t => b.jobTitle.includes(t));
-    const aPinned = aPin !== -1;
-    const bPinned = bPin !== -1;
+    const aIdPin = pinnedIds.indexOf(a.jobId);
+    const bIdPin = pinnedIds.indexOf(b.jobId);
+    if (aIdPin !== -1 && bIdPin === -1) return -1;
+    if (aIdPin === -1 && bIdPin !== -1) return 1;
+    if (aIdPin !== -1 && bIdPin !== -1) return aIdPin - bIdPin;
+
+    const aTitlePin = pinnedTitles.findIndex(t => a.jobTitle.includes(t));
+    const bTitlePin = pinnedTitles.findIndex(t => b.jobTitle.includes(t));
+    const aPinned = aTitlePin !== -1;
+    const bPinned = bTitlePin !== -1;
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
-    if (aPinned && bPinned) return aPin - bPin;
+    if (aPinned && bPinned) return aTitlePin - bTitlePin;
     return a.jobTitle.localeCompare(b.jobTitle);
   });
 
