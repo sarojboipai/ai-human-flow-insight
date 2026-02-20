@@ -1,115 +1,79 @@
 
 
-## Per-Node Task Attribution (AI Agent Task + Human Task)
+## Add AI Agent & Human Task Details to Stage Details Panel
 
 ### What This Does
-Adds two new collapsible sections to the Node Properties Panel in the Pipeline Config Workflow Builder. When you click any pipeline node, the right-side configuration sheet will now show:
-- **AI Agent Task** section -- toggle on/off, select agent, describe the AI task, set execution mode and confidence threshold
-- **Human Task** section -- toggle on/off, select role, describe the human task, set assignment mode and SLA
-- **Attribution badges** on each node in the canvas showing the task ownership (AI, Human, Hybrid, or HITL)
+When you click a node in the customer pipeline board and the stage details sheet opens, it will now show two new sections:
+- **AI Agent Involved** -- which AI agent handles this stage and what it does
+- **Human Involved** -- which human role is responsible and what they do
+
+These appear as cards between the Attribution Bar and the stage-specific metrics, giving full transparency into who does what at each stage.
 
 ### Changes
 
-#### 1. Expand the Node Data Model
-**File: `src/components/orchestration/WorkflowTab.tsx` and `src/pages/PipelineTemplateBuilder.tsx`**
+#### 1. Extend the EnhancedStageMetrics data model
+**File: `src/lib/mockData.ts`**
 
-Add new fields to the `StageNodeData` interface:
-- `aiEnabled`, `aiAgentId`, `aiTaskDescription`, `executionMode`, `confidenceThreshold`
-- `humanEnabled`, `humanRole`, `humanTaskDescription`, `assignmentType`, `humanSlaHours`
+Add new optional fields to the `EnhancedStageMetrics` interface:
+- `aiAgentName?: string` -- e.g. "Sourcing Agent", "Voice Screening Agent"
+- `aiTaskDescription?: string` -- e.g. "Auto-source candidates from job boards"
+- `humanRoleName?: string` -- e.g. "Recruiter", "Hiring Manager"
+- `humanTaskDescription?: string` -- e.g. "College outreach for nursing institutes"
 
-Update `nodesToStages` in `PipelineTemplateBuilder.tsx` to serialize these new fields into workflow stage data when saving.
+Then populate these fields across all existing mock data entries (all jobs' `enhancedStageMetrics`) with realistic values per stage. For example:
+- **Sourcing stage**: AI Agent = "Sourcing Agent" doing "Automated candidate search across job boards", Human = "Sourcer" doing "College outreach and referral follow-ups"
+- **Voice Screening stage**: AI Agent = "Voice Screening Agent" doing "Automated phone screening with NLP analysis", Human = "Recruiter" doing "Manual interview for edge cases"
+- **Interview Scheduling**: AI Agent = "Scheduling Agent" doing "AI-powered slot suggestion and auto-booking", Human = "Recruiter" doing "Manual calendar coordination for senior roles"
 
-#### 2. Rebuild the NodeConfigPanel
-**File: `src/components/orchestration/NodeConfigPanel.tsx`**
+#### 2. Add AI Agent & Human Task cards to StageDetailsSheet
+**File: `src/components/customer/StageDetailsSheet.tsx`**
 
-Replace the current conditional AI/Human sections with two always-visible, toggle-gated sections for non-entry/exit nodes:
+Add two new card sections right after the Attribution Bar card:
 
-**AI Agent Task Section:**
-- Enable toggle ("AI performs this stage")
-- Agent selector dropdown (from Agent Registry)
-- Task description textarea
-- Execution mode selector: Fully Automated / Human Review After AI / Confidence-based routing
-- Confidence threshold slider (0-100%, shown only when mode = confidence-based)
+**AI Agent Card** (shown when `metrics.aiAgentName` exists):
+- Orange-themed card with Bot icon
+- Agent name in bold
+- Task description below
+- AI percentage badge
 
-**Human Task Section:**
-- Enable toggle ("Human involved in this stage")
-- Role selector: Recruiter, Sourcer, Hiring Manager, Ops Specialist, HITL Reviewer, Custom Role
-- Task description textarea
-- Assignment type: Auto-assign, Round robin, Manual pick, Queue based
-- Human SLA duration picker (hours)
+**Human Task Card** (shown when `metrics.humanRoleName` exists):
+- Blue-themed card with Users icon
+- Role name in bold
+- Task description below
+- Human percentage badge
 
-**Attribution summary** at the top of each section showing computed badge (AI Only / Human Only / Hybrid / HITL).
-
-#### 3. Add Attribution Badges to Canvas Nodes
-**Files: All editable node components under `src/components/orchestration/pipeline-nodes/`**
-- `EditableAINode.tsx`, `EditableHumanNode.tsx`, `EditableAutomationNode.tsx`, `EditableStageNode.tsx`
-
-Add small colored badges at the bottom of each node:
-- Orange "AI" badge when `aiEnabled` is true
-- Blue "Human" badge when `humanEnabled` is true  
-- Green "Hybrid" badge when both are enabled
-- Show task descriptions as tooltips on hover
-
-#### 4. Persist to Workflow Save
-**File: `src/pages/PipelineTemplateBuilder.tsx`**
-
-Update the `nodesToStages` function and `buildWorkflowData` to include the new task attribution fields so they persist when saving/publishing a pipeline template.
+Layout:
+```text
++----------------------------------+
+| [Attribution Bar - existing]     |
++----------------------------------+
+| AI Agent Involved                |
+| [Bot icon] Sourcing Agent        |
+| "Auto-source candidates from..." |
+| [85% badge]                      |
++----------------------------------+
+| Human Involved                   |
+| [Users icon] Recruiter           |
+| "College outreach for nursing.." |
+| [12% badge]                      |
++----------------------------------+
+| [Stage-specific metrics - exist] |
++----------------------------------+
+```
 
 ### Technical Details
 
-**Updated `StageNodeData` interface:**
+**Updated `EnhancedStageMetrics` interface (additions only):**
 ```text
-StageNodeData {
-  // existing fields...
-  label, stageType, icon, agentId, humanRole, slaHours
-
-  // NEW: AI Task fields
-  aiEnabled?: boolean
-  aiAgentId?: string
-  aiTaskDescription?: string
-  executionMode?: "fully_automated" | "human_review" | "confidence_based"
-  confidenceThreshold?: number  // 0-100
-
-  // NEW: Human Task fields
-  humanEnabled?: boolean
-  humanTaskDescription?: string
-  assignmentType?: "auto_assign" | "round_robin" | "manual_pick" | "queue_based"
-  humanSlaHours?: number
+EnhancedStageMetrics {
+  // ... existing fields unchanged
+  aiAgentName?: string;
+  aiTaskDescription?: string;
+  humanRoleName?: string;
+  humanTaskDescription?: string;
 }
 ```
 
-**NodeConfigPanel structure (for non-entry/exit nodes):**
-```text
-+---------------------------+
-| Configure Node            |
-| [NODE_TYPE badge]         |
-| Stage Name: [input]       |
-|---------------------------|
-| Attribution: [AI/Human/   |
-|   Hybrid badge]           |
-|---------------------------|
-| AI Agent Task        [ON] |
-|   Agent: [dropdown]       |
-|   Task: [textarea]        |
-|   Mode: [select]          |
-|   Confidence: [slider]    |
-|---------------------------|
-| Human Task           [ON] |
-|   Role: [dropdown]        |
-|   Task: [textarea]        |
-|   Assignment: [select]    |
-|   SLA: [input] hours      |
-|---------------------------|
-| SLA Threshold (hours)     |
-|   [input]                 |
-+---------------------------+
-```
-
-**Files to create/modify:**
-- `src/components/orchestration/NodeConfigPanel.tsx` -- major rewrite with new sections
-- `src/components/orchestration/WorkflowTab.tsx` -- update StageNodeData interface
-- `src/pages/PipelineTemplateBuilder.tsx` -- update StageNodeData interface and nodesToStages
-- `src/components/orchestration/pipeline-nodes/EditableAINode.tsx` -- add attribution badges
-- `src/components/orchestration/pipeline-nodes/EditableHumanNode.tsx` -- add attribution badges
-- `src/components/orchestration/pipeline-nodes/EditableAutomationNode.tsx` -- add attribution badges
-- `src/components/orchestration/pipeline-nodes/EditableStageNode.tsx` -- add attribution badges
+**Files to modify:**
+- `src/lib/mockData.ts` -- add 4 fields to interface + populate in all mock data entries
+- `src/components/customer/StageDetailsSheet.tsx` -- add two new card sections after the Attribution Bar
