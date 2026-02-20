@@ -51,7 +51,22 @@ export function deriveJobPipelineHealth(jobs: Job[], customerFilter?: string): J
     };
   });
 
-  mapped.sort((a, b) => a.jobTitle.localeCompare(b.jobTitle));
+  const pinnedTitles = [
+    "Medical Oncologist",
+    "Staff Nurse - Emergency Room",
+    "Anaesthesia Technician",
+  ];
+
+  mapped.sort((a, b) => {
+    const aPin = pinnedTitles.findIndex(t => a.jobTitle.includes(t));
+    const bPin = pinnedTitles.findIndex(t => b.jobTitle.includes(t));
+    const aPinned = aPin !== -1;
+    const bPinned = bPin !== -1;
+    if (aPinned && !bPinned) return -1;
+    if (!aPinned && bPinned) return 1;
+    if (aPinned && bPinned) return aPin - bPin;
+    return a.jobTitle.localeCompare(b.jobTitle);
+  });
 
   return mapped;
 }
