@@ -31,7 +31,7 @@ const slaBorderColors = {
 };
 
 export const AIAgentNode = memo(({ data }: AIAgentNodeProps) => {
-  const Icon = data.icon ? iconMap[data.icon] : Bot;
+  const Icon = (data.icon && iconMap[data.icon]) || Bot;
   const borderClass = data.slaStatus ? slaBorderColors[data.slaStatus] : "border-orange-300";
 
   return (

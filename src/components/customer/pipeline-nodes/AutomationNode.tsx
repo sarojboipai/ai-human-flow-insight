@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Zap, Calendar, Send, RefreshCw, Megaphone } from "lucide-react";
+import { Zap, Calendar, Send, RefreshCw, Megaphone, Search, ClipboardList, Eye, Briefcase } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
   zap: Zap,
@@ -8,6 +8,10 @@ const iconMap: Record<string, React.ElementType> = {
   send: Send,
   refresh: RefreshCw,
   megaphone: Megaphone,
+  search: Search,
+  clipboard: ClipboardList,
+  eye: Eye,
+  briefcase: Briefcase,
 };
 
 interface AutomationNodeData {
@@ -31,7 +35,7 @@ const slaBorderColors = {
 };
 
 export const AutomationNode = memo(({ data }: AutomationNodeProps) => {
-  const Icon = data.icon ? iconMap[data.icon] : Zap;
+  const Icon = (data.icon && iconMap[data.icon]) || Zap;
   const borderClass = data.slaStatus ? slaBorderColors[data.slaStatus] : "border-emerald-300";
 
   return (
