@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   ReactFlow,
   Controls,
@@ -9,6 +9,7 @@ import {
   BackgroundVariant,
   type Node,
   type Edge,
+  type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -237,6 +238,27 @@ const buildEdgesFromSchema = (schema: CustomerWorkflowSchema): Edge[] => {
   return edges;
 };
 
+// localStorage helpers
+const loadSavedPositions = (jobId: string, nodes: Node[]): Node[] => {
+  try {
+    const saved = localStorage.getItem(`pipeline-node-positions-${jobId}`);
+    if (!saved) return nodes;
+    const positions: Record<string, { x: number; y: number }> = JSON.parse(saved);
+    return nodes.map(node => positions[node.id] 
+      ? { ...node, position: positions[node.id] } 
+      : node
+    );
+  } catch {
+    return nodes;
+  }
+};
+
+const savePositions = (jobId: string, nodes: Node[]) => {
+  const positions: Record<string, { x: number; y: number }> = {};
+  nodes.forEach(n => { positions[n.id] = n.position; });
+  localStorage.setItem(`pipeline-node-positions-${jobId}`, JSON.stringify(positions));
+};
+
 const legendItems = [
   { color: "bg-purple-500", name: "Candidate Journey", description: "User journey steps" },
   { color: "bg-orange-500", name: "AI Agent", description: "AI automated steps" },
@@ -299,24 +321,44 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
     return buildEdgesFromSchema(workflowSchema);
   }, [workflowSchema]);
 
-  // Add click handlers to nodes
-  const nodesWithHandlers = useMemo(() => {
-    return dynamicNodes.map(node => {
+  // Add click handlers and load saved positions
+  const initialNodes = useMemo(() => {
+    const withHandlers = dynamicNodes.map(node => {
       if (node.type !== "sourceNode" && node.type !== "decisionNode") {
         return {
           ...node,
-          data: {
-            ...node.data,
-            onClick: () => handleNodeClick(node.id),
-          }
+          data: { ...node.data, onClick: () => handleNodeClick(node.id) },
         };
       }
       return node;
     });
-  }, [dynamicNodes, handleNodeClick]);
+    return job ? loadSavedPositions(job.id, withHandlers) : withHandlers;
+  }, [dynamicNodes, handleNodeClick, job]);
 
-  const [nodes, , onNodesChange] = useNodesState(nodesWithHandlers);
-  const [edges, , onEdgesChange] = useEdgesState(dynamicEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(dynamicEdges);
+
+  // Re-sync when job changes
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(dynamicEdges);
+  }, [initialNodes, dynamicEdges, setNodes, setEdges]);
+
+  // Wrap onNodesChange to persist positions after drag
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    onNodesChange(changes);
+    // Save after drag end
+    const hasDragEnd = changes.some(c => c.type === "position" && !c.dragging);
+    if (hasDragEnd && job) {
+      // Use setTimeout to read state after React applies changes
+      setTimeout(() => {
+        setNodes(current => {
+          savePositions(job.id, current);
+          return current;
+        });
+      }, 0);
+    }
+  }, [onNodesChange, job, setNodes]);
 
   const selectedMetrics: EnhancedStageMetrics | null = selectedNodeId && job?.enhancedStageMetrics 
     ? job.enhancedStageMetrics[selectedNodeId] || null 
@@ -357,9 +399,9 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
         
         <div className="flex-1 min-h-0">
           <ReactFlow
-            nodes={nodesWithHandlers}
-            edges={dynamicEdges}
-            onNodesChange={onNodesChange}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             fitView
