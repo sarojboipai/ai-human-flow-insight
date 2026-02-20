@@ -54,6 +54,17 @@ export interface StageNodeData extends Record<string, unknown> {
   onDelete?: () => void;
   onSelect?: () => void;
   isSelected?: boolean;
+  // AI Task Attribution
+  aiEnabled?: boolean;
+  aiAgentId?: string;
+  aiTaskDescription?: string;
+  executionMode?: "fully_automated" | "human_review" | "confidence_based";
+  confidenceThreshold?: number;
+  // Human Task Attribution
+  humanEnabled?: boolean;
+  humanTaskDescription?: string;
+  assignmentType?: "auto_assign" | "round_robin" | "manual_pick" | "queue_based";
+  humanSlaHours?: number;
 }
 
 interface WorkflowTabProps {

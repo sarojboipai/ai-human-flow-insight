@@ -41,6 +41,17 @@ interface StageNodeData extends Record<string, unknown> {
   onDelete?: () => void;
   onSelect?: () => void;
   isSelected?: boolean;
+  // AI Task Attribution
+  aiEnabled?: boolean;
+  aiAgentId?: string;
+  aiTaskDescription?: string;
+  executionMode?: "fully_automated" | "human_review" | "confidence_based";
+  confidenceThreshold?: number;
+  // Human Task Attribution
+  humanEnabled?: boolean;
+  humanTaskDescription?: string;
+  assignmentType?: "auto_assign" | "round_robin" | "manual_pick" | "queue_based";
+  humanSlaHours?: number;
 }
 
 const DEFAULT_METADATA: TemplateMetadata = {
@@ -78,21 +89,40 @@ const INITIAL_EDGES: Edge[] = [];
 const nodesToStages = (nodes: Node<StageNodeData>[]): WorkflowStage[] => {
   return nodes
     .filter((n) => !["entry", "exit"].includes(n.data.stageType))
-    .map((n) => ({
-      id: n.id,
-      name: n.data.label,
-      type: "match" as const,
-      assignedActor:
-        n.data.stageType === "ai"
-          ? ("ai" as const)
-          : n.data.stageType === "human"
-          ? ("human" as const)
-          : ("hybrid" as const),
-      agentId: n.data.agentId || null,
-      humanBackup: n.data.humanRole || "Recruiter Team",
-      slaHours: n.data.slaHours || 24,
-      retryPolicy: { maxRetries: 2, backoffMinutes: 30 },
-    }));
+    .map((n) => {
+      // Determine assigned actor from attribution toggles
+      const aiOn = !!n.data.aiEnabled;
+      const humanOn = !!n.data.humanEnabled;
+      let assignedActor: "ai" | "human" | "hybrid" = "hybrid";
+      if (aiOn && !humanOn) assignedActor = "ai";
+      else if (!aiOn && humanOn) assignedActor = "human";
+      else if (aiOn && humanOn) assignedActor = "hybrid";
+      else {
+        // Fallback to stageType if no toggles set
+        assignedActor =
+          n.data.stageType === "ai" ? "ai" : n.data.stageType === "human" ? "human" : "hybrid";
+      }
+
+      return {
+        id: n.id,
+        name: n.data.label,
+        type: "match" as const,
+        assignedActor,
+        agentId: n.data.aiAgentId || n.data.agentId || null,
+        humanBackup: n.data.humanRole || "Recruiter Team",
+        slaHours: n.data.slaHours || 24,
+        retryPolicy: { maxRetries: 2, backoffMinutes: 30 },
+        // Task attribution fields
+        aiEnabled: n.data.aiEnabled,
+        aiTaskDescription: n.data.aiTaskDescription,
+        executionMode: n.data.executionMode,
+        confidenceThreshold: n.data.confidenceThreshold,
+        humanEnabled: n.data.humanEnabled,
+        humanTaskDescription: n.data.humanTaskDescription,
+        assignmentType: n.data.assignmentType,
+        humanSlaHours: n.data.humanSlaHours,
+      };
+    });
 };
 
 export default function PipelineTemplateBuilder() {
