@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Zap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AttributionBadges } from "./AttributionBadges";
 
 interface EditableAutomationNodeData extends Record<string, unknown> {
   label: string;
@@ -11,6 +12,10 @@ interface EditableAutomationNodeData extends Record<string, unknown> {
   isSelected?: boolean;
   onDelete?: () => void;
   onSelect?: () => void;
+  aiEnabled?: boolean;
+  humanEnabled?: boolean;
+  aiTaskDescription?: string;
+  humanTaskDescription?: string;
 }
 
 export const EditableAutomationNode = memo(({ data, selected }: NodeProps) => {
@@ -74,6 +79,12 @@ export const EditableAutomationNode = memo(({ data, selected }: NodeProps) => {
           )}
         </div>
       </div>
+      <AttributionBadges
+        aiEnabled={nodeData.aiEnabled}
+        humanEnabled={nodeData.humanEnabled}
+        aiTaskDescription={nodeData.aiTaskDescription}
+        humanTaskDescription={nodeData.humanTaskDescription}
+      />
     </div>
   );
 });

@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AttributionBadges } from "./AttributionBadges";
 
 interface EditableStageNodeData extends Record<string, unknown> {
   label: string;
@@ -10,6 +11,10 @@ interface EditableStageNodeData extends Record<string, unknown> {
   isSelected?: boolean;
   onDelete?: () => void;
   onSelect?: () => void;
+  aiEnabled?: boolean;
+  humanEnabled?: boolean;
+  aiTaskDescription?: string;
+  humanTaskDescription?: string;
 }
 
 export const EditableStageNode = memo(({ data, selected }: NodeProps) => {
@@ -55,6 +60,12 @@ export const EditableStageNode = memo(({ data, selected }: NodeProps) => {
       {/* Content */}
       <div className="text-center">
         <span className="text-sm font-medium">{nodeData.label}</span>
+        <AttributionBadges
+          aiEnabled={nodeData.aiEnabled}
+          humanEnabled={nodeData.humanEnabled}
+          aiTaskDescription={nodeData.aiTaskDescription}
+          humanTaskDescription={nodeData.humanTaskDescription}
+        />
       </div>
     </div>
   );
