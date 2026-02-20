@@ -30,7 +30,7 @@ const slaBorderColors = {
 };
 
 export const RecruiterNode = memo(({ data }: RecruiterNodeProps) => {
-  const Icon = data.icon ? iconMap[data.icon] : Users;
+  const Icon = (data.icon && iconMap[data.icon]) || Users;
   const borderClass = data.slaStatus ? slaBorderColors[data.slaStatus] : "border-blue-300";
 
   return (

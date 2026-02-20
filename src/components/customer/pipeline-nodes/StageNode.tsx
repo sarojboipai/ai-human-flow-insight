@@ -49,7 +49,7 @@ interface StageNodeProps {
 }
 
 export const StageNode = memo(({ data }: StageNodeProps) => {
-  const Icon = data.icon ? iconMap[data.icon] : Briefcase;
+  const Icon = (data.icon && iconMap[data.icon]) || Briefcase;
   const borderClass = data.borderColor || "border-blue-200";
 
   return (

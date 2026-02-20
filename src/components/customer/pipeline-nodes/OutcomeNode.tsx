@@ -30,7 +30,7 @@ const handlerColors: Record<string, { bg: string; text: string; label: string }>
 };
 
 export const OutcomeNode = memo(({ data }: OutcomeNodeProps) => {
-  const Icon = data.icon ? iconMap[data.icon] : Calendar;
+  const Icon = (data.icon && iconMap[data.icon]) || Calendar;
   
   const getBorderColor = () => {
     switch (data.variant) {
