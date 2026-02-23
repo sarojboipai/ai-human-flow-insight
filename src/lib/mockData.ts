@@ -609,6 +609,13 @@ export interface EnhancedStageMetrics extends StageMetrics {
   
   // SEO score (only for jobs-ankura / job posting stage)
   seoScore?: JobSEOScore;
+
+  // JD SEO details (only for review-jd-seo stage)
+  jdSeoDetails?: {
+    suggestions: string[];
+    aiAction: string;
+    humanAction: string;
+  };
   
   // In-stage progress funnel
   progressFunnel?: ProgressStep[];
@@ -915,10 +922,28 @@ export const jobs: Job[] = [
         sent: 1, appeared: 1, qualified: 1, disqualified: 0, pending: 0,
         avgResponseTime: "30 mins", handler: "AE",
         aiPercentage: 90, humanPercentage: 8, hitlPercentage: 2,
-        aiAgentName: "SEO Optimization Agent", aiTaskDescription: "Analyze and optimize job description for search visibility",
-        humanRoleName: "Recruiter", humanTaskDescription: "Final approval of SEO-optimized job descriptions",
+        aiAgentName: "SEO Optimization Agent", aiTaskDescription: "AI SEO optimization to make JD more search-friendly",
+        humanRoleName: "Recruiter", humanTaskDescription: "Job Description editing and final approval",
         avgTimeInStage: "1 hour", slaThreshold: "4 hours", slaStatus: "green",
         conversionRate: 100, dropOffRate: 0,
+        seoScore: {
+          overall: 72,
+          titleOptimization: 65,
+          descriptionQuality: 78,
+          keywordMatch: 60,
+          locationOptimization: 85,
+          mobileReadiness: 72,
+        },
+        jdSeoDetails: {
+          suggestions: [
+            "Add salary range to improve CTR",
+            "Include 3+ relevant keywords",
+            "Shorten title to under 60 characters",
+            "Add location-specific benefits",
+          ],
+          aiAction: "AI SEO optimization to make JD more search-friendly",
+          humanAction: "Job Description editing and approval",
+        },
         progressFunnel: [
           { label: "JD Received", count: 1, percentage: 100 },
           { label: "SEO Analysis Complete", count: 1, percentage: 100 },
