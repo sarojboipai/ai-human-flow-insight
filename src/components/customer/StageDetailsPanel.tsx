@@ -146,6 +146,7 @@ function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics:
     case "silver-med": return metrics.silverMedalistMetrics ? <SilverMedalistMetricsCard metrics={metrics.silverMedalistMetrics} /> : null;
     case "talent-community": return metrics.talentCommunityMetrics ? <TalentCommunityMetricsCard metrics={metrics.talentCommunityMetrics} /> : null;
     case "review-jd-seo": return metrics.seoScore && metrics.jdSeoDetails ? <ReviewJDSEOMetricsCard seoScore={metrics.seoScore} jdSeoDetails={metrics.jdSeoDetails} /> : null;
+    case "job-post-swaasa": return metrics.jobPostMetrics ? <JobPostMetricsCard metrics={metrics.jobPostMetrics} /> : null;
     default: return null;
   }
 }
@@ -226,7 +227,8 @@ export function StageDetailsPanel({ stageName, stageIcon, stageId, metrics, onCl
     (stageId === "scheduling" && metrics.interviewSchedulingMetrics) ||
     (stageId === "silver-med" && metrics.silverMedalistMetrics) ||
     (stageId === "talent-community" && metrics.talentCommunityMetrics) ||
-    (stageId === "review-jd-seo" && metrics.seoScore && metrics.jdSeoDetails)
+    (stageId === "review-jd-seo" && metrics.seoScore && metrics.jdSeoDetails) ||
+    (stageId === "job-post-swaasa" && metrics.jobPostMetrics)
   );
 
   return (
