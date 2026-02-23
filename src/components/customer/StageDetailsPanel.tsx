@@ -81,6 +81,22 @@ const stageAttributionDefaults: Record<string, { aiAgentName: string; aiTaskDesc
   "talent-community": { aiAgentName: "Community Engagement Agent", aiTaskDescription: "Automated community content and engagement triggers", humanRoleName: "Community Manager", humanTaskDescription: "Manual moderation and relationship building" },
   "job-post": { aiAgentName: "JD Optimization Agent", aiTaskDescription: "Auto-generate and optimize job descriptions", humanRoleName: "Recruiter", humanTaskDescription: "Final review and approval of job postings" },
   "sourcing": { aiAgentName: "Sourcing Agent", aiTaskDescription: "Automated candidate search across job boards", humanRoleName: "Sourcer", humanTaskDescription: "College outreach and referral follow-ups" },
+  // Workflow node IDs
+  "customer-job-posting": { aiAgentName: "Intake Agent", aiTaskDescription: "Auto-parse and validate incoming job requisitions", humanRoleName: "Account Manager", humanTaskDescription: "Review client requirements and confirm job details" },
+  "review-jd-seo": { aiAgentName: "SEO Optimization Agent", aiTaskDescription: "Analyze and optimize job description for search visibility", humanRoleName: "Recruiter", humanTaskDescription: "Final approval of SEO-optimized job descriptions" },
+  "review-jd-criteria": { aiAgentName: "Criteria Validation Agent", aiTaskDescription: "Auto-validate screening questions and qualification criteria", humanRoleName: "Hiring Manager", humanTaskDescription: "Review and refine screening criteria alignment" },
+  "job-post-swaasa": { aiAgentName: "JD Optimization Agent", aiTaskDescription: "Auto-generate and optimize job descriptions for Swaasa platform", humanRoleName: "Recruiter", humanTaskDescription: "Final review and approval of job postings" },
+  "outreach": { aiAgentName: "Outreach Agent", aiTaskDescription: "Automated candidate outreach via email and WhatsApp", humanRoleName: "Recruiter", humanTaskDescription: "Personalized outreach for senior candidates" },
+  "campaigns": { aiAgentName: "Campaign Agent", aiTaskDescription: "Automated campaign targeting and A/B testing", humanRoleName: "Marketing Specialist", humanTaskDescription: "Campaign strategy and creative review" },
+  "marketing": { aiAgentName: "Marketing Agent", aiTaskDescription: "Automated employer branding and job promotion", humanRoleName: "Marketing Specialist", humanTaskDescription: "Content creation and channel management" },
+  "application": { aiAgentName: "Application Processing Agent", aiTaskDescription: "Auto-parse applications and extract candidate profiles", humanRoleName: "Recruiter", humanTaskDescription: "Review incomplete or flagged applications" },
+  "primary-screening": { aiAgentName: "Pre-Screen Agent", aiTaskDescription: "Automated screening via questionnaire and resume parsing", humanRoleName: "Recruiter", humanTaskDescription: "Manual review of edge-case candidates" },
+  "interview-scheduling": { aiAgentName: "Scheduling Agent", aiTaskDescription: "AI-powered interview slot suggestion and auto-booking", humanRoleName: "Recruiter", humanTaskDescription: "Manual calendar coordination for complex schedules" },
+  "placement-candidate": { aiAgentName: "Placement Agent", aiTaskDescription: "Auto-generate offer letters and onboarding checklists", humanRoleName: "Recruiter", humanTaskDescription: "Final offer negotiation and candidate confirmation" },
+  "2ndpri": { aiAgentName: "Priority Routing Agent", aiTaskDescription: "Auto-route candidates to secondary screening paths", humanRoleName: "Recruiter", humanTaskDescription: "Manual triage of borderline candidates" },
+  "human-screening": { aiAgentName: "Screening Support Agent", aiTaskDescription: "AI-assisted interview prep and candidate dossier generation", humanRoleName: "Recruiter", humanTaskDescription: "Conduct manual screening interviews" },
+  "backup-candidate": { aiAgentName: "Talent Classification Agent", aiTaskDescription: "Auto-tag and classify backup candidates for future roles", humanRoleName: "Recruiter", humanTaskDescription: "Manual re-engagement and pipeline nurturing" },
+  "talent-pool": { aiAgentName: "Community Engagement Agent", aiTaskDescription: "Automated talent pool segmentation and engagement triggers", humanRoleName: "Community Manager", humanTaskDescription: "Manual relationship building and community moderation" },
 };
 
 function SLAStatusBadge({ status }: { status: "green" | "amber" | "red" }) {
@@ -144,19 +160,48 @@ export function StageDetailsPanel({ stageName, stageIcon, stageId, metrics, onCl
   const Icon = (stageIcon && iconMap[stageIcon]) ? iconMap[stageIcon] : Briefcase;
 
   if (!metrics) {
+    const defaults = stageId ? stageAttributionDefaults[stageId] : undefined;
     return (
       <div className="w-[400px] shrink-0 border-l bg-background overflow-y-auto">
         <div className="p-4 border-b flex items-center justify-between">
-          <div className="flex items-center gap-2 font-semibold">
-            <Icon className="h-5 w-5" />
-            {stageName}
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-muted">
+              <Icon className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <span className="font-semibold text-lg">{stageName}</span>
           </div>
           <button onClick={onClose} className="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-6 text-center text-muted-foreground">
-          No detailed metrics available for this stage.
+        <div className="p-4 space-y-4">
+          {defaults && (
+            <>
+              <Card className="border-orange-200 dark:border-orange-800">
+                <CardContent className="pt-6 space-y-2">
+                  <h4 className="text-sm font-medium text-muted-foreground">AI Agent Involved</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-orange-100 dark:bg-orange-900/30"><Bot className="h-4 w-4 text-orange-600 dark:text-orange-400" /></div>
+                    <span className="font-semibold text-sm">{defaults.aiAgentName}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-8">{defaults.aiTaskDescription}</p>
+                </CardContent>
+              </Card>
+              <Card className="border-blue-200 dark:border-blue-800">
+                <CardContent className="pt-6 space-y-2">
+                  <h4 className="text-sm font-medium text-muted-foreground">Human Involved</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30"><Users className="h-4 w-4 text-blue-600 dark:text-blue-400" /></div>
+                    <span className="font-semibold text-sm">{defaults.humanRoleName}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-8">{defaults.humanTaskDescription}</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
+          <p className="text-sm text-center text-muted-foreground pt-2">
+            Detailed volume metrics are not yet available for this stage.
+          </p>
         </div>
       </div>
     );
