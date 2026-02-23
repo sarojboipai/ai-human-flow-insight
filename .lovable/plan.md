@@ -1,60 +1,28 @@
 
+## Add Job Posting Details to "Job Post in Swaasa" Node
 
-## Enrich "Review JD SEO" Node with SEO Score, Suggestions, and AI/Human Actions
+### What Changes
+When clicking the "Job Post in Swaasa" node in the pipeline, the side panel will show the layout from the reference image:
 
-### Problem
-Clicking the "Review JD SEO" node in the pipeline board shows generic volume metrics but no SEO-specific content: no SEO score, no editing suggestions, no AI action detail, and no human action detail.
+1. **In-Stage Progress** -- "Draft Created", "Published", "Live & Indexed" (replacing the current funnel labels)
+2. **AI vs Human vs HITL Attribution** bar (already renders)
+3. **Job Posting Details** card -- "Posted by", "JD Reviewed by" (with AI Agent and HITL badges), and "Details Added" checklist
+4. **Avg Response Time / Handler** footer (already renders)
 
-### Solution
-Three changes:
+### Technical Changes
 
-### 1. Add `seoScore` and new fields to the `review-jd-seo` mock data
-**File: `src/lib/mockData.ts`**
+#### 1. Update `job-post-swaasa` mock data in `src/lib/mockData.ts`
+- Change `progressFunnel` labels from "Job Published / Job Indexed / Job Viewed / Apply Clicked" to "Draft Created / Published / Live & Indexed" with counts matching the reference (120, 110, 95)
+- Add `jobPostMetrics` field with:
+  - `postedBy`: "Recruiter in HRM"
+  - `jdReviewedBy`: AI Agent followed by HITL (Rahul Das)
+  - `detailsAdded`: ["Matching criteria confirmation", "Right Ideal Candidate", "Screening Questions"]
+- Update `avgTimeInStage` to "2 days" and `avgResponseTime` to "1.2 days" per the reference
 
-Add to the `review-jd-seo` enhancedStageMetrics entry for JOB-001:
-- `seoScore` object (reusing `JobSEOScore` type) with realistic values
-- Update `aiTaskDescription` to "AI SEO optimization to make JD more search-friendly"
-- Update `humanTaskDescription` to "Job Description editing and final approval"
+#### 2. Add `job-post-swaasa` case in `StageSpecificMetrics` switch (`src/components/customer/StageDetailsPanel.tsx`)
+- Render `JobPostMetricsCard` when `stageId === "job-post-swaasa"` and `metrics.jobPostMetrics` exists
+- Add to `hasStageSpecificMetrics` check
 
-Also add a new optional field `jdSeoDetails` to the `EnhancedStageMetrics` interface to hold SEO-specific suggestions:
-
-```
-jdSeoDetails?: {
-  suggestions: string[];
-  aiAction: string;
-  humanAction: string;
-}
-```
-
-Populate it for the `review-jd-seo` entry with:
-- `suggestions`: ["Add salary range to improve CTR", "Include 3+ relevant keywords", "Shorten title to under 60 characters", "Add location-specific benefits"]
-- `aiAction`: "AI SEO optimization to make JD more search-friendly"
-- `humanAction`: "Job Description editing and approval"
-
-### 2. Create a `ReviewJDSEOMetricsCard` component
-**File: `src/components/customer/stage-metrics/ReviewJDSEOMetricsCard.tsx`** (new file)
-
-A dedicated card that renders:
-- The existing `SEOScoreRuleCard` (overall score, individual metrics, routing rule)
-- A "Suggested Edits" section listing improvement suggestions with icons
-- An "AI Action" card showing what the AI SEO agent did
-- A "Human Action" card showing what the recruiter needs to do
-
-### 3. Wire it into StageDetailsPanel
-**File: `src/components/customer/StageDetailsPanel.tsx`**
-
-- Add `review-jd-seo` case to the `StageSpecificMetrics` switch to render the new `ReviewJDSEOMetricsCard`
-- Add `review-jd-seo` to the `hasStageSpecificMetrics` check
-- Import the new component
-
-### 4. Export from stage-metrics index
-**File: `src/components/customer/stage-metrics/index.ts`**
-
-Add export for `ReviewJDSEOMetricsCard`.
-
-### Files to modify
-- `src/lib/mockData.ts` -- add `jdSeoDetails` to interface + populate `seoScore` and `jdSeoDetails` for `review-jd-seo`
-- `src/components/customer/stage-metrics/ReviewJDSEOMetricsCard.tsx` -- new component
-- `src/components/customer/stage-metrics/index.ts` -- add export
-- `src/components/customer/StageDetailsPanel.tsx` -- add switch case and hasStageSpecificMetrics entry
-
+#### Files
+- `src/lib/mockData.ts` -- update `job-post-swaasa` entry for JOB-001 (and all other jobs that have it)
+- `src/components/customer/StageDetailsPanel.tsx` -- add switch case + hasStageSpecificMetrics entry
