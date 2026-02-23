@@ -1,60 +1,60 @@
 
 
-## Add Metrics for Every Node via Fallback Mapping
+## Enrich "Review JD SEO" Node with SEO Score, Suggestions, and AI/Human Actions
 
 ### Problem
-Only JOB-001 has `enhancedStageMetrics` entries for workflow node IDs (e.g., `outreach`, `primary-screening`, `interview-scheduling`). JOB-002 through JOB-017 only have the original legacy stage IDs (e.g., `sourcing`, `prescreen`, `scheduling`), so clicking nodes for those jobs shows "No detailed metrics available" or falls back to only showing AI/Human cards without volume data.
+Clicking the "Review JD SEO" node in the pipeline board shows generic volume metrics but no SEO-specific content: no SEO score, no editing suggestions, no AI action detail, and no human action detail.
 
 ### Solution
-Add a **node-to-legacy-stage fallback map** so the system resolves metrics correctly for all jobs, and extend the `StageSpecificMetrics` switch to render the right metric cards for workflow node IDs too.
+Three changes:
 
-### Changes
+### 1. Add `seoScore` and new fields to the `review-jd-seo` mock data
+**File: `src/lib/mockData.ts`**
 
-#### 1. Add fallback mapping in PipelineBoardDialog.tsx
+Add to the `review-jd-seo` enhancedStageMetrics entry for JOB-001:
+- `seoScore` object (reusing `JobSEOScore` type) with realistic values
+- Update `aiTaskDescription` to "AI SEO optimization to make JD more search-friendly"
+- Update `humanTaskDescription` to "Job Description editing and final approval"
 
-Add a `nodeIdFallbackMap` object that maps workflow node IDs to their equivalent legacy stage IDs. Update the `selectedMetrics` resolution (line 363) to try the direct node ID first, then the fallback:
+Also add a new optional field `jdSeoDetails` to the `EnhancedStageMetrics` interface to hold SEO-specific suggestions:
 
-```text
-Mapping:
-  job-post-swaasa     -> jobs-ankura
-  primary-screening   -> prescreen
-  interview-scheduling -> scheduling
-  backup-candidate    -> silver-med
-  talent-pool         -> talent-community
-  application         -> expression
-  outreach            -> sourcing
-  campaigns           -> job-discovery
-  marketing           -> job-discovery
-  human-screening     -> voice-agent
+```
+jdSeoDetails?: {
+  suggestions: string[];
+  aiAction: string;
+  humanAction: string;
+}
 ```
 
-Updated resolution logic:
-```text
-const selectedMetrics = selectedNodeId && job?.enhancedStageMetrics
-  ? job.enhancedStageMetrics[selectedNodeId]
-    || job.enhancedStageMetrics[nodeIdFallbackMap[selectedNodeId]]
-    || null
-  : null;
-```
+Populate it for the `review-jd-seo` entry with:
+- `suggestions`: ["Add salary range to improve CTR", "Include 3+ relevant keywords", "Shorten title to under 60 characters", "Add location-specific benefits"]
+- `aiAction`: "AI SEO optimization to make JD more search-friendly"
+- `humanAction`: "Job Description editing and approval"
 
-#### 2. Extend StageSpecificMetrics switch in StageDetailsPanel.tsx
+### 2. Create a `ReviewJDSEOMetricsCard` component
+**File: `src/components/customer/stage-metrics/ReviewJDSEOMetricsCard.tsx`** (new file)
 
-Add cases for workflow node IDs that should render existing stage-specific metric cards:
+A dedicated card that renders:
+- The existing `SEOScoreRuleCard` (overall score, individual metrics, routing rule)
+- A "Suggested Edits" section listing improvement suggestions with icons
+- An "AI Action" card showing what the AI SEO agent did
+- A "Human Action" card showing what the recruiter needs to do
 
-| Workflow Node ID | Renders |
-|-----------------|---------|
-| `job-post-swaasa` | JobsSwaasaMetricsCard |
-| `primary-screening` | PreScreenMetricsCard |
-| `interview-scheduling` | InterviewSchedulingMetricsCard |
-| `backup-candidate` | SilverMedalistMetricsCard |
-| `talent-pool` | TalentCommunityMetricsCard |
-| `application` | EOIMetricsCard |
-| `outreach` | SourcingMetricsCard |
-| `human-screening` | VoiceScreeningMetricsCard |
+### 3. Wire it into StageDetailsPanel
+**File: `src/components/customer/StageDetailsPanel.tsx`**
 
-Also extend the `hasStageSpecificMetrics` check to include these new node IDs.
+- Add `review-jd-seo` case to the `StageSpecificMetrics` switch to render the new `ReviewJDSEOMetricsCard`
+- Add `review-jd-seo` to the `hasStageSpecificMetrics` check
+- Import the new component
 
-### Files to Modify
-- `src/components/customer/PipelineBoardDialog.tsx` -- add fallback map + update metric resolution
-- `src/components/customer/StageDetailsPanel.tsx` -- extend StageSpecificMetrics switch and hasStageSpecificMetrics check
+### 4. Export from stage-metrics index
+**File: `src/components/customer/stage-metrics/index.ts`**
+
+Add export for `ReviewJDSEOMetricsCard`.
+
+### Files to modify
+- `src/lib/mockData.ts` -- add `jdSeoDetails` to interface + populate `seoScore` and `jdSeoDetails` for `review-jd-seo`
+- `src/components/customer/stage-metrics/ReviewJDSEOMetricsCard.tsx` -- new component
+- `src/components/customer/stage-metrics/index.ts` -- add export
+- `src/components/customer/StageDetailsPanel.tsx` -- add switch case and hasStageSpecificMetrics entry
 
