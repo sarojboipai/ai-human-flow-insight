@@ -136,15 +136,24 @@ function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics:
   if (!stageId) return null;
   switch (stageId) {
     case "job-post": return metrics.jobPostMetrics ? <JobPostMetricsCard metrics={metrics.jobPostMetrics} /> : null;
-    case "sourcing": return metrics.sourcingMetrics ? <SourcingMetricsCard metrics={metrics.sourcingMetrics} /> : null;
+    case "sourcing":
+    case "outreach": return metrics.sourcingMetrics ? <SourcingMetricsCard metrics={metrics.sourcingMetrics} /> : null;
     case "jobs-ankura": return metrics.jobsSwaasaMetrics ? <JobsSwaasaMetricsCard metrics={metrics.jobsSwaasaMetrics} /> : null;
-    case "job-discovery": return metrics.jobDiscoveryMetrics ? <JobDiscoveryMetricsCard metrics={metrics.jobDiscoveryMetrics} /> : null;
-    case "expression": return metrics.eoiMetrics ? <EOIMetricsCard metrics={metrics.eoiMetrics} /> : null;
-    case "prescreen": return metrics.preScreenMetrics ? <PreScreenMetricsCard metrics={metrics.preScreenMetrics} /> : null;
-    case "voice-agent": return metrics.voiceScreeningMetrics ? <VoiceScreeningMetricsCard metrics={metrics.voiceScreeningMetrics} /> : null;
-    case "scheduling": return metrics.interviewSchedulingMetrics ? <InterviewSchedulingMetricsCard metrics={metrics.interviewSchedulingMetrics} /> : null;
-    case "silver-med": return metrics.silverMedalistMetrics ? <SilverMedalistMetricsCard metrics={metrics.silverMedalistMetrics} /> : null;
-    case "talent-community": return metrics.talentCommunityMetrics ? <TalentCommunityMetricsCard metrics={metrics.talentCommunityMetrics} /> : null;
+    case "job-discovery":
+    case "campaigns":
+    case "marketing": return metrics.jobDiscoveryMetrics ? <JobDiscoveryMetricsCard metrics={metrics.jobDiscoveryMetrics} /> : null;
+    case "expression":
+    case "application": return metrics.eoiMetrics ? <EOIMetricsCard metrics={metrics.eoiMetrics} /> : null;
+    case "prescreen":
+    case "primary-screening": return metrics.preScreenMetrics ? <PreScreenMetricsCard metrics={metrics.preScreenMetrics} /> : null;
+    case "voice-agent":
+    case "human-screening": return metrics.voiceScreeningMetrics ? <VoiceScreeningMetricsCard metrics={metrics.voiceScreeningMetrics} /> : null;
+    case "scheduling":
+    case "interview-scheduling": return metrics.interviewSchedulingMetrics ? <InterviewSchedulingMetricsCard metrics={metrics.interviewSchedulingMetrics} /> : null;
+    case "silver-med":
+    case "backup-candidate": return metrics.silverMedalistMetrics ? <SilverMedalistMetricsCard metrics={metrics.silverMedalistMetrics} /> : null;
+    case "talent-community":
+    case "talent-pool": return metrics.talentCommunityMetrics ? <TalentCommunityMetricsCard metrics={metrics.talentCommunityMetrics} /> : null;
     case "review-jd-seo": return metrics.seoScore && metrics.jdSeoDetails ? <ReviewJDSEOMetricsCard seoScore={metrics.seoScore} jdSeoDetails={metrics.jdSeoDetails} /> : null;
     case "job-post-swaasa": return metrics.jobPostMetrics ? <JobPostMetricsCard metrics={metrics.jobPostMetrics} /> : null;
     default: return null;
@@ -218,15 +227,15 @@ export function StageDetailsPanel({ stageName, stageIcon, stageId, metrics, onCl
 
   const hasStageSpecificMetrics = stageId && (
     (stageId === "job-post" && metrics.jobPostMetrics) ||
-    (stageId === "sourcing" && metrics.sourcingMetrics) ||
+    ((stageId === "sourcing" || stageId === "outreach") && metrics.sourcingMetrics) ||
     (stageId === "jobs-ankura" && metrics.jobsSwaasaMetrics) ||
-    (stageId === "job-discovery" && metrics.jobDiscoveryMetrics) ||
-    (stageId === "expression" && metrics.eoiMetrics) ||
-    (stageId === "prescreen" && metrics.preScreenMetrics) ||
-    (stageId === "voice-agent" && metrics.voiceScreeningMetrics) ||
-    (stageId === "scheduling" && metrics.interviewSchedulingMetrics) ||
-    (stageId === "silver-med" && metrics.silverMedalistMetrics) ||
-    (stageId === "talent-community" && metrics.talentCommunityMetrics) ||
+    ((stageId === "job-discovery" || stageId === "campaigns" || stageId === "marketing") && metrics.jobDiscoveryMetrics) ||
+    ((stageId === "expression" || stageId === "application") && metrics.eoiMetrics) ||
+    ((stageId === "prescreen" || stageId === "primary-screening") && metrics.preScreenMetrics) ||
+    ((stageId === "voice-agent" || stageId === "human-screening") && metrics.voiceScreeningMetrics) ||
+    ((stageId === "scheduling" || stageId === "interview-scheduling") && metrics.interviewSchedulingMetrics) ||
+    ((stageId === "silver-med" || stageId === "backup-candidate") && metrics.silverMedalistMetrics) ||
+    ((stageId === "talent-community" || stageId === "talent-pool") && metrics.talentCommunityMetrics) ||
     (stageId === "review-jd-seo" && metrics.seoScore && metrics.jdSeoDetails) ||
     (stageId === "job-post-swaasa" && metrics.jobPostMetrics)
   );

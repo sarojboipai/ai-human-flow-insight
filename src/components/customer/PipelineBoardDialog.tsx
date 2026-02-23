@@ -259,6 +259,19 @@ const savePositions = (jobId: string, nodes: Node[]) => {
   localStorage.setItem(`pipeline-node-positions-${jobId}`, JSON.stringify(positions));
 };
 
+// Fallback mapping: workflow node IDs -> legacy stage IDs
+const nodeIdFallbackMap: Record<string, string> = {
+  "application": "expression",
+  "primary-screening": "prescreen",
+  "interview-scheduling": "scheduling",
+  "backup-candidate": "silver-med",
+  "talent-pool": "talent-community",
+  "outreach": "sourcing",
+  "campaigns": "job-discovery",
+  "marketing": "job-discovery",
+  "human-screening": "voice-agent",
+};
+
 const legendItems = [
   { color: "bg-purple-500", name: "Candidate Journey", description: "User journey steps" },
   { color: "bg-orange-500", name: "AI Agent", description: "AI automated steps" },
@@ -360,9 +373,13 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
     }
   }, [onNodesChange, job, setNodes]);
 
-  const selectedMetrics: EnhancedStageMetrics | null = selectedNodeId && job?.enhancedStageMetrics 
-    ? job.enhancedStageMetrics[selectedNodeId] || null 
-    : null;
+  const selectedMetrics: EnhancedStageMetrics | null = useMemo(() => {
+    if (!selectedNodeId || !job?.enhancedStageMetrics) return null;
+    // Try direct ID first, then fallback mapping
+    return job.enhancedStageMetrics[selectedNodeId] 
+      || job.enhancedStageMetrics[nodeIdFallbackMap[selectedNodeId]] 
+      || null;
+  }, [selectedNodeId, job]);
 
   const selectedNodeInfo = selectedNodeId && job 
     ? getNodeMetadata(selectedNodeId, job.employer) 
