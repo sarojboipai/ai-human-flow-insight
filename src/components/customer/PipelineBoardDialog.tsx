@@ -30,7 +30,7 @@ import {
   RecruiterNode,
   AutomationNode,
 } from "./pipeline-nodes";
-import { StageDetailsSheet } from "./StageDetailsSheet";
+import { StageDetailsPanel } from "./StageDetailsPanel";
 import { 
   getCustomerWorkflowSchema, 
   type Job, 
@@ -397,50 +397,54 @@ export function PipelineBoardDialog({ open, onOpenChange, job }: PipelineBoardDi
           </div>
         </DialogHeader>
         
-        <div className="flex-1 min-h-0">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: 0.15 }}
-            minZoom={0.3}
-            maxZoom={2}
-            defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
-          >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e2e8f0" />
-            <Controls 
-              showInteractive={false}
-              className="!bg-background !border !shadow-md"
-            />
-            <MiniMap 
-              nodeColor={(node) => {
-                switch (node.type) {
-                  case "candidateNode": return "#a855f7";
-                  case "aiAgentNode": return "#f97316";
-                  case "recruiterNode": return "#3b82f6";
-                  case "automationNode": return "#10b981";
-                  case "decisionNode": return "#1e293b";
-                  case "sourceNode": return "#3b82f6";
-                  default: return "#94a3b8";
-                }
-              }}
-              maskColor="rgba(0, 0, 0, 0.1)"
-              className="!bg-background/80 !border !shadow-sm"
-            />
-          </ReactFlow>
-        </div>
+        <div className="flex-1 min-h-0 flex">
+          <div className="flex-1 min-h-0">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={onEdgesChange}
+              nodeTypes={nodeTypes}
+              onPaneClick={() => setSelectedNodeId(null)}
+              fitView
+              fitViewOptions={{ padding: 0.15 }}
+              minZoom={0.3}
+              maxZoom={2}
+              defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
+            >
+              <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e2e8f0" />
+              <Controls 
+                showInteractive={false}
+                className="!bg-background !border !shadow-md"
+              />
+              <MiniMap 
+                nodeColor={(node) => {
+                  switch (node.type) {
+                    case "candidateNode": return "#a855f7";
+                    case "aiAgentNode": return "#f97316";
+                    case "recruiterNode": return "#3b82f6";
+                    case "automationNode": return "#10b981";
+                    case "decisionNode": return "#1e293b";
+                    case "sourceNode": return "#3b82f6";
+                    default: return "#94a3b8";
+                  }
+                }}
+                maskColor="rgba(0, 0, 0, 0.1)"
+                className="!bg-background/80 !border !shadow-sm"
+              />
+            </ReactFlow>
+          </div>
 
-        <StageDetailsSheet
-          open={!!selectedNodeId}
-          onOpenChange={(open) => !open && setSelectedNodeId(null)}
-          stageName={selectedNodeInfo?.label || "Stage Details"}
-          stageIcon={selectedNodeInfo?.icon}
-          stageId={selectedNodeId || undefined}
-          metrics={selectedMetrics}
-        />
+          {selectedNodeId && (
+            <StageDetailsPanel
+              stageName={selectedNodeInfo?.label || "Stage Details"}
+              stageIcon={selectedNodeInfo?.icon}
+              stageId={selectedNodeId}
+              metrics={selectedMetrics}
+              onClose={() => setSelectedNodeId(null)}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
