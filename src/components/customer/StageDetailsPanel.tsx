@@ -35,6 +35,7 @@ import {
   SEOScoreRuleCard,
   JobPostMetricsCard,
   SourcingMetricsCard,
+  ReviewJDSEOMetricsCard,
 } from "./stage-metrics";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -144,6 +145,7 @@ function StageSpecificMetrics({ stageId, metrics }: { stageId?: string; metrics:
     case "scheduling": return metrics.interviewSchedulingMetrics ? <InterviewSchedulingMetricsCard metrics={metrics.interviewSchedulingMetrics} /> : null;
     case "silver-med": return metrics.silverMedalistMetrics ? <SilverMedalistMetricsCard metrics={metrics.silverMedalistMetrics} /> : null;
     case "talent-community": return metrics.talentCommunityMetrics ? <TalentCommunityMetricsCard metrics={metrics.talentCommunityMetrics} /> : null;
+    case "review-jd-seo": return metrics.seoScore && metrics.jdSeoDetails ? <ReviewJDSEOMetricsCard seoScore={metrics.seoScore} jdSeoDetails={metrics.jdSeoDetails} /> : null;
     default: return null;
   }
 }
@@ -223,7 +225,8 @@ export function StageDetailsPanel({ stageName, stageIcon, stageId, metrics, onCl
     (stageId === "voice-agent" && metrics.voiceScreeningMetrics) ||
     (stageId === "scheduling" && metrics.interviewSchedulingMetrics) ||
     (stageId === "silver-med" && metrics.silverMedalistMetrics) ||
-    (stageId === "talent-community" && metrics.talentCommunityMetrics)
+    (stageId === "talent-community" && metrics.talentCommunityMetrics) ||
+    (stageId === "review-jd-seo" && metrics.seoScore && metrics.jdSeoDetails)
   );
 
   return (

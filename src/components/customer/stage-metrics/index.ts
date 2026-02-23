@@ -10,4 +10,5 @@ export { TalentCommunityMetricsCard } from "./TalentCommunityMetricsCard";
 export { SEOScoreRuleCard } from "./SEOScoreRuleCard";
 export { JobPostMetricsCard } from "./JobPostMetricsCard";
 export { SourcingMetricsCard } from "./SourcingMetricsCard";
+export { ReviewJDSEOMetricsCard } from "./ReviewJDSEOMetricsCard";
 export * from "./types";
